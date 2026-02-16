@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.moper.cap</groupId>
+    <artifactId>cap-framework</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <modules>
+        <module>cap-core</module>
+        <module>cap-boot</module>
+        <module>cap-web</module>
+        <module>cap-jdbc</module>
+        <module>cap-property</module>
+        <module>cap-bean</module>
+    </modules>
+
+    <properties>
+        <java.version>17</java.version>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- 依赖版本集中管理 -->
+        <junit.jupiter.version>5.10.1</junit.jupiter.version>
+        <lombok.version>1.18.30</lombok.version>
+        <slf4j.version>2.0.9</slf4j.version>
+        <logback.version>1.5.13</logback.version>
+        <classgraph.version>4.8.172</classgraph.version>
+        <jackson.version>2.16.1</jackson.version>
+        <snakeyaml.version>2.2</snakeyaml.version>
+        <hibernate.validator.version>8.0.1.Final</hibernate.validator.version>
+        <jetbrains.annotations.version>24.1.0</jetbrains.annotations.version>
+
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+
+            <!-- ===== cap 模块自身 ===== -->
+
+            <dependency>
+                <groupId>org.moper.cap</groupId>
+                <artifactId>cap-property</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.moper.cap</groupId>
+                <artifactId>cap-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.moper.cap</groupId>
+                <artifactId>cap-boot</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.moper.cap</groupId>
+                <artifactId>cap-web</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.moper.cap</groupId>
+                <artifactId>cap-jdbc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- ========== 测试 ========== -->
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>${junit.jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- ========== 日志门面 ========== -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- ========== Lombok ========== -->
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- ===== JetBrains Nullable / NotNull ===== -->
+
+            <dependency>
+                <groupId>org.jetbrains</groupId>
+                <artifactId>annotations</artifactId>
+                <version>${jetbrains.annotations.version}</version>
+            </dependency>
+
+            <!-- ========== 校验注解（@NotNull / @Nullable + 实际校验） ========== -->
+            <dependency>
+                <groupId>org.hibernate.validator</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>${hibernate.validator.version}</version>
+            </dependency>
+
+            <!-- ===== 校验 API（不默认启用） ===== -->
+
+            <dependency>
+                <groupId>jakarta.validation</groupId>
+                <artifactId>jakarta.validation-api</artifactId>
+                <version>3.0.2</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+</project>
