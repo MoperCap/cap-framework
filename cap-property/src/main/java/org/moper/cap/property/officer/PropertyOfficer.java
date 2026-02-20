@@ -1,5 +1,7 @@
 package org.moper.cap.property.officer;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.moper.cap.core.context.ResourceContext;
 import org.moper.cap.property.event.PublisherManifest;
 import org.moper.cap.property.publisher.PropertyPublisher;
@@ -21,7 +23,7 @@ public interface PropertyOfficer extends ResourceContext {
      *
      * @return 当前属性管理平台的名称
      */
-    String name();
+    @NotBlank String name();
 
     /**
      * 获取当前属性管理平台的版本号
@@ -37,7 +39,7 @@ public interface PropertyOfficer extends ResourceContext {
      * @param manifest 事件清单
      * @return 关于事件清单的处理结果
      */
-    PublisherManifestResult receive(PublisherManifest manifest);
+    @NotNull PublisherManifestResult receive(@NotNull PublisherManifest manifest);
 
     /**
      * 以异步的方式接收Publisher发布的事件清单 </br>
@@ -46,7 +48,7 @@ public interface PropertyOfficer extends ResourceContext {
      * @param manifest 事件清单
      * @return 关于事件清单的处理结果
      */
-    CompletableFuture<PublisherManifestResult> receiveAsync(PublisherManifest manifest);
+    @NotNull CompletableFuture<PublisherManifestResult> receiveAsync(@NotNull PublisherManifest manifest);
 
     /**
      * 当属性发布者不在线时，属性管理平台将接收到通知，并进行相应的处理 </br>
@@ -56,7 +58,7 @@ public interface PropertyOfficer extends ResourceContext {
      *
      * @param publisher 被销毁的属性发布者
      */
-    void offPublisher(PropertyPublisher publisher);
+    void offPublisher(@NotNull PropertyPublisher publisher);
 
     /**
      * 订阅属性更新事件 </br>
@@ -64,7 +66,7 @@ public interface PropertyOfficer extends ResourceContext {
      *
      * @param subscription 订阅者客户端
      */
-    void subscribe(PropertySubscription subscription);
+    void subscribe(@NotNull PropertySubscription subscription);
 
     /**
      * 取消订阅属性更新事件 </br>
@@ -72,7 +74,7 @@ public interface PropertyOfficer extends ResourceContext {
      *
      * @param subscription 取消订阅的订阅者客户端
      */
-    void unsubscribe(PropertySubscription subscription);
+    void unsubscribe(@NotNull PropertySubscription subscription);
 
     /**
      * 判断当前 Officer 是否已关闭
@@ -82,7 +84,7 @@ public interface PropertyOfficer extends ResourceContext {
     boolean isClosed();
 
     /**
-     * 关闭属性管理平台
+     * 关闭属性管理平台 </br>
      *
      * 关闭后，Officer 将不再接收新的事件清单和订阅请求。
      * 该方法是幂等的，可以被重复调用。

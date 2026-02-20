@@ -1,14 +1,16 @@
 package org.moper.cap.property.result;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import org.jetbrains.annotations.Nullable;
 import org.moper.cap.property.event.PropertyOperation;
 import org.moper.cap.property.exception.PropertyException;
 
 public record PropertyOperationResult(
-        PropertyOperation operation,
-        Status status,
-        PropertyException exception,
-        String message
+        @NotNull PropertyOperation operation,
+        @NotNull Status status,
+        @Nullable PropertyException exception,
+        @NotNull String message
 ) {
 
     /**

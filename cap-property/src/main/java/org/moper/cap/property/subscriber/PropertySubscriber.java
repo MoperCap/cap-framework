@@ -1,5 +1,8 @@
 package org.moper.cap.property.subscriber;
 
+import jakarta.validation.constraints.NotBlank;
+import org.jetbrains.annotations.Nullable;
+
 /**
  * 单一属性订阅者 </br>
  * 属性订阅者用于订阅单个属性的相关事件，负责处理该属性的添加、更新和移除事件。 </br>
@@ -13,7 +16,7 @@ public interface PropertySubscriber {
      *
      * @return 订阅的属性键
      */
-    String getPropertyKey();
+    @NotBlank String getPropertyKey();
 
     /**
      * 属性设置事件处理方法 </br>
@@ -27,7 +30,7 @@ public interface PropertySubscriber {
      * @param value 被添加或更新的最新属性值
      * @throws Exception 处理过程中发生的任何异常
      */
-    void onSet(Object value) throws Exception;
+    void onSet(@Nullable Object value) throws Exception;
 
     /**
      * 属性移除事件处理方法 </br>

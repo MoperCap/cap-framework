@@ -1,5 +1,8 @@
 package org.moper.cap.property.publisher.impl;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import org.moper.cap.property.event.PropertyOperation;
 import org.moper.cap.property.event.PublisherManifest;
@@ -24,22 +27,22 @@ import java.util.stream.Collectors;
 @Builder
 public final class DefaultPropertyPublisher implements PropertyPublisher {
 
-    private final String name;
+    private final @NotBlank String name;
 
     @Builder.Default
-    private final AtomicInteger version = new AtomicInteger(0);
+    private final @NotNull AtomicInteger version = new AtomicInteger(0);
 
     @Builder.Default
-    private final Set<PropertyOfficer> officers = new CopyOnWriteArraySet<>();
+    private final @NotNull Set<PropertyOfficer> officers = new CopyOnWriteArraySet<>();
 
     @Builder.Default
-    private final Map<Integer, PublisherManifest> history = new ConcurrentHashMap<>();
+    private final @NotNull Map<Integer, PublisherManifest> history = new ConcurrentHashMap<>();
 
     @Builder.Default
-    private final ExecutorService executorService = Executors.newFixedThreadPool(4);
+    private final @NotNull ExecutorService executorService = Executors.newFixedThreadPool(4);
 
     @Builder.Default
-    private final AtomicBoolean closed = new AtomicBoolean(false);
+    private final @NotNull AtomicBoolean closed = new AtomicBoolean(false);
 
     /**
      * 获取当前发布者的名称
@@ -47,7 +50,7 @@ public final class DefaultPropertyPublisher implements PropertyPublisher {
      * @return 当前发布者的名称
      */
     @Override
-    public String name() {
+    public @NotBlank String name() {
         return name;
     }
 
@@ -68,7 +71,7 @@ public final class DefaultPropertyPublisher implements PropertyPublisher {
      * @return 每个已签约的Officer针对该事件列表的处理结果。若publisher已关闭，则返回一个空列表
      */
     @Override
-    public List<PublisherManifestResult> publish(PropertyOperation... operations) {
+    public @NotNull List<PublisherManifestResult> publish(@NotEmpty PropertyOperation... operations) {
         // 关闭后静默失败
         if (closed.get()) return Collections.emptyList();
 
@@ -86,7 +89,7 @@ public final class DefaultPropertyPublisher implements PropertyPublisher {
      * @return 每个已签约的Officer针对该事件列表的处理结果。若publisher已关闭，则返回一个完成的、包含空列表的CompletableFuture
      */
     @Override
-    public List<CompletableFuture<PublisherManifestResult>> publishAsync(PropertyOperation... operations) {
+    public @NotNull List<CompletableFuture<PublisherManifestResult>> publishAsync(@NotEmpty PropertyOperation... operations) {
         if(closed.get()) return Collections.emptyList();
 
         PublisherManifest manifest = createAndSaveManifest(version.getAndIncrement(), operations);
@@ -104,7 +107,7 @@ public final class DefaultPropertyPublisher implements PropertyPublisher {
      * @throws PropertyManifestVersionException 若版本号小于0或者版本号超出当前版本号范围，则抛出异常。同时，如果指定版本号的事件清单不存在，也抛出异常，不过该情况几乎不会发生
      */
     @Override
-    public PublisherManifest pull(int versionID) throws PropertyManifestVersionException {
+    public @NotNull PublisherManifest pull(int versionID) throws PropertyManifestVersionException {
         if(versionID < 0)
             throw new PropertyManifestVersionException("Invalid version: versionID must be non-negative");
         else if (versionID >= currentVersion())
@@ -126,7 +129,7 @@ public final class DefaultPropertyPublisher implements PropertyPublisher {
      * 同时，如果指定版本范围内的事件清单不存在，也抛出异常，不过该情况几乎不会发生
      */
     @Override
-    public List<PublisherManifest> pull(int beginVersionID, int endVersionID) throws PropertyManifestVersionException {
+    public @NotNull List<PublisherManifest> pull(int beginVersionID, int endVersionID) throws PropertyManifestVersionException {
         if(beginVersionID < 0)
             throw new PropertyManifestVersionException("Invalid version range: beginVersionID must be non-negative");
         if(beginVersionID >= endVersionID)
@@ -152,7 +155,7 @@ public final class DefaultPropertyPublisher implements PropertyPublisher {
      * @exception PropertyException 若当前publisher已关闭，则抛出异常。
      */
     @Override
-    public void contract(PropertyOfficer officer) throws PropertyException {
+    public void contract(@NotNull PropertyOfficer officer) throws PropertyException {
         if(closed.get())
             throw new PropertyException("Cannot contract officer: Publisher is closed");
 
@@ -166,7 +169,7 @@ public final class DefaultPropertyPublisher implements PropertyPublisher {
      * @param officer 解约的Officer
      */
     @Override
-    public void uncontract(PropertyOfficer officer) {
+    public void uncontract(@NotNull PropertyOfficer officer) {
         if(closed.get()) return;
 
         officer.offPublisher(this);
@@ -189,7 +192,7 @@ public final class DefaultPropertyPublisher implements PropertyPublisher {
      * @return 当前已签约的Officer集合
      */
     @Override
-    public Set<PropertyOfficer> getOfficers() {
+    public @NotNull Set<PropertyOfficer> getOfficers() {
         return Set.copyOf(officers);
     }
 
@@ -200,7 +203,7 @@ public final class DefaultPropertyPublisher implements PropertyPublisher {
      * @return 若已签约，则返回true；否则返回false
      */
     @Override
-    public boolean isContractOfficer(PropertyOfficer officer) {
+    public boolean isContractOfficer(@NotNull PropertyOfficer officer) {
         return officers.contains(officer);
     }
 

@@ -1,5 +1,8 @@
 package org.moper.cap.property.publisher;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import org.moper.cap.core.context.DispatcherContext;
 import org.moper.cap.property.event.PropertyOperation;
 import org.moper.cap.property.event.PublisherManifest;
@@ -26,7 +29,7 @@ public interface PropertyPublisher extends DispatcherContext {
      *
      * @return 当前发布者的名称
      */
-    String name();
+    @NotBlank String name();
 
     /**
      * 获取当前发布者的版本号
@@ -41,7 +44,7 @@ public interface PropertyPublisher extends DispatcherContext {
      * @param operations 发布的事件列表
      * @return 每个已签约的Officer针对该事件列表的处理结果
      */
-    List<PublisherManifestResult> publish(PropertyOperation... operations);
+    @NotNull List<PublisherManifestResult> publish(@NotEmpty PropertyOperation... operations);
 
     /**
      * 以异步的方式向所有已签约的Officer发布事件清单 </br>
@@ -49,7 +52,7 @@ public interface PropertyPublisher extends DispatcherContext {
      * @param operations 发布的事件列表
      * @return 每个已签约的Officer针对该事件列表的处理结果
      */
-    List<CompletableFuture<PublisherManifestResult>> publishAsync(PropertyOperation... operations);
+    @NotNull List<CompletableFuture<PublisherManifestResult>> publishAsync(@NotEmpty PropertyOperation... operations);
 
     /**
      * 拉取指定版本号的事件清单 </br>
@@ -58,7 +61,7 @@ public interface PropertyPublisher extends DispatcherContext {
      * @return 指定版本号的事件清单
      * @throws PropertyManifestVersionException 若版本号无效，则抛出异常
      */
-    PublisherManifest pull(int versionID) throws PropertyManifestVersionException;
+    @NotNull PublisherManifest pull(int versionID) throws PropertyManifestVersionException;
 
     /**
      * 拉取指定版本范围 [beginVersionID, endVersionID) 内的事件清单 </br>
@@ -68,7 +71,7 @@ public interface PropertyPublisher extends DispatcherContext {
      * @return 指定版本范围的事件清单列表
      * @throws PropertyManifestVersionException 若版本号无效，则抛出异常
      */
-    List<PublisherManifest> pull(int beginVersionID, int endVersionID) throws PropertyManifestVersionException;
+    @NotNull List<PublisherManifest> pull(int beginVersionID, int endVersionID) throws PropertyManifestVersionException;
 
     /**
      * 与Officer签约，允许该Officer接收本Publisher发布的事件
@@ -76,7 +79,7 @@ public interface PropertyPublisher extends DispatcherContext {
      * @param officer 签约的Officer
      * @exception PropertyException 若签约过程中发生错误，例如发布者已关闭，则抛出异常
      */
-    void contract(PropertyOfficer officer) throws PropertyException;
+    void contract(@NotNull PropertyOfficer officer) throws PropertyException;
 
     /**
      * 与Officer解约，禁止该Officer接收本Publisher发布的事件 </br>
@@ -84,7 +87,7 @@ public interface PropertyPublisher extends DispatcherContext {
      *
      * @param officer 解约的Officer
      */
-    void uncontract(PropertyOfficer officer);
+    void uncontract(@NotNull PropertyOfficer officer);
 
     /**
      * 获取当前已签约的Officer数量
@@ -98,7 +101,7 @@ public interface PropertyPublisher extends DispatcherContext {
      *
      * @return 当前已签约的Officer副本集合
      */
-    Set<PropertyOfficer> getOfficers();
+    @NotNull Set<PropertyOfficer> getOfficers();
 
     /**
      * 判断Publisher是否已与指定Officer签约
@@ -106,7 +109,7 @@ public interface PropertyPublisher extends DispatcherContext {
      * @param officer 指定Officer
      * @return 若已签约，则返回true；否则返回false
      */
-    boolean isContractOfficer(PropertyOfficer officer);
+    boolean isContractOfficer(@NotNull PropertyOfficer officer);
 
     /**
      * 判断发布者是否已关闭 </br>

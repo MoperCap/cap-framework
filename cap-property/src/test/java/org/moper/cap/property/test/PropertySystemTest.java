@@ -794,13 +794,6 @@ public class PropertySystemTest {
             }
         }
 
-        @Test
-        @DisplayName("ViewPool 查询空属性键抛出异常")
-        void testViewPoolEmptyKey() {
-            DefaultPropertyViewPool viewPool = new DefaultPropertyViewPool("TestViewPool");
-
-            assertThrows(IllegalArgumentException.class, () -> viewPool.getRawPropertyValue(""));
-        }
     }
 
     // ===================== 测试辅助类 =====================

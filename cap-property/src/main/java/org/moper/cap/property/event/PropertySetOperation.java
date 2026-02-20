@@ -1,10 +1,13 @@
 package org.moper.cap.property.event;
 
+import jakarta.validation.constraints.NotBlank;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Objects;
 
 public record PropertySetOperation(
-        String key,
-        Object value
+        @NotBlank String key,
+        @Nullable Object value
 ) implements PropertyOperation {
     @Override
     public boolean equals(Object o) {

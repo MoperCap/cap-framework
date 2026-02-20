@@ -1,5 +1,7 @@
 package org.moper.cap.property.subscriber.selector;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.moper.cap.property.subscriber.PropertySelector;
 
 import java.util.Set;
@@ -12,9 +14,9 @@ import java.util.Set;
  */
 public final class ExactPropertySelector implements PropertySelector {
 
-    private final Set<String> keys;
+    private final @NotNull Set<String> keys;
 
-    public ExactPropertySelector(Set<String> keys) {
+    public ExactPropertySelector(@NotNull Set<String> keys) {
         this.keys = keys;
     }
 
@@ -25,7 +27,7 @@ public final class ExactPropertySelector implements PropertySelector {
      * @return 如果属性键匹配订阅者的兴趣范围，则返回true；否则返回false
      */
     @Override
-    public boolean matches(String key) {
+    public boolean matches(@NotBlank String key) {
         return keys.contains(key);
     }
 }

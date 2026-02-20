@@ -1,5 +1,9 @@
 package org.moper.cap.property.subscriber.view;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.moper.cap.property.event.PropertyOperation;
 import org.moper.cap.property.officer.PropertyOfficer;
 import org.moper.cap.property.subscriber.PropertySelector;
@@ -79,16 +83,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * 关闭后，ViewPool 将继续保留已缓存的属性值，但不会再接收来自 Officer 的
  * 属性更新通知。这样做的好处是即使 Officer 关闭或 ViewPool 被取消订阅，
  * 外部模块仍然可以查询最后缓存的属性值。
- *
- * @author MoperCap
- * @since 1.0
  */
 public final class DefaultPropertyViewPool implements PropertyViewPool {
 
     /**
      * 视图池的名称
      */
-    private final String name;
+    private final @NotBlank String name;
 
     /**
      * 属性值存储 </br>
@@ -97,13 +98,13 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      *
      * 该映射缓存了所有从 Officer 接收到的属性值。
      */
-    private final Map<String, Object> properties;
+    private final @NotNull Map<String, Object> properties;
 
     /**
      * 视图池的关闭标志 </br>
      * 使用原子布尔值保证线程安全性 </br>
      */
-    private final AtomicBoolean closed;
+    private final @NotNull AtomicBoolean closed;
 
     /**
      * 构造函数 </br>
@@ -118,7 +119,7 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      * @param name 视图池的名称，不能为 null 或空字符串
      * @throws IllegalArgumentException 如果 name 为 null 或空
      */
-    public DefaultPropertyViewPool(String name) {
+    public DefaultPropertyViewPool(@NotBlank String name) {
         this.name = name;
         this.properties = new ConcurrentHashMap<>();
         this.closed = new AtomicBoolean(false);
@@ -130,7 +131,7 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      * @return 视图池的名称
      */
     @Override
-    public String name() {
+    public @NotBlank String name() {
         return name;
     }
 
@@ -142,7 +143,7 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      * @return AnyPropertySelector 实例
      */
     @Override
-    public PropertySelector selector() {
+    public @NotNull PropertySelector selector() {
         return new AnyPropertySelector();
     }
 
@@ -154,7 +155,7 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      * @param operations 属性管理平台发送的事件清单
      */
     @Override
-    public void dispatch(PropertyOperation... operations) {
+    public void dispatch(@NotEmpty PropertyOperation... operations) {
         if (closed.get()) {
             return;
         }
@@ -173,7 +174,7 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      * @param officer 不在线的属性官管理平台
      */
     @Override
-    public void offOfficer(PropertyOfficer officer) {
+    public void offOfficer(@NotNull PropertyOfficer officer) {
         if (closed.get()) {
             return;
         }
@@ -213,13 +214,11 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      *
      * 该方法返回属性的原始值，无类型转换。</br>
      *
-     * @param key 属性键，不能为 null 或空
+     * @param key 属性键
      * @return 属性值，如果属性不存在则返回 null
-     * @throws IllegalArgumentException 如果 key 为 null 或空
      */
     @Override
-    public Object getRawPropertyValue(String key) {
-        validateKey(key);
+    public @Nullable Object getRawPropertyValue(@NotBlank String key) {
         return properties.get(key);
     }
 
@@ -228,19 +227,13 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      *
      * 该方法会尝试将属性值转换为指定的类型。如果类型转换失败，将返回 null。</br>
      *
-     * @param key 属性键，不能为 null 或 空
-     * @param type 目标类型，不能为 null
+     * @param key 属性键
+     * @param type 目标类型
      * @param <T> 泛型参数
      * @return 转换后的属性值，如果属性不存在或类型转换失败则返回 null
-     * @throws IllegalArgumentException 如果 key 为 null/空 或 type 为 null
      */
     @Override
-    public <T> T getPropertyValue(String key, Class<T> type) {
-        validateKey(key);
-        if (type == null) {
-            throw new IllegalArgumentException("Type cannot be null");
-        }
-
+    public <T> @Nullable T getPropertyValue(@NotBlank String key, @NotNull Class<T> type) {
         Object value = properties.get(key);
         if (value == null) {
             return null;
@@ -254,23 +247,14 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      *
      * 该方法会尝试将属性值转换为指定的类型。如果属性不存在或类型转换失败，将返回提供的默认值。</br>
      *
-     * @param key 属性键，不能为 null 或空
-     * @param type 目标类型，不能为 null
-     * @param defaultValue 默认值，不能为 null
+     * @param key 属性键
+     * @param type 目标类型
+     * @param defaultValue 默认值
      * @param <T> 泛型参数
      * @return 转换后的属性值，如果属性不存在或类型转换失败则返回 defaultValue
-     * @throws IllegalArgumentException 如果 key 为 null/空、type 为 null 或 defaultValue 为 null
      */
     @Override
-    public <T> T getPropertyValueOrDefault(String key, Class<T> type, T defaultValue) {
-        validateKey(key);
-        if (type == null) {
-            throw new IllegalArgumentException("Type cannot be null");
-        }
-        if (defaultValue == null) {
-            throw new IllegalArgumentException("Default value cannot be null");
-        }
-
+    public <T> @NotNull T getPropertyValueOrDefault(@NotBlank String key, @NotNull Class<T> type, @NotNull T defaultValue) {
         Object value = properties.get(key);
         if (value == null) {
             return defaultValue;
@@ -285,19 +269,13 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      *
      * 该方法会尝试将属性值转换为指定的类型。返回的 Optional 对象可以用于函数式编程。</br>
      *
-     * @param key 属性键，不能为 null 或空
-     * @param type 目标类型，不能为 null
+     * @param key 属性键
+     * @param type 目标类型
      * @param <T> 泛型参数
      * @return 包含属性值的 Optional，如果属性不存在或类型转换失败则返回 Optional.empty()
-     * @throws IllegalArgumentException 如果 key 为 null/空 或 type 为 null
      */
     @Override
-    public <T> Optional<T> getPropertyValueOptional(String key, Class<T> type) {
-        validateKey(key);
-        if (type == null) {
-            throw new IllegalArgumentException("Type cannot be null");
-        }
-
+    public <T> @NotNull Optional<T> getPropertyValueOptional(@NotBlank String key, @NotNull Class<T> type) {
         Object value = properties.get(key);
         if (value == null) {
             return Optional.empty();
@@ -310,13 +288,11 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
     /**
      * 判断是否存在指定属性键的属性。</br>
      *
-     * @param key 属性键，不能为 null 或空
+     * @param key 属性键
      * @return 如果属性存在则返回 true，否则返回 false
-     * @throws IllegalArgumentException 如果 key 为 null 或空
      */
     @Override
-    public boolean containsProperty(String key) {
-        validateKey(key);
+    public boolean containsProperty(@NotBlank String key) {
         return properties.containsKey(key);
     }
 
@@ -326,7 +302,7 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      * @return 属性键集合的不可修改副本
      */
     @Override
-    public Set<String> keySet() {
+    public @NotNull Set<String> keySet() {
         return Collections.unmodifiableSet(properties.keySet());
     }
 
@@ -351,10 +327,6 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      */
     @SuppressWarnings("unchecked")
     private <T> T castToType(Object value, Class<T> type) {
-        if (value == null) {
-            return null;
-        }
-
         // 如果值已经是目标类型，直接返回
         if (type.isInstance(value)) {
             return (T) value;
@@ -384,17 +356,5 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
 
         // 无法转换，返回 null
         return null;
-    }
-
-    /**
-     * 验证属性键的有效性
-     *
-     * @param key 属性键
-     * @throws IllegalArgumentException 如果 key 为 null 或空
-     */
-    private void validateKey(String key) {
-        if (key == null || key.trim().isEmpty()) {
-            throw new IllegalArgumentException("Property key cannot be null or empty");
-        }
     }
 }

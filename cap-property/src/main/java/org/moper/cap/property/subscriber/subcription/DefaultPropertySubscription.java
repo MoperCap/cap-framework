@@ -1,5 +1,8 @@
 package org.moper.cap.property.subscriber.subcription;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import org.moper.cap.property.event.PropertyOperation;
 import org.moper.cap.property.event.PropertyRemoveOperation;
 import org.moper.cap.property.event.PropertySetOperation;
@@ -91,12 +94,12 @@ public final class DefaultPropertySubscription implements PropertySubscription {
     /**
      * 订阅客户端的名称
      */
-    private final String name;
+    private final @NotBlank String name;
 
     /**
      * 属性选择器：用于确定该订阅客户端关心的属性范围
      */
-    private final PropertySelector selector;
+    private final @NotNull PropertySelector selector;
 
     /**
      * 订阅者映射表
@@ -106,13 +109,13 @@ public final class DefaultPropertySubscription implements PropertySubscription {
      * 该映射既作为订阅者的存储容器，又作为属性键的缓存，
      * 避免每次都调用 getPropertyKey() 方法。
      */
-    private final Map<PropertySubscriber, String> subscribers;
+    private final @NotNull Map<PropertySubscriber, String> subscribers;
 
     /**
      * 订阅客户端的关闭标志
      * 使用原子布尔值保证线程安全性
      */
-    private final AtomicBoolean closed;
+    private final @NotNull AtomicBoolean closed;
 
     /**
      * 构造函数1：显式指定属性选择器 </br>
@@ -121,19 +124,16 @@ public final class DefaultPropertySubscription implements PropertySubscription {
      *
      * 初始化工作：
      * <ol>
-     *   <li>验证 name 不为 null 或空</li>
-     *   <li>验证 subscribers 不为 null 或空</li>
      *   <li>初始化 subscribers 映射，缓存每个订阅者的属性键</li>
      *   <li>初始化 closed 标志为 false</li>
      * </ol>
      *
-     * @param name 订阅客户端的名称，不能为 null 或空字符串
+     * @param name 订阅客户端的名称
      * @param selector 属性选择器，用于确定关心的属性范围
-     * @param subscribers 订阅者集合，不能为 null 或空
-     * @throws IllegalArgumentException 如果 name 为 null/空 或 subscribers 为 null/空
+     * @param subscribers 订阅者集合
      */
-    public DefaultPropertySubscription(String name, PropertySelector selector,
-                                       Collection<PropertySubscriber> subscribers) {
+    public DefaultPropertySubscription(@NotBlank String name, @NotNull PropertySelector selector,
+                                       @NotEmpty Collection<PropertySubscriber> subscribers) {
         this.name = name;
         this.selector = selector;
         this.subscribers = new ConcurrentHashMap<>();
@@ -151,19 +151,16 @@ public final class DefaultPropertySubscription implements PropertySubscription {
      *
      * 初始化工作：
      * <ol>
-     *   <li>验证 name 不为 null 或空</li>
-     *   <li>验证 subscribers 不为 null 或空</li>
      *   <li>初始化 subscribers 映射，缓存每个订阅者的属性键</li>
      *   <li>收集所有订阅者的属性键</li>
      *   <li>根据属性键集合创建 ExactPropertySelector</li>
      *   <li>初始化 closed 标志为 false</li>
      * </ol>
      *
-     * @param name 订阅客户端的名称，不能为 null 或���字符串
-     * @param subscribers 订阅者集合，不能为 null 或空
-     * @throws IllegalArgumentException 如果 name 为 null/空 或 subscribers 为 null/空
+     * @param name 订阅客户端的名称
+     * @param subscribers 订阅者集合
      */
-    public DefaultPropertySubscription(String name, Collection<PropertySubscriber> subscribers) {
+    public DefaultPropertySubscription(@NotBlank String name, @NotEmpty Collection<PropertySubscriber> subscribers) {
         this.name = name;
         this.subscribers = new ConcurrentHashMap<>();
         this.closed = new AtomicBoolean(false);
@@ -188,7 +185,7 @@ public final class DefaultPropertySubscription implements PropertySubscription {
      * @return 当前属性订阅客户端的名称
      */
     @Override
-    public String name() {
+    public @NotBlank String name() {
         return name;
     }
 
@@ -200,7 +197,7 @@ public final class DefaultPropertySubscription implements PropertySubscription {
      * @return 当前属性订阅客户端的属性选择器（不可变）
      */
     @Override
-    public PropertySelector selector() {
+    public @NotNull PropertySelector selector() {
         return selector;
     }
 
@@ -212,7 +209,7 @@ public final class DefaultPropertySubscription implements PropertySubscription {
      * @param operations 属性管理平台发送的事件清单
      */
     @Override
-    public void dispatch(PropertyOperation... operations) {
+    public void dispatch(@NotEmpty PropertyOperation... operations) {
         if (closed.get()) {
             return;
         }
@@ -230,7 +227,7 @@ public final class DefaultPropertySubscription implements PropertySubscription {
      * @param officer 不在线的属性官管理平台
      */
     @Override
-    public void offOfficer(PropertyOfficer officer) {
+    public void offOfficer(@NotNull PropertyOfficer officer) {
         // 遍历所有订阅者，依次调用 onRemoved() 方法
         for (PropertySubscriber subscriber : subscribers.keySet()) {
             try {
