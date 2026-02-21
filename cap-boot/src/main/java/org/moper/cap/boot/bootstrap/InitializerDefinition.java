@@ -1,7 +1,6 @@
 package org.moper.cap.boot.bootstrap;
 
 import jakarta.validation.constraints.NotNull;
-import org.moper.cap.core.context.ResourceContext;
 import org.moper.cap.boot.exception.InitializerInstanceException;
 
 import java.lang.reflect.InvocationTargetException;
@@ -15,7 +14,7 @@ import java.lang.reflect.InvocationTargetException;
  * @param description 构造器相关描述(可以为空)
  */
 public record InitializerDefinition(
-        @NotNull Class<? extends Initializer<? extends ResourceContext>> clazz,
+        @NotNull Class<? extends Initializer> clazz,
         @NotNull InitializerType type,
         int order,
         @NotNull String name,
@@ -27,7 +26,7 @@ public record InitializerDefinition(
      * @return Initializer实例
      * @throws InitializerInstanceException 若获取实例失败，则抛出异常
      */
-    public Initializer<? extends ResourceContext> newInstance() throws InitializerInstanceException {
+    public Initializer newInstance() throws InitializerInstanceException {
         try {
             return clazz.getDeclaredConstructor().newInstance();
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {

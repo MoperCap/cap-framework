@@ -6,7 +6,6 @@ import org.moper.cap.boot.annotation.InitializerExtensions;
 import org.moper.cap.boot.annotation.ResourceScan;
 import org.moper.cap.boot.bootstrap.Initializer;
 import org.moper.cap.boot.config.ConfigClassResourceViewContext;
-import org.moper.cap.core.context.ResourceContext;
 
 import java.util.Collection;
 import java.util.Set;
@@ -50,7 +49,7 @@ public final class DefaultConfigClassResourceViewContext implements ConfigClassR
      * @return 若配置类上存在Initializer类，则返回对应集合; 否则返回空集合
      */
     @Override
-    public Collection<Class<? extends Initializer<? extends ResourceContext>>> getInitializerExtensionClasses() {
+    public Collection<Class<? extends Initializer>> getInitializerExtensionClasses() {
         InitializerExtensions extensions = configClass.getAnnotation(InitializerExtensions.class);
         if(extensions == null) return Set.of();
         else return Set.of(extensions.value());

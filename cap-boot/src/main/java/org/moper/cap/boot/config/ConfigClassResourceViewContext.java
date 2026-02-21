@@ -2,12 +2,10 @@ package org.moper.cap.boot.config;
 
 import jakarta.validation.constraints.NotNull;
 import org.moper.cap.boot.bootstrap.Initializer;
-import org.moper.cap.core.context.ResourceContext;
-import org.moper.cap.core.context.ResourceViewContext;
 
 import java.util.Collection;
 
-public interface ConfigClassResourceViewContext extends ResourceViewContext {
+public interface ConfigClassResourceViewContext {
 
     /**
      * 获取配置类上指定的软件包扫描路径集合
@@ -31,5 +29,5 @@ public interface ConfigClassResourceViewContext extends ResourceViewContext {
      * @return 若配置类上存在Initializer类，则返回对应集合; 否则返回空集合
      */
     @NotNull
-    Collection<Class<? extends Initializer<? extends ResourceContext>>> getInitializerExtensionClasses();
+    Collection<Class<? extends Initializer>> getInitializerExtensionClasses();
 }

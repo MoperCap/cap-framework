@@ -1,8 +1,7 @@
 package org.moper.cap.boot.context;
 
 
-import jakarta.validation.constraints.NotNull;
-import org.moper.cap.core.context.ApplicationContext;
+import org.moper.cap.core.ApplicationContext;
 import org.moper.cap.core.context.BootstrapLifecycleContext;
 import org.moper.cap.core.exception.CapFrameworkException;
 
@@ -19,6 +18,5 @@ public interface BootstrapContext extends BootstrapLifecycleContext {
      *
      * @exception CapFrameworkException 若构建失败，则抛出异常
      */
-    @NotNull
     ApplicationContext build() throws CapFrameworkException;
 }

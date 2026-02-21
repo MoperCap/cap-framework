@@ -2,7 +2,6 @@ package org.moper.cap.property.officer;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import org.moper.cap.core.context.ResourceContext;
 import org.moper.cap.property.event.PublisherManifest;
 import org.moper.cap.property.publisher.PropertyPublisher;
 import org.moper.cap.property.result.PublisherManifestResult;
@@ -16,7 +15,7 @@ import java.util.concurrent.CompletableFuture;
  * 属性官管理平台还负责通知相关的订阅者和视图池进行相应的更新 </br>
  * 属性管理平台的生命周期由用户自行管理，用户可以根据需要创建和销毁属性管理平台 </br>
  */
-public interface PropertyOfficer extends ResourceContext {
+public interface PropertyOfficer{
 
     /**
      * 获取当前属性管理平台的名称
