@@ -1,11 +1,16 @@
 package org.moper.cap.bean.exception;
 
-import org.moper.cap.core.exception.CapFrameworkRuntimeException;
-
-public class BeanException extends CapFrameworkRuntimeException {
+/**
+ * Bean相关异常基类
+ * 所有Bean模块异常的根异常
+ */
+public class BeanException extends Exception {
+    
     public BeanException(String message) {
         super(message);
     }
 
-    public BeanException(String message, Throwable cause) {super(message, cause);}
+    public BeanException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
