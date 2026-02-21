@@ -1,6 +1,7 @@
 package org.moper.cap.bean.aware;
 
 import jakarta.validation.constraints.NotNull;
+import org.moper.cap.bean.exception.BeanException;
 import org.moper.cap.bean.factory.BeanFactory;
 
 /**

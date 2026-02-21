@@ -3,6 +3,7 @@ package org.moper.cap.bean.factory;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.moper.cap.bean.definition.BeanDefinition;
+import org.moper.cap.bean.exception.BeanException;
 import org.moper.cap.bean.processor.BeanPostProcessor;
 
 /**

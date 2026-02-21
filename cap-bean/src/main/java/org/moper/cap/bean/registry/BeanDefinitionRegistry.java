@@ -3,6 +3,7 @@ package org.moper.cap.bean.registry;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.moper.cap.bean.definition.BeanDefinition;
+import org.moper.cap.bean.exception.BeanException;
 
 /**
  * Bean定义注册表接口

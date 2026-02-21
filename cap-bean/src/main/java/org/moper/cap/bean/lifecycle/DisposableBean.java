@@ -1,6 +1,8 @@
 package org.moper.cap.bean.lifecycle;
 
 
+import org.moper.cap.bean.exception.BeanException;
+
 /**
  * Bean销毁接口
  * 在Bean销毁前调用

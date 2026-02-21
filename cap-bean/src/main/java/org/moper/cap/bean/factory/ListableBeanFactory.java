@@ -2,6 +2,7 @@ package org.moper.cap.bean.factory;
 
 import jakarta.validation.constraints.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.moper.cap.bean.exception.BeanException;
 
 import java.lang.annotation.Annotation;
 import java.util.Map;

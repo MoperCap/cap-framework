@@ -3,6 +3,7 @@ package org.moper.cap.bean.processor;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.moper.cap.bean.exception.BeanException;
 
 /**
  * Bean后置处理器接口
