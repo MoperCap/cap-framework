@@ -1,6 +1,6 @@
 package org.moper.cap.boot.application;
 
-import org.moper.cap.core.ApplicationContext;
+import org.moper.cap.core.context.ApplicationContext;
 import org.moper.cap.core.exception.CapFrameworkException;
 
 /**

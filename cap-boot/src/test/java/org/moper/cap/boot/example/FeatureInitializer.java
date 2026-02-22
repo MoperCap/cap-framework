@@ -3,7 +3,7 @@ package org.moper.cap.boot.example;
 import org.moper.cap.boot.annotation.InitializerMeta;
 import org.moper.cap.boot.bootstrap.Initializer;
 import org.moper.cap.boot.bootstrap.InitializerType;
-import org.moper.cap.boot.context.BootstrapContext;
+import org.moper.cap.context.BootstrapContext;
 import org.moper.cap.core.exception.CapFrameworkException;
 
 @InitializerMeta(type = InitializerType.FEATURE, order = 1)
