@@ -1,7 +1,11 @@
 package org.moper.cap.bean.definition;
 
 /**
- * Bean作用域枚举类
+ * Bean 的作用域枚举
+ *
+ * <p>cap-bean 内核直接支持 {@link #SINGLETON} 和 {@link #PROTOTYPE}。
+ * {@link #REQUEST} 和 {@link #SESSION} 由上层 cap-web 通过作用域代理实现，
+ * 内核保留枚举值供上层模块识别。
  */
 public enum BeanScope {
 

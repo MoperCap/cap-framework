@@ -4,7 +4,7 @@ package org.moper.cap.bean.exception;
  * Bean相关异常基类
  * 所有Bean模块异常的根异常
  */
-public class BeanException extends Exception {
+public class BeanException extends RuntimeException {
     
     public BeanException(String message) {
         super(message);

@@ -2,65 +2,195 @@ package org.moper.cap.bean.definition;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
+ * Bean 的完整元数据描述（不可变）。
  *
- * @param name  Bean的唯一标识名称
- * @param type Bean的类型
- * @param scope Bean的作用域
- * @param factoryBeanName 工厂Bean名称（用于实例工厂方法，为null表示不使用）
- * @param factoryMethodName 工厂方法名称（用于静态或实例工厂方法，为null表示使用构造函数）
- * @param constructorArgTypes 构造函数参数类型（或工厂方法参数类型）
- * @param lazy 是否延迟初始化
- * @param primary 是否为主要候选Bean（当存在多个同类型Bean时）
- * @param autowired 是否作为自动装配的候选者
- * @param initMethodName 初始化方法名
- * @param destroyMethodName 销毁方法名
- * @param dependsOn 依赖的其他Bean名称
- * @param description Bean的描述信息
+ * <p>通过静态工厂方法 {@link #of(String, Class)} 创建实例，支持链式调用。
+ * 如需修改行为性字段，使用对应的 {@code with*} 方法返回新实例，原实例不受影响。
+ *
+ * <p><b>使用示例：</b>
+ * <pre>{@code
+ * // 最简单的单例 Bean（无参构造函数实例化）
+ * BeanDefinition def = BeanDefinition.of("userService", UserService.class);
+ *
+ * // 链式配置
+ * BeanDefinition def = BeanDefinition.of("dataSource", DataSource.class)
+ *     .withInstantiationPolicy(InstantiationPolicy.staticFactory("create", Config.class))
+ *     .dependsOn("configBean")
+ *     .withPrimary(true)
+ *     .withLazy(true);
+ *
+ * // 运行期调整行为性字段（容器冻结前）
+ * BeanDefinition updated = original.withLazy(true);
+ * registry.registerBeanDefinition(updated);
+ * }</pre>
+ *
+ * @param name                Bean 的唯一标识名称，不能为空
+ * @param type                Bean 的类型，不能为 null
+ * @param scope               Bean 的作用域，不能为 null，默认 {@link BeanScope#SINGLETON}
+ * @param instantiationPolicy Bean 的实例化策略，不能为 null，
+ *                            描述容器如何创建该 Bean 的实例，
+ *                            默认为无参构造函数策略
+ * @param dependsOn           强依赖的其他 Bean 名称，不能为 null，
+ *                            容器保证这些 Bean 先于本 Bean 初始化，
+ *                            适用于非注入式的顺序依赖，默认为空数组
+ * @param lazy                是否延迟初始化，{@code true} 表示首次 {@code getBean}
+ *                            时才创建实例，仅对 {@link BeanScope#SINGLETON} 有效，
+ *                            默认 {@code false}
+ * @param primary             是否为同类型 Bean 的首选候选，按类型查找时若存在多个匹配，
+ *                            优先返回标记为 {@code primary} 的 Bean，默认 {@code false}
+ * @param autowired           是否作为自动装配的候选者，设为 {@code false} 可将该 Bean
+ *                            从自动装配中排除，默认 {@code true}
+ * @param description         可读描述信息，不能为 null，默认为空字符串
  */
 public record BeanDefinition(
         @NotBlank String name,
         @NotNull Class<?> type,
         @NotNull BeanScope scope,
-        @Nullable String factoryBeanName,
-        @Nullable String factoryMethodName,
-        @NotNull Class<?>[] constructorArgTypes,
+        @NotNull InstantiationPolicy instantiationPolicy,
+        @NotNull String[] dependsOn,
         boolean lazy,
         boolean primary,
         boolean autowired,
-        @Nullable String initMethodName,
-        @Nullable String destroyMethodName,
-        @NotNull String[] dependsOn,
         @NotNull String description
 ) {
 
     /**
-     * 判断是否通过构造函数实例化
+     * 创建一个以无参构造函数实例化的单例 BeanDefinition。
      *
-     * @return 如果factoryMethodName为null，则使用构造函数
+     * <p>所有可选字段均使用默认值：
+     * {@code scope=SINGLETON, lazy=false, primary=false, autowired=true, description=""}
+     *
+     * @param name Bean 唯一名称，不能为空
+     * @param type Bean 类型，不能为 null
+     * @return 新的 BeanDefinition 实例
+     * @throws IllegalArgumentException 如果 name 为空或 type 为 null
      */
-    public boolean isConstructorInstantiation() {
-        return factoryMethodName == null;
+    public static BeanDefinition of(@NotBlank String name, @NotNull Class<?> type) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Bean name must not be blank");
+        }
+        if (type == null) {
+            throw new IllegalArgumentException("Bean type must not be null");
+        }
+        return new BeanDefinition(
+                name, type, BeanScope.SINGLETON,
+                InstantiationPolicy.constructor(),
+                new String[0],
+                false, false, true, ""
+        );
     }
 
     /**
-     * 判断是否通过静态工厂方法实例化
+     * 返回一个使用指定实例化策略的新 BeanDefinition。
      *
-     * @return 如果factoryMethodName不为null且factoryBeanName为null，则为静态工厂方法
+     * @param policy 实例化策略，不能为 null
+     * @return 新的 BeanDefinition 实例
+     * @see InstantiationPolicy#constructor(Class[])
+     * @see InstantiationPolicy#staticFactory(String, Class[])
+     * @see InstantiationPolicy#instanceFactory(String, String, Class[])
      */
-    public boolean isStaticFactoryMethod() {
-        return factoryMethodName != null && factoryBeanName == null;
+    public BeanDefinition withInstantiationPolicy(@NotNull InstantiationPolicy policy) {
+        return new BeanDefinition(
+                name, type, scope, policy, dependsOn,
+                lazy, primary, autowired, description
+        );
     }
 
     /**
-     * 判断是否通过实例工厂方法实例化
+     * 返回一个使用指定作用域的新 BeanDefinition。
      *
-     * @return 如果factoryMethodName和factoryBeanName都不为null，则为实例工厂方法
+     * @param scope 作用域，不能为 null
+     * @return 新的 BeanDefinition 实例
      */
-    public boolean isInstanceFactoryMethod() {
-        return factoryMethodName != null && factoryBeanName != null;
+    public BeanDefinition withScope(@NotNull BeanScope scope) {
+        return new BeanDefinition(
+                name, type, scope, instantiationPolicy, dependsOn,
+                lazy, primary, autowired, description
+        );
     }
 
+    /**
+     * 返回一个使用指定 dependsOn 的新 BeanDefinition。
+     *
+     * @param beanNames 强依赖的 Bean 名称，不能为 null
+     * @return 新的 BeanDefinition 实例
+     */
+    public BeanDefinition dependsOn(@NotNull String... beanNames) {
+        return new BeanDefinition(
+                name, type, scope, instantiationPolicy, beanNames,
+                lazy, primary, autowired, description
+        );
+    }
+
+    /**
+     * 返回一个 {@code lazy} 字段被修改的新 BeanDefinition。
+     *
+     * @param lazy 是否延迟初始化
+     * @return 新的 BeanDefinition 实例
+     */
+    public BeanDefinition withLazy(boolean lazy) {
+        return new BeanDefinition(
+                name, type, scope, instantiationPolicy, dependsOn,
+                lazy, primary, autowired, description
+        );
+    }
+
+    /**
+     * 返回一个 {@code primary} 字段被修改的新 BeanDefinition。
+     *
+     * @param primary 是否为首选候选
+     * @return 新的 BeanDefinition 实例
+     */
+    public BeanDefinition withPrimary(boolean primary) {
+        return new BeanDefinition(
+                name, type, scope, instantiationPolicy, dependsOn,
+                lazy, primary, autowired, description
+        );
+    }
+
+    /**
+     * 返回一个 {@code autowired} 字段被修改的新 BeanDefinition。
+     *
+     * @param autowired 是否作为自动装配候选者
+     * @return 新的 BeanDefinition 实例
+     */
+    public BeanDefinition withAutowired(boolean autowired) {
+        return new BeanDefinition(
+                name, type, scope, instantiationPolicy, dependsOn,
+                lazy, primary, autowired, description
+        );
+    }
+
+    /**
+     * 返回一个 {@code description} 字段被修改的新 BeanDefinition。
+     *
+     * @param description 描述信息，不能为 null
+     * @return 新的 BeanDefinition 实例
+     */
+    public BeanDefinition withDescription(@NotNull String description) {
+        return new BeanDefinition(
+                name, type, scope, instantiationPolicy, dependsOn,
+                lazy, primary, autowired, description
+        );
+    }
+
+    /**
+     * 是否为单例作用域。
+     *
+     * @return {@code scope == SINGLETON}
+     */
+    public boolean isSingleton() {
+        return scope == BeanScope.SINGLETON;
+    }
+
+    /**
+     * 是否为原型作用域。
+     *
+     * @return {@code scope == PROTOTYPE}
+     */
+    public boolean isPrototype() {
+        return scope == BeanScope.PROTOTYPE;
+    }
 }
