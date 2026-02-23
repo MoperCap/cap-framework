@@ -1,0 +1,3 @@
+org.moper.cap.boot.initializer.PropertyInitializer
+org.moper.cap.boot.initializer.ComponentScanInitializer
+org.moper.cap.boot.initializer.AutowiredInitializer

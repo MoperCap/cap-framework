@@ -19,6 +19,15 @@ public abstract class Initializer implements AutoCloseable, Comparable<Initializ
     private final String description;
 
     /**
+     * 构造机构造函数，默认构造机类型为EXTENSION
+     *
+     * @param order 同级别构造机优先级，数值越小优先执行
+     */
+    public Initializer(int order){
+        this(InitializerType.EXTENSION, order, "", "");
+    }
+
+    /**
      * 构造机构造函数
      *
      * @param type 构造机类型，决定了构造机的执行顺序，框架最小运行内核构造机优先执行，第三方扩展能力构造机最后执行
@@ -48,7 +57,7 @@ public abstract class Initializer implements AutoCloseable, Comparable<Initializ
      *
      * @return 构造机类型
      */
-    InitializerType type(){
+    public InitializerType type(){
         return type;
     }
 
@@ -57,7 +66,7 @@ public abstract class Initializer implements AutoCloseable, Comparable<Initializ
      *
      * @return 同级别构造机优先级
      */
-    int order(){
+    public int order(){
         return order;
     }
 
@@ -80,7 +89,7 @@ public abstract class Initializer implements AutoCloseable, Comparable<Initializ
      *
      * @param context 初始化上下文
      */
-    abstract void initialize(BootstrapContext context) throws ContextException;
+    public abstract void initialize(BootstrapContext context) throws ContextException;
 
     @Override
     public void close() throws InitializerException {
