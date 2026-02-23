@@ -1,7 +1,6 @@
 package org.moper.cap.context;
 
-
-import org.moper.cap.core.exception.CapFrameworkException;
+import org.moper.cap.exception.ContextException;
 
 /**
  * 框架初始化阶段系统上下文 </br>
@@ -17,9 +16,9 @@ public interface BootstrapContext{
      * @param factory 根据BootstrapContext构建ApplicationContext的工厂策略
      * @return 构建完成的ApplicationContext实例
      * @param <T> ApplicationContext的具体类型
-     * @throws CapFrameworkException 若构建失败，则抛出异常
+     * @throws ContextException 若构建失败，则抛出异常
      */
-    default  <T extends ApplicationContext> T build(ApplicationContextFactory<T> factory) throws CapFrameworkException{
+    default  <T extends ApplicationContext> T build(ApplicationContextFactory<T> factory) throws ContextException {
         return factory.create(this);
     }
 }
