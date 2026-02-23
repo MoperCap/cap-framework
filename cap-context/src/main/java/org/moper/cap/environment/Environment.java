@@ -1,51 +1,40 @@
 package org.moper.cap.environment;
 
-import org.jetbrains.annotations.Nullable;
+import jakarta.validation.constraints.NotNull;
+import org.moper.cap.property.officer.PropertyOfficer;
+import org.moper.cap.property.publisher.PropertyPublisher;
+import org.moper.cap.property.subscriber.PropertyViewPool;
 
 /**
- * 应用环境接口，提供属性查询和属性源管理能力
+ * 运行期环境上下文。
+ * 封装属性系统的访问入口，负责管理所有 PropertyPublisher 的生命周期。
+ *
+ * 用户若需读取属性，应调用 getViewPool().getPropertyValue(...) 等方法。
  */
-public interface Environment {
+public interface Environment extends AutoCloseable {
+
+    /** 获取属性管理平台，供 Initializer 向其发布属性变更事件 */
+    @NotNull PropertyOfficer getOfficer();
+
+    /** 获取只读属性视图池，供运行期查询属性值 */
+    @NotNull PropertyViewPool getViewPool();
 
     /**
-     * 获取指定键的属性值
-     *
-     * @param key 属性键
-     * @return 属性值，若不存在则返回 null
+     * 注册并托管一个 PropertyPublisher 的生命周期。
+     * 调用方在 publisher.contract(officer) 之后，应立即调用此方法。
      */
-    @Nullable String getProperty(String key);
+    void registerPublisher(@NotNull PropertyPublisher publisher);
 
     /**
-     * 获取指定键的属性值，若不存在则返回默认值
-     *
-     * @param key          属性键
-     * @param defaultValue 默认值
-     * @return 属性值或默认值
+     * 注销一个已托管的 PropertyPublisher（不自动解约）。
      */
-    String getProperty(String key, String defaultValue);
+    void unregisterPublisher(@NotNull PropertyPublisher publisher);
 
     /**
-     * 获取指定键的属性值并转换为目标类型
-     *
-     * @param key        属性键
-     * @param targetType 目标类型
-     * @param <T>        类型参数
-     * @return 属性值，若不存在则返回 null
+     * 关闭 Environment：
+     * 1. 对所有托管 Publisher 调用 uncontract(officer) 然后 close()
+     * 2. 关闭 Officer
      */
-    <T> @Nullable T getProperty(String key, Class<T> targetType);
-
-    /**
-     * 判断是否包含指定键的属性
-     *
-     * @param key 属性键
-     * @return 若包含则返回 true
-     */
-    boolean containsProperty(String key);
-
-    /**
-     * 添加属性源
-     *
-     * @param propertySource 要添加的属性源
-     */
-    void addPropertySource(PropertySource propertySource);
+    @Override
+    void close();
 }

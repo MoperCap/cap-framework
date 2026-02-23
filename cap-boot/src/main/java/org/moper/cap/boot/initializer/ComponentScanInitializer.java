@@ -4,16 +4,16 @@ import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
-import org.moper.cap.annotation.*;
+import org.moper.cap.boot.annotation.Autowired;
+import org.moper.cap.boot.annotation.Component;
+import org.moper.cap.boot.annotation.Lazy;
+import org.moper.cap.boot.annotation.Primary;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.definition.InstantiationPolicy;
 import org.moper.cap.bootstrap.Initializer;
 import org.moper.cap.bootstrap.InitializerType;
-import org.moper.cap.config.ConfigurationClass;
-import org.moper.cap.boot.config.DefaultConfigurationClass;
 import org.moper.cap.context.BootstrapContext;
 import org.moper.cap.exception.ContextException;
-import org.moper.cap.exception.InitializerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,21 +34,7 @@ public class ComponentScanInitializer extends Initializer {
 
     @Override
     public void initialize(BootstrapContext context) throws ContextException {
-        String primarySourceName = context.getEnvironment().getProperty("cap.primary-source");
-        if (primarySourceName == null) {
-            log.warn("cap.primary-source not set, skipping component scan");
-            return;
-        }
-
-        Class<?> primarySource;
-        try {
-            primarySource = Class.forName(primarySourceName);
-        } catch (ClassNotFoundException e) {
-            throw new InitializerException("Cannot load primary source class: " + primarySourceName, e);
-        }
-
-        ConfigurationClass viewContext = new DefaultConfigurationClass(primarySource);
-        Collection<String> scanPackages = viewContext.getComponentScanPaths();
+        Collection<String> scanPackages = context.getConfigurationClass().getComponentScanPaths();
 
         try (ScanResult scanResult = new ClassGraph()
                 .enableAnnotationInfo()
@@ -98,11 +84,7 @@ public class ComponentScanInitializer extends Initializer {
         } else {
             // Check if there is exactly one @Autowired constructor
             Constructor<?> autowiredConstructor = null;
-            boolean hasNoArg = false;
             for (Constructor<?> c : constructors) {
-                if (c.getParameterCount() == 0) {
-                    hasNoArg = true;
-                }
                 if (c.isAnnotationPresent(Autowired.class)) {
                     autowiredConstructor = c;
                 }
