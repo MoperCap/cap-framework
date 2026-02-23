@@ -42,8 +42,7 @@ public class ComponentScanInitializer extends Initializer {
                 .acceptPackages(scanPackages.toArray(new String[0]))
                 .scan()) {
 
-            ClassInfoList componentClasses = scanResult.getClassesWithAnnotation(
-                    Component.class.getName());
+            ClassInfoList componentClasses = scanResult.getClassesWithAnnotation(Component.class.getName());
 
             for (ClassInfo classInfo : componentClasses) {
                 if (classInfo.isAbstract() || classInfo.isInterface() || classInfo.isAnnotation()) {

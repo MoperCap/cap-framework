@@ -138,7 +138,8 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
 
         // 发布者不存在检查
         if (!publishers.containsKey(publisher)) {
-            return PublisherManifestResult.publisherNotFound(this, manifest, publisher.name());
+            // return PublisherManifestResult.publisherNotFound(this, manifest, publisher.name());
+            publishers.put(publisher, 0);
         }
 
         int expectedVersion = publishers.get(publisher);

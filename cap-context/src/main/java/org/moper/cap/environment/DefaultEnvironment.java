@@ -30,10 +30,12 @@ public class DefaultEnvironment implements Environment {
     @Override
     public void registerPublisher(PropertyPublisher publisher) {
         publishers.add(publisher);
+
     }
 
     @Override
     public void unregisterPublisher(PropertyPublisher publisher) {
+        publisher.uncontract(officer);
         publishers.remove(publisher);
     }
 

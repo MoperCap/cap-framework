@@ -1,4 +1,4 @@
-package org.moper.cap.boot.initializer;
+package org.moper.cap.boot.interceptor;
 
 import org.moper.cap.boot.annotation.Autowired;
 import org.moper.cap.boot.annotation.Qualifier;

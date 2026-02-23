@@ -13,6 +13,8 @@ import org.moper.cap.environment.DefaultEnvironment;
 import org.moper.cap.environment.Environment;
 import org.moper.cap.exception.ContextException;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.ServiceLoader;
 import java.util.TreeSet;
 
@@ -33,30 +35,27 @@ public class DefaultBootstrapContext implements BootstrapContext {
         this.environment = new DefaultEnvironment("cap");
         this.configurationClass = new DefaultConfigurationClass(primarySource);
 
-        // ② 通过 SPI 发现所有 Initializer，收集到有序集合
+        // 1、 通过 SPI 发现所有 Initializer，收集到有序集合
         TreeSet<Initializer> initializers = new TreeSet<>();
         ServiceLoader<Initializer> loader = ServiceLoader.load(Initializer.class);
         for (Initializer initializer : loader) {
             initializers.add(initializer);
         }
 
-        // ③ 通过 @InitializerExtensions 追加用户声明的 Initializer
-        InitializerExtensions extensions = primarySource.getAnnotation(InitializerExtensions.class);
-        if (extensions != null) {
-            for (Class<? extends Initializer> cls : extensions.value()) {
-                try {
-                    initializers.add(cls.getDeclaredConstructor().newInstance());
-                } catch (Exception e) {
-                    throw new ContextException(
-                            "Failed to instantiate user-declared Initializer: " + cls.getName(), e);
-                }
+        // 2、 通过 @InitializerExtensions 追加用户声明的 Initializer
+        for(Class<? extends Initializer> cls : configurationClass.getInitializerExtensionClasses()){
+            try{
+                initializers.add(cls.getDeclaredConstructor().newInstance());
+            }catch (Exception e){
+                throw new ContextException("Failed to instantiate user-declared Initializer: " + cls.getName(), e);
             }
-        }
 
-        // ④ 按顺序执行所有 Initializer（构造函数内完成，而不是 build() 里）
+        }
+        // 3、 按顺序执行所有 Initializer（构造函数内完成，而不是 build() 里）
         for (Initializer initializer : initializers) {
             try {
                 initializer.initialize(this);
+                initializer.close();
             } catch (ContextException e) {
                 throw e;
             } catch (Exception e) {
@@ -76,8 +75,7 @@ public class DefaultBootstrapContext implements BootstrapContext {
     public ConfigurationClass getConfigurationClass() { return configurationClass; }
 
     @Override
-    public <T extends ApplicationContext> T build(ApplicationContextFactory<T> factory)
-            throws ContextException {
+    public <T extends ApplicationContext> T build(ApplicationContextFactory<T> factory) throws ContextException {
         // 纯转换，不做任何初始化
         return factory.create(this);
     }

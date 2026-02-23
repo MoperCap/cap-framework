@@ -1,5 +1,6 @@
 package org.moper.cap.boot.initializer;
 
+import org.moper.cap.boot.interceptor.AutowiredBeanInterceptor;
 import org.moper.cap.bootstrap.Initializer;
 import org.moper.cap.bootstrap.InitializerType;
 import org.moper.cap.context.BootstrapContext;

@@ -7,6 +7,8 @@ import org.moper.cap.environment.Environment;
 import org.moper.cap.exception.ContextException;
 import org.moper.cap.property.event.PropertySetOperation;
 import org.moper.cap.property.publisher.impl.DefaultPropertyPublisher;
+import org.moper.cap.property.result.PropertyOperationResult;
+import org.moper.cap.property.result.PublisherManifestResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
@@ -55,8 +57,25 @@ public class PropertyInitializer extends Initializer {
                         .map(e -> new PropertySetOperation(e.getKey(), e.getValue()))
                         .toArray(PropertySetOperation[]::new);
 
-                publisher.publish(operations);
-                log.debug("Loaded property source from: {}", resourceName);
+                // 发布属性
+                List<PublisherManifestResult> results =  publisher.publish(operations);
+
+                // 校验发布结果
+                for(PublisherManifestResult result : results) {
+                    if(result.status().equals(PublisherManifestResult.Status.TOTAL_SUCCESS))
+                        log.info("Successfully published properties from: {}", resourceName);
+                    else if(result.status().equals(PublisherManifestResult.Status.ERROR)){
+                        log.error("Failed to publish properties from: {}, reason: {}", resourceName, result.description());
+                    } else if(result.status().equals(PublisherManifestResult.Status.PARTIAL_SUCCESS)) {
+                        for(PropertyOperationResult operationResult : result.operationResults()) {
+                            if(operationResult.status().isFailed()){
+                                log.warn("Property publish event filed: " + operationResult.operation() + ", reason: " + operationResult.message());
+                            }
+                        }
+                        throw new ContextException("Property publish event filed: " + resourceName);
+                    }
+                }
+
             }
         }
     }
