@@ -107,7 +107,7 @@ public class ComponentScanInitializer extends Initializer {
                     autowiredConstructor = c;
                 }
             }
-            if (autowiredConstructor != null && !hasNoArg) {
+            if (autowiredConstructor != null) {
                 Class<?>[] paramTypes = autowiredConstructor.getParameterTypes();
                 definition = definition.withInstantiationPolicy(InstantiationPolicy.constructor(paramTypes));
             }

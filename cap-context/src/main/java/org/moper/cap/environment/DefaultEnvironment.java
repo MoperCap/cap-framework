@@ -3,6 +3,7 @@ package org.moper.cap.environment;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -44,7 +45,7 @@ public class DefaultEnvironment implements Environment {
     @Override
     public void addPropertySource(PropertySource propertySource) {
         propertySources.add(propertySource);
-        propertySources.sort((a, b) -> Integer.compare(a.getOrder(), b.getOrder()));
+        propertySources.sort(Comparator.comparingInt(PropertySource::getOrder));
     }
 
     @Nullable

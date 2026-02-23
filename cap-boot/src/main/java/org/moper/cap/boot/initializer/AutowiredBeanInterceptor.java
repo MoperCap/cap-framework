@@ -43,7 +43,7 @@ public class AutowiredBeanInterceptor implements BeanInterceptor {
                 throw e;
             } catch (Exception e) {
                 throw new BeanException("Failed to inject field '" + field.getName()
-                        + "' in bean '" + definition.name() + "'", e) {};
+                        + "' in bean '" + definition.name() + "'", e);
             }
         }
         return bean;
