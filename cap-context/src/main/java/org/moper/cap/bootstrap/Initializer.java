@@ -48,7 +48,7 @@ public abstract class Initializer implements AutoCloseable, Comparable<Initializ
      *
      * @return 构造机类型
      */
-    InitializerType type(){
+    public InitializerType type(){
         return type;
     }
 
@@ -57,7 +57,7 @@ public abstract class Initializer implements AutoCloseable, Comparable<Initializ
      *
      * @return 同级别构造机优先级
      */
-    int order(){
+    public int order(){
         return order;
     }
 
@@ -80,7 +80,7 @@ public abstract class Initializer implements AutoCloseable, Comparable<Initializ
      *
      * @param context 初始化上下文
      */
-    abstract void initialize(BootstrapContext context) throws ContextException;
+    public abstract void initialize(BootstrapContext context) throws ContextException;
 
     @Override
     public void close() throws InitializerException {

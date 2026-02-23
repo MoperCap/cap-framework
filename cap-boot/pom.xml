@@ -18,6 +18,18 @@
             <artifactId>cap-context</artifactId>
         </dependency>
 
+        <!-- cap-bean (transitive from cap-context, explicit for clarity) -->
+        <dependency>
+            <groupId>org.moper.cap</groupId>
+            <artifactId>cap-bean</artifactId>
+        </dependency>
+
+        <!-- cap-property (transitive from cap-context, explicit for clarity) -->
+        <dependency>
+            <groupId>org.moper.cap</groupId>
+            <artifactId>cap-property</artifactId>
+        </dependency>
+
         <!-- 日志 -->
         <dependency>
             <groupId>org.slf4j</groupId>
