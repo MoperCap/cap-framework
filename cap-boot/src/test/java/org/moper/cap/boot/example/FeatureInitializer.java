@@ -1,8 +1,8 @@
 package org.moper.cap.boot.example;
 
-import org.moper.cap.boot.annotation.InitializerMeta;
-import org.moper.cap.boot.bootstrap.Initializer;
-import org.moper.cap.boot.bootstrap.InitializerType;
+import org.moper.cap.annotation.InitializerMeta;
+import org.moper.cap.bootstrap.Initializer;
+import org.moper.cap.bootstrap.InitializerType;
 import org.moper.cap.context.BootstrapContext;
 import org.moper.cap.core.exception.CapFrameworkException;
 

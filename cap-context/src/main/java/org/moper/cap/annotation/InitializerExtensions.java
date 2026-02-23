@@ -1,6 +1,6 @@
-package org.moper.cap.boot.annotation;
+package org.moper.cap.annotation;
 
-import org.moper.cap.boot.bootstrap.Initializer;
+import org.moper.cap.bootstrap.Initializer;
 
 import java.lang.annotation.*;
 

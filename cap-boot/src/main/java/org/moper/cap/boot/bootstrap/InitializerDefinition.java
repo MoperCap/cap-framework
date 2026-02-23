@@ -1,7 +1,9 @@
 package org.moper.cap.boot.bootstrap;
 
 import jakarta.validation.constraints.NotNull;
-import org.moper.cap.boot.exception.InitializerInstanceException;
+import org.moper.cap.exception.InitializerInstanceException;
+import org.moper.cap.bootstrap.Initializer;
+import org.moper.cap.bootstrap.InitializerType;
 
 import java.lang.reflect.InvocationTargetException;
 

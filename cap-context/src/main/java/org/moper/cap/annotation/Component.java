@@ -1,4 +1,4 @@
-package org.moper.cap.boot.annotation;
+package org.moper.cap.annotation;
 
 import java.lang.annotation.*;
 

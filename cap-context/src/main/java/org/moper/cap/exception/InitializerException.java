@@ -1,8 +1,6 @@
-package org.moper.cap.boot.exception;
+package org.moper.cap.exception;
 
-import org.moper.cap.core.exception.CapFrameworkRuntimeException;
-
-public class InitializerException extends CapFrameworkRuntimeException {
+public class InitializerException extends RuntimeException {
     public InitializerException(String message) {
         super(message);
     }

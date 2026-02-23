@@ -1,4 +1,4 @@
-package org.moper.cap.boot.exception;
+package org.moper.cap.exception;
 
 public class InitializerInstanceException extends InitializerException {
     public InitializerInstanceException(String message) {

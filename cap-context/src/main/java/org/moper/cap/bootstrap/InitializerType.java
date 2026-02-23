@@ -1,4 +1,4 @@
-package org.moper.cap.boot.bootstrap;
+package org.moper.cap.bootstrap;
 
 /**
  * 框架启动阶段构造机类型

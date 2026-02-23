@@ -1,4 +1,4 @@
-package org.moper.cap.boot.bootstrap;
+package org.moper.cap.bootstrap;
 
 import org.moper.cap.context.BootstrapContext;
 import org.moper.cap.core.exception.CapFrameworkException;

@@ -1,7 +1,7 @@
-package org.moper.cap.boot.config;
+package org.moper.cap.config;
 
 import jakarta.validation.constraints.NotNull;
-import org.moper.cap.boot.bootstrap.Initializer;
+import org.moper.cap.bootstrap.Initializer;
 
 import java.util.Collection;
 
