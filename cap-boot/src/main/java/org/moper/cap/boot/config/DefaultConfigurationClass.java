@@ -1,19 +1,19 @@
-package org.moper.cap.config.impl;
+package org.moper.cap.boot.config;
 
 import jakarta.validation.constraints.NotNull;
 import org.moper.cap.annotation.ComponentScan;
 import org.moper.cap.annotation.InitializerExtensions;
 import org.moper.cap.annotation.ResourceScan;
 import org.moper.cap.bootstrap.Initializer;
-import org.moper.cap.config.ConfigClassResourceViewContext;
+import org.moper.cap.config.ConfigurationClass;
 
 import java.util.Collection;
 import java.util.Set;
 
-public final class DefaultConfigClassResourceViewContext implements ConfigClassResourceViewContext {
+public final class DefaultConfigurationClass implements ConfigurationClass {
     private final Class<?> configClass;
 
-    public DefaultConfigClassResourceViewContext(Class<?> configClass) {
+    public DefaultConfigurationClass(Class<?> configClass) {
         this.configClass = configClass;
     }
 

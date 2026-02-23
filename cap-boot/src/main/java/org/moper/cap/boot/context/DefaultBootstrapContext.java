@@ -2,7 +2,6 @@ package org.moper.cap.boot.context;
 
 import org.moper.cap.annotation.InitializerExtensions;
 import org.moper.cap.bootstrap.Initializer;
-import org.moper.cap.context.AbstractBootstrapContext;
 import org.moper.cap.environment.MapPropertySource;
 import org.moper.cap.exception.ContextException;
 

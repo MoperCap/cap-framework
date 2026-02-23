@@ -2,7 +2,6 @@ package org.moper.cap.boot.context;
 
 import org.moper.cap.context.ApplicationContextFactory;
 import org.moper.cap.context.BootstrapContext;
-import org.moper.cap.context.DefaultApplicationContext;
 import org.moper.cap.exception.ContextException;
 
 /**

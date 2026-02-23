@@ -2,6 +2,7 @@ package org.moper.cap.context;
 
 import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bootstrap.Initializer;
+import org.moper.cap.config.ConfigurationClass;
 import org.moper.cap.environment.Environment;
 import org.moper.cap.exception.ContextException;
 
@@ -24,6 +25,13 @@ public interface BootstrapContext {
      * @return 环境配置实例
      */
     Environment getEnvironment();
+
+    /**
+     * 获取配置类资源视图上下文
+     *
+     * @return 配置类资源视图上下文实例
+     */
+    ConfigurationClass getConfigClass();
 
     /**
      * 注册一个 Initializer

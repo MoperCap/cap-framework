@@ -9,8 +9,8 @@ import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.definition.InstantiationPolicy;
 import org.moper.cap.bootstrap.Initializer;
 import org.moper.cap.bootstrap.InitializerType;
-import org.moper.cap.config.ConfigClassResourceViewContext;
-import org.moper.cap.config.impl.DefaultConfigClassResourceViewContext;
+import org.moper.cap.config.ConfigurationClass;
+import org.moper.cap.boot.config.DefaultConfigurationClass;
 import org.moper.cap.context.BootstrapContext;
 import org.moper.cap.exception.ContextException;
 import org.moper.cap.exception.InitializerException;
@@ -47,7 +47,7 @@ public class ComponentScanInitializer extends Initializer {
             throw new InitializerException("Cannot load primary source class: " + primarySourceName, e);
         }
 
-        ConfigClassResourceViewContext viewContext = new DefaultConfigClassResourceViewContext(primarySource);
+        ConfigurationClass viewContext = new DefaultConfigurationClass(primarySource);
         Collection<String> scanPackages = viewContext.getComponentScanPaths();
 
         try (ScanResult scanResult = new ClassGraph()

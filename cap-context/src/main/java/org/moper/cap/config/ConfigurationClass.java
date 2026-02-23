@@ -5,7 +5,7 @@ import org.moper.cap.bootstrap.Initializer;
 
 import java.util.Collection;
 
-public interface ConfigClassResourceViewContext {
+public interface ConfigurationClass {
 
     /**
      * 获取配置类上指定的软件包扫描路径集合
