@@ -1,22 +1,19 @@
 package org.moper.cap.bean.exception;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
 /**
- * Bean定义不存在异常
+ * 按名称或类型查找 Bean 时，容器中不存在匹配的 Bean 时抛出。
  */
 public class NoSuchBeanDefinitionException extends BeanDefinitionException {
-    
-    public NoSuchBeanDefinitionException(@NotBlank String beanName) {
+
+    public NoSuchBeanDefinitionException(String beanName) {
         super("No bean named '" + beanName + "' available");
     }
 
-    public NoSuchBeanDefinitionException(@NotNull Class<?> type) {
+    public NoSuchBeanDefinitionException(Class<?> type) {
         super("No qualifying bean of type '" + type.getName() + "' available");
     }
 
-    public NoSuchBeanDefinitionException(@NotNull Class<?> type, String message) {
+    public NoSuchBeanDefinitionException(Class<?> type, String message) {
         super("No qualifying bean of type '" + type.getName() + "' available: " + message);
     }
 }

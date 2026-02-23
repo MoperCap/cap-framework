@@ -1,24 +1,21 @@
 package org.moper.cap.bean.exception;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 
 /**
- * Bean创建异常
- * 在通过构造函数或工厂方法创建Bean实例时发生的异常
- * 这是Bean实例化阶段的核心异常
+ * Bean 创建过程中任意阶段（实例化、属性注入、拦截器处理、初始化回调）失败时抛出。
  */
 @Getter
 public class BeanCreationException extends BeanException {
-    
+
     private final String beanName;
 
-    public BeanCreationException(@NotBlank String beanName, String message) {
+    public BeanCreationException(String beanName, String message) {
         super("Error creating bean with name '" + beanName + "': " + message);
         this.beanName = beanName;
     }
 
-    public BeanCreationException(@NotBlank String beanName, String message, Throwable cause) {
+    public BeanCreationException(String beanName, String message, Throwable cause) {
         super("Error creating bean with name '" + beanName + "': " + message, cause);
         this.beanName = beanName;
     }

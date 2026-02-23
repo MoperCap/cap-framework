@@ -1,27 +1,21 @@
 package org.moper.cap.bean.exception;
 
-import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
 
 /**
- * Bean销毁异常
- * 在执行Bean的销毁方法时发生的异常
- * 包括：
- * - DisposableBean.destroy() 方法
- * - 自定义的destroy方法（通过BeanDefinition.destroyMethodName指定）
+ * Bean 的销毁回调（{@link org.moper.cap.bean.lifecycle.BeanLifecycle#destroy()}）
+ * 执行失败时抛出。
+ *
+ * <p>与 {@link BeanCreationException} 语义对称，专属于销毁阶段。
  */
-public class BeanDestructionException extends BeanLifecycleException {
-    
-    public BeanDestructionException(@NotBlank String beanName, String message) {
-        super(beanName, LifecyclePhase.DESTRUCTION, message);
+@Getter
+public class BeanDestructionException extends BeanException {
+
+    private final String beanName;
+
+    public BeanDestructionException(String beanName, Throwable cause) {
+        super("Error destroying bean with name '" + beanName + "'", cause);
+        this.beanName = beanName;
     }
 
-    public BeanDestructionException(@NotBlank String beanName, 
-                                   String message, 
-                                   Throwable cause) {
-        super(beanName, LifecyclePhase.DESTRUCTION, message, cause);
-    }
-
-    public BeanDestructionException(@NotBlank String beanName, Throwable cause) {
-        super(beanName, LifecyclePhase.DESTRUCTION, "Destruction method threw exception", cause);
-    }
 }

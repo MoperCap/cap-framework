@@ -1,11 +1,10 @@
 package org.moper.cap.bean.exception;
 
 /**
- * Bean定义异常基类
- * 与Bean定义的注册、查询、验证相关的异常
+ * 与 BeanDefinition 的注册、查询、操作相关的异常基类。
  */
 public class BeanDefinitionException extends BeanException {
-    
+
     public BeanDefinitionException(String message) {
         super(message);
     }
