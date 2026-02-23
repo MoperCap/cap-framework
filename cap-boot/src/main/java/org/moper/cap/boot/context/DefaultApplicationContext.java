@@ -9,17 +9,11 @@ import org.moper.cap.bean.exception.*;
 import org.moper.cap.context.ApplicationContext;
 import org.moper.cap.context.BootstrapContext;
 import org.moper.cap.environment.Environment;
-import org.moper.cap.event.ApplicationEvent;
-import org.moper.cap.event.ApplicationListener;
-import org.moper.cap.event.ContextClosedEvent;
-import org.moper.cap.event.ContextStartedEvent;
 import org.moper.cap.exception.ContextException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -33,7 +27,6 @@ public class DefaultApplicationContext implements ApplicationContext {
 
     private final BeanContainer beanContainer;
     private final Environment environment;
-    private final List<ApplicationListener<ApplicationEvent>> listeners = new ArrayList<>();
 
     private final AtomicBoolean running = new AtomicBoolean(false);
     private final AtomicBoolean closed = new AtomicBoolean(false);
@@ -54,7 +47,6 @@ public class DefaultApplicationContext implements ApplicationContext {
             throw new ContextException("Failed to pre-instantiate singletons", e);
         }
         Runtime.getRuntime().addShutdownHook(new Thread(this::close));
-        publishEvent(new ContextStartedEvent(this));
     }
 
     @Override
@@ -62,39 +54,17 @@ public class DefaultApplicationContext implements ApplicationContext {
         if (!closed.compareAndSet(false, true)) {
             return;
         }
-        publishEvent(new ContextClosedEvent(this));
         try {
             beanContainer.destroySingletons();
         } catch (BeanDestructionException e) {
             log.error("Error destroying singletons during context close", e);
         }
+        environment.close();
     }
 
     @Override
     public Environment getEnvironment() {
         return environment;
-    }
-
-    @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public void publishEvent(ApplicationEvent event) {
-        for (ApplicationListener listener : listeners) {
-            try {
-                listener.onEvent(event);
-            } catch (Exception e) {
-                log.error("Error in event listener for event {}", event.getClass().getSimpleName(), e);
-            }
-        }
-    }
-
-    /**
-     * 注册应用事件监听器
-     *
-     * @param listener 监听器
-     */
-    @SuppressWarnings("unchecked")
-    public <E extends ApplicationEvent> void addApplicationListener(ApplicationListener<E> listener) {
-        listeners.add((ApplicationListener<ApplicationEvent>) listener);
     }
 
     // ===== BeanProvider delegation =====

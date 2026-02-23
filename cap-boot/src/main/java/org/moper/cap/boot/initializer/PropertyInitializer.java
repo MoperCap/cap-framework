@@ -2,12 +2,11 @@ package org.moper.cap.boot.initializer;
 
 import org.moper.cap.bootstrap.Initializer;
 import org.moper.cap.bootstrap.InitializerType;
-import org.moper.cap.config.ConfigurationClass;
-import org.moper.cap.boot.config.DefaultConfigurationClass;
 import org.moper.cap.context.BootstrapContext;
-import org.moper.cap.environment.MapPropertySource;
+import org.moper.cap.environment.Environment;
 import org.moper.cap.exception.ContextException;
-import org.moper.cap.exception.InitializerException;
+import org.moper.cap.property.event.PropertySetOperation;
+import org.moper.cap.property.publisher.impl.DefaultPropertyPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
@@ -29,59 +28,60 @@ public class PropertyInitializer extends Initializer {
 
     @Override
     public void initialize(BootstrapContext context) throws ContextException {
-        String primarySourceName = context.getEnvironment().getProperty("cap.primary-source");
-        if (primarySourceName == null) {
-            log.warn("cap.primary-source not set, skipping property loading");
-            return;
-        }
-
-        Class<?> primarySource;
-        try {
-            primarySource = Class.forName(primarySourceName);
-        } catch (ClassNotFoundException e) {
-            throw new InitializerException("Cannot load primary source class: " + primarySourceName, e);
-        }
-
-        ConfigurationClass viewContext = new DefaultConfigurationClass(primarySource);
-        Collection<String> resourcePaths = viewContext.getResourceScanPaths();
-
+        Collection<String> resourcePaths = context.getConfigurationClass().getResourceScanPaths();
+        Environment environment = context.getEnvironment();
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         if (classLoader == null) classLoader = getClass().getClassLoader();
 
         for (String path : resourcePaths) {
-            loadResourcePath(context, classLoader, path);
+            List<String> filesToLoad = resolveFilesToLoad(path);
+            for (String resourceName : filesToLoad) {
+                Map<String, Object> props = tryLoadFile(classLoader, resourceName);
+                if (props == null || props.isEmpty()) continue;
+
+                // 为每个配置文件创建独立的 Publisher
+                DefaultPropertyPublisher publisher = DefaultPropertyPublisher.builder()
+                        .name("property-publisher-" + resourceName)
+                        .build();
+
+                // 签约
+                publisher.contract(environment.getOfficer());
+
+                // 立即托管到 Environment，防止 GC 回收
+                environment.registerPublisher(publisher);
+
+                // 将所有属性转换为 PropertySetOperation 发布
+                PropertySetOperation[] operations = props.entrySet().stream()
+                        .map(e -> new PropertySetOperation(e.getKey(), e.getValue()))
+                        .toArray(PropertySetOperation[]::new);
+
+                publisher.publish(operations);
+                log.debug("Loaded property source from: {}", resourceName);
+            }
         }
     }
 
-    private void loadResourcePath(BootstrapContext context, ClassLoader classLoader, String path) {
+    private List<String> resolveFilesToLoad(String path) {
         if (path == null || path.isEmpty()) {
-            // Load default config files from classpath root
-            tryLoad(context, classLoader, "application.properties");
-            tryLoad(context, classLoader, "application.yml");
-            tryLoad(context, classLoader, "application.yaml");
-        } else {
-            tryLoad(context, classLoader, path);
+            return List.of("application.properties", "application.yml", "application.yaml");
         }
+        return List.of(path);
     }
 
-    private void tryLoad(BootstrapContext context, ClassLoader classLoader, String resourceName) {
+    private Map<String, Object> tryLoadFile(ClassLoader classLoader, String resourceName) {
         try (InputStream is = classLoader.getResourceAsStream(resourceName)) {
-            if (is == null) return;
-            Map<String, Object> props;
+            if (is == null) return null;
             if (resourceName.endsWith(".yml") || resourceName.endsWith(".yaml")) {
-                props = loadYaml(is);
+                return loadYaml(is);
             } else if (resourceName.endsWith(".properties")) {
-                props = loadProperties(is);
+                return loadProperties(is);
             } else {
                 log.debug("Unknown resource format, skipping: {}", resourceName);
-                return;
-            }
-            if (!props.isEmpty()) {
-                context.getEnvironment().addPropertySource(new MapPropertySource(resourceName, props, 10));
-                log.debug("Loaded property source from: {}", resourceName);
+                return null;
             }
         } catch (Exception e) {
             log.warn("Failed to load resource: {}", resourceName, e);
+            return null;
         }
     }
 

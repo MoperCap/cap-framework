@@ -1,54 +1,30 @@
 package org.moper.cap.context;
 
 import org.moper.cap.bean.container.BeanContainer;
-import org.moper.cap.bootstrap.Initializer;
 import org.moper.cap.config.ConfigurationClass;
 import org.moper.cap.environment.Environment;
 import org.moper.cap.exception.ContextException;
 
 /**
- * 框架初始化阶段系统上下文 </br>
- * 仅在框架初始化阶段存在
+ * 框架初始化完成后的系统上下文。
+ * 所有初始化工作在 DefaultBootstrapContext 构造时完成。
+ * build() 仅负责将已初始化的 BootstrapContext 转换为 ApplicationContext。
  */
 public interface BootstrapContext {
 
-    /**
-     * 获取 Bean 容器
-     *
-     * @return Bean 容器实例
-     */
+    /** 获取已完成 BeanDefinition 注册的 Bean 容器 */
     BeanContainer getBeanContainer();
 
-    /**
-     * 获取环境配置
-     *
-     * @return 环境配置实例
-     */
+    /** 获取已完成属性加载的环境上下文 */
     Environment getEnvironment();
 
-    /**
-     * 获取配置类资源视图上下文
-     *
-     * @return 配置类资源视图上下文实例
-     */
-    ConfigurationClass getConfigClass();
+    /** 获取配置类信息视图 */
+    ConfigurationClass getConfigurationClass();
 
     /**
-     * 注册一个 Initializer
-     *
-     * @param initializer 要注册的构造机
+     * 纯转换：将已初始化完成的 BootstrapContext 转换为 ApplicationContext。
+     * 不执行任何初始化逻辑。
      */
-    void addInitializer(Initializer initializer);
-
-    /**
-     * 构建最终的 ApplicationContext </br>
-     * 调用后, BootstrapContext 进入不可用状态 </br>
-     * 若仍然强行调用，则抛出 ContextException </br>
-     *
-     * @param factory 根据BootstrapContext构建ApplicationContext的工厂策略
-     * @return 构建完成的ApplicationContext实例
-     * @param <T> ApplicationContext的具体类型
-     * @throws ContextException 若构建失败，则抛出异常
-     */
-    <T extends ApplicationContext> T build(ApplicationContextFactory<T> factory) throws ContextException;
+    <T extends ApplicationContext> T build(ApplicationContextFactory<T> factory)
+            throws ContextException;
 }

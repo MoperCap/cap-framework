@@ -1,8 +1,8 @@
 package org.moper.cap.boot.initializer;
 
-import org.moper.cap.annotation.Autowired;
-import org.moper.cap.annotation.Qualifier;
-import org.moper.cap.annotation.Value;
+import org.moper.cap.boot.annotation.Autowired;
+import org.moper.cap.boot.annotation.Qualifier;
+import org.moper.cap.boot.annotation.Value;
 import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.exception.BeanException;
@@ -79,9 +79,11 @@ public class AutowiredBeanInterceptor implements BeanInterceptor {
             if (colonIdx >= 0) {
                 String key = inner.substring(0, colonIdx);
                 String defaultValue = inner.substring(colonIdx + 1);
-                return environment.getProperty(key, defaultValue);
+                Object raw = environment.getViewPool().getRawPropertyValue(key);
+                return raw == null ? defaultValue : raw.toString();
             } else {
-                return environment.getProperty(inner);
+                Object raw = environment.getViewPool().getRawPropertyValue(inner);
+                return raw == null ? null : raw.toString();
             }
         }
         return expression;
