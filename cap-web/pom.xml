@@ -13,11 +13,6 @@
 
     <dependencies>
 
-        <dependency>
-            <groupId>org.moper.cap</groupId>
-            <artifactId>cap-core</artifactId>
-        </dependency>
-
         <!-- Servlet API -->
         <dependency>
             <groupId>jakarta.servlet</groupId>

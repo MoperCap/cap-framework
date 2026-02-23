@@ -11,13 +11,5 @@
 
     <artifactId>cap-context</artifactId>
 
-    <dependencies>
-
-        <dependency>
-            <groupId>org.moper.cap</groupId>
-            <artifactId>cap-core</artifactId>
-        </dependency>
-
-    </dependencies>
 
 </project>

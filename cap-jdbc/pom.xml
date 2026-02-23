@@ -13,11 +13,6 @@
 
     <dependencies>
 
-        <dependency>
-            <groupId>org.moper.cap</groupId>
-            <artifactId>cap-core</artifactId>
-        </dependency>
-
         <!-- JDBC 连接池 -->
         <dependency>
             <groupId>com.zaxxer</groupId>

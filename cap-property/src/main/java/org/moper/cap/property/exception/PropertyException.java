@@ -1,8 +1,6 @@
 package org.moper.cap.property.exception;
 
-import org.moper.cap.core.exception.CapFrameworkRuntimeException;
-
-public class PropertyException extends CapFrameworkRuntimeException {
+public class PropertyException extends RuntimeException {
     public PropertyException(String message) {
         super(message);
     }

@@ -3,7 +3,6 @@ package org.moper.cap.property.publisher;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import org.moper.cap.core.context.DispatcherContext;
 import org.moper.cap.property.event.PropertyOperation;
 import org.moper.cap.property.event.PublisherManifest;
 import org.moper.cap.property.exception.PropertyException;
@@ -21,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
  * 属性发布者负责发布属性相关事件，并与属性管理平台进行签约和解约 </br>
  * 属性发布者只提供属性更新事件的发布功能，不直接处理属性查询和订阅等功能 </br>
  */
-public interface PropertyPublisher extends DispatcherContext {
+public interface PropertyPublisher {
 
 
     /**
