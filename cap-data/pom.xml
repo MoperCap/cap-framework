@@ -9,9 +9,14 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>cap-jdbc</artifactId>
+    <artifactId>cap-data</artifactId>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.moper.cap</groupId>
+            <artifactId>cap-context</artifactId>
+        </dependency>
 
         <!-- JDBC 连接池 -->
         <dependency>

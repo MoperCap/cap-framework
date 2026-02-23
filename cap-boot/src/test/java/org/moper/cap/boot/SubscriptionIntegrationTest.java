@@ -1,8 +1,8 @@
 package org.moper.cap.boot;
 
 import org.junit.jupiter.api.Test;
-import org.moper.cap.boot.annotation.Subscription;
-import org.moper.cap.boot.annotation.Subscriber;
+import org.moper.cap.annotation.Subscription;
+import org.moper.cap.annotation.Subscriber;
 import org.moper.cap.boot.context.DefaultBootstrapContext;
 import org.moper.cap.boot.context.DefaultApplicationContextFactory;
 import org.moper.cap.context.ApplicationContext;

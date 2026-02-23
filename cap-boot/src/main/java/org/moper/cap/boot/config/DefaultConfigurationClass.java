@@ -1,9 +1,9 @@
 package org.moper.cap.boot.config;
 
 import jakarta.validation.constraints.NotNull;
-import org.moper.cap.boot.annotation.ComponentScan;
-import org.moper.cap.boot.annotation.InitializerExtensions;
-import org.moper.cap.boot.annotation.ResourceScan;
+import org.moper.cap.annotation.ComponentScan;
+import org.moper.cap.annotation.InitializerExtensions;
+import org.moper.cap.annotation.ResourceScan;
 import org.moper.cap.bootstrap.Initializer;
 import org.moper.cap.config.ConfigurationClass;
 

@@ -11,10 +11,11 @@
     <modules>
         <module>cap-boot</module>
         <module>cap-web</module>
-        <module>cap-jdbc</module>
+        <module>cap-data</module>
         <module>cap-property</module>
         <module>cap-bean</module>
         <module>cap-context</module>
+        <module>cap-aop</module>
     </modules>
 
     <properties>
@@ -73,7 +74,7 @@
 
             <dependency>
                 <groupId>org.moper.cap</groupId>
-                <artifactId>cap-jdbc</artifactId>
+                <artifactId>cap-data</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

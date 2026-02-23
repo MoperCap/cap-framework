@@ -1,6 +1,8 @@
 package org.moper.cap.boot;
 
 import org.junit.jupiter.api.*;
+import org.moper.cap.annotation.Component;
+import org.moper.cap.annotation.ComponentScan;
 import org.moper.cap.boot.annotation.*;
 import org.moper.cap.boot.context.DefaultBootstrapContext;
 import org.moper.cap.boot.context.DefaultApplicationContextFactory;

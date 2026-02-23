@@ -2,7 +2,6 @@ package org.moper.cap.boot.context;
 
 import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bean.container.impl.DefaultBeanContainer;
-import org.moper.cap.boot.annotation.InitializerExtensions;
 import org.moper.cap.boot.config.DefaultConfigurationClass;
 import org.moper.cap.bootstrap.Initializer;
 import org.moper.cap.config.ConfigurationClass;
@@ -13,8 +12,6 @@ import org.moper.cap.environment.DefaultEnvironment;
 import org.moper.cap.environment.Environment;
 import org.moper.cap.exception.ContextException;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.ServiceLoader;
 import java.util.TreeSet;
 

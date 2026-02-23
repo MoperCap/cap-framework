@@ -5,7 +5,7 @@ import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
 import org.moper.cap.boot.annotation.Autowired;
-import org.moper.cap.boot.annotation.Component;
+import org.moper.cap.annotation.Component;
 import org.moper.cap.boot.annotation.Lazy;
 import org.moper.cap.boot.annotation.Primary;
 import org.moper.cap.bean.definition.BeanDefinition;
