@@ -5,7 +5,7 @@ package org.moper.cap.property.subscriber;
  */
 public interface PropertySubscriber {
 
-    String key();
+    String getPropertyKey();
 
     void onSet(Object value);
 

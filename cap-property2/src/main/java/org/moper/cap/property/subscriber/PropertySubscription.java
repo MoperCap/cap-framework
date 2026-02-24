@@ -4,7 +4,7 @@ import org.moper.cap.property.event.PropertyOperation;
 
 public interface PropertySubscription {
 
-    PropertySelector selector();
+    PropertySelector getSelector();
 
     void dispatch(PropertyOperation... operations);
 }
