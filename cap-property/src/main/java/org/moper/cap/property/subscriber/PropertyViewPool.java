@@ -19,7 +19,6 @@ public interface PropertyViewPool extends PropertySubscription {
     <T>  Optional<T> getPropertyValueOptional( String key,  Class<T> type);
 
     boolean containsProperty( String key);
-
     
     Set<String> keySet();
 
