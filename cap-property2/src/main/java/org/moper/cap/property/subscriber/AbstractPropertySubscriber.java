@@ -1,6 +1,6 @@
 package org.moper.cap.property.subscriber;
 
-public abstract class AbstractPropertySubscriber implements PropertySubscriber {
+public abstract class AbstractPropertySubscriber<T> implements PropertySubscriber<T> {
     private final String propertyKey;
 
     public AbstractPropertySubscriber(String propertyKey) {
