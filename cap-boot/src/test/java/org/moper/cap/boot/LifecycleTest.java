@@ -3,7 +3,7 @@ package org.moper.cap.boot;
 import org.junit.jupiter.api.*;
 import org.moper.cap.boot.context.DefaultBootstrapContext;
 import org.moper.cap.boot.context.DefaultApplicationContextFactory;
-import org.moper.cap.context.ApplicationContext;
+import org.moper.cap.context.context.ApplicationContext;
 
 import static org.junit.jupiter.api.Assertions.*;
 

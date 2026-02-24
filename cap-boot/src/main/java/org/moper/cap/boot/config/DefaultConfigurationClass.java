@@ -1,11 +1,11 @@
 package org.moper.cap.boot.config;
 
 import jakarta.validation.constraints.NotNull;
-import org.moper.cap.annotation.ComponentScan;
-import org.moper.cap.annotation.InitializerExtensions;
-import org.moper.cap.annotation.ResourceScan;
-import org.moper.cap.bootstrap.Initializer;
-import org.moper.cap.config.ConfigurationClass;
+import org.moper.cap.context.annotation.ComponentScan;
+import org.moper.cap.context.annotation.InitializerExtensions;
+import org.moper.cap.context.annotation.ResourceScan;
+import org.moper.cap.context.bootstrap.Initializer;
+import org.moper.cap.context.config.ConfigurationClass;
 
 import java.util.Collection;
 import java.util.Set;

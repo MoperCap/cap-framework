@@ -1,12 +1,12 @@
 package org.moper.cap.boot;
 
 import org.junit.jupiter.api.Test;
-import org.moper.cap.annotation.Subscription;
-import org.moper.cap.annotation.Subscriber;
+import org.moper.cap.context.annotation.Subscription;
+import org.moper.cap.context.annotation.Subscriber;
 import org.moper.cap.boot.context.DefaultBootstrapContext;
 import org.moper.cap.boot.context.DefaultApplicationContextFactory;
-import org.moper.cap.context.ApplicationContext;
-import org.moper.cap.environment.Environment;
+import org.moper.cap.context.context.ApplicationContext;
+import org.moper.cap.context.environment.Environment;
 import org.moper.cap.property.officer.PropertyOfficer;
 import org.moper.cap.property.publisher.impl.DefaultPropertyPublisher;
 import org.moper.cap.property.event.PropertySetOperation;

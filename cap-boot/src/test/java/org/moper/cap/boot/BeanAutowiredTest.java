@@ -1,12 +1,12 @@
 package org.moper.cap.boot;
 
 import org.junit.jupiter.api.*;
-import org.moper.cap.annotation.Component;
-import org.moper.cap.annotation.ComponentScan;
+import org.moper.cap.context.annotation.Component;
+import org.moper.cap.context.annotation.ComponentScan;
 import org.moper.cap.boot.annotation.*;
 import org.moper.cap.boot.context.DefaultBootstrapContext;
 import org.moper.cap.boot.context.DefaultApplicationContextFactory;
-import org.moper.cap.context.ApplicationContext;
+import org.moper.cap.context.context.ApplicationContext;
 
 import static org.junit.jupiter.api.Assertions.*;
 
