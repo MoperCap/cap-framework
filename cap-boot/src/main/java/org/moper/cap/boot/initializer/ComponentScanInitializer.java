@@ -1,15 +1,14 @@
 package org.moper.cap.boot.initializer;
 
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ClassInfo;
-import io.github.classgraph.ClassInfoList;
-import io.github.classgraph.ScanResult;
+import io.github.classgraph.*;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.definition.InstantiationPolicy;
 import org.moper.cap.boot.annotation.Autowired;
 import org.moper.cap.boot.annotation.Lazy;
 import org.moper.cap.boot.annotation.Primary;
+import org.moper.cap.context.annotation.Bean;
 import org.moper.cap.context.annotation.Component;
+import org.moper.cap.context.annotation.Configuration;
 import org.moper.cap.context.bootstrap.Initializer;
 import org.moper.cap.context.bootstrap.InitializerType;
 import org.moper.cap.context.context.BootstrapContext;
@@ -18,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.Collection;
 
 /**
@@ -39,25 +39,54 @@ public class ComponentScanInitializer extends Initializer {
         try (ScanResult scanResult = new ClassGraph()
                 .enableAnnotationInfo()
                 .enableClassInfo()
+                .enableMethodInfo()
                 .acceptPackages(scanPackages.toArray(new String[0]))
                 .scan()) {
 
-            ClassInfoList componentClasses = scanResult.getClassesWithAnnotation(Component.class.getName());
-
-            for (ClassInfo classInfo : componentClasses) {
-                if (classInfo.isAbstract() || classInfo.isInterface() || classInfo.isAnnotation()) {
-                    continue;
-                }
+            // 扫描所有 @Component 注解的类，并注册为 BeanDefinition
+            for (ClassInfo classInfo :
+                    scanResult.getClassesWithAnnotation(Component.class.getName())
+                    .filter(classInfo -> !classInfo.isAbstract() && !classInfo.isInterface() && !classInfo.isAnnotation()))
+            {
                 try {
+                    // 注册所有 @Component 注解的类为 BeanDefinition
                     Class<?> beanClass = classInfo.loadClass();
                     String beanName = toBeanName(beanClass.getSimpleName());
                     BeanDefinition definition = buildBeanDefinition(beanName, beanClass);
                     context.getBeanContainer().registerBeanDefinition(definition);
                     log.debug("Registered bean: {} -> {}", beanName, beanClass.getName());
+
+                    // 如果是 @Configuration 类，还需要注册它的 @Bean 方法
+                    if(!classInfo.hasAnnotation(Configuration.class)) continue;
+
+                    for(MethodInfo methodInfo : classInfo.getDeclaredMethodInfo()
+                            .filter(method -> method.hasAnnotation(Bean.class)))
+                    {
+                        Method method = methodInfo.loadClassAndGetMethod();
+                        String methodName = method.getName();
+                        Bean methodBean = method.getAnnotation(Bean.class);
+                        String methodBeanName = methodBean.value().isEmpty() ? toBeanName(methodName) : methodBean.value();
+                        Class<?> methodBeanType = method.getReturnType();
+                        Class<?>[] methodBeanArgTypes = method.getParameterTypes();
+
+                        InstantiationPolicy methodInstantiationPolicy = methodInfo.isStatic() ?
+                                InstantiationPolicy.staticFactory(methodName, methodBeanArgTypes) :
+                                InstantiationPolicy.instanceFactory(beanName, methodName, methodBeanArgTypes);
+
+                        BeanDefinition methodBeanDefinition = BeanDefinition.of(methodBeanName, methodBeanType)
+                                .withInstantiationPolicy(methodInstantiationPolicy);
+
+                        context.getBeanContainer().registerBeanDefinition(methodBeanDefinition);
+
+                        log.debug("Registering @Bean: {} -> {} ", methodBeanName, methodBeanType);
+                    }
+
                 } catch (Exception e) {
                     log.warn("Failed to register bean for class {}: {}", classInfo.getName(), e.getMessage());
                 }
             }
+
+
         }
     }
 
