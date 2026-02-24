@@ -1,7 +1,5 @@
 package org.moper.cap.property.officer;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import org.moper.cap.property.event.PublisherManifest;
 import org.moper.cap.property.publisher.PropertyPublisher;
 import org.moper.cap.property.result.PublisherManifestResult;
@@ -22,7 +20,7 @@ public interface PropertyOfficer{
      *
      * @return 当前属性管理平台的名称
      */
-    @NotBlank String name();
+     String name();
 
     /**
      * 获取当前属性管理平台的版本号
@@ -38,7 +36,7 @@ public interface PropertyOfficer{
      * @param manifest 事件清单
      * @return 关于事件清单的处理结果
      */
-    @NotNull PublisherManifestResult receive(@NotNull PublisherManifest manifest);
+     PublisherManifestResult receive( PublisherManifest manifest);
 
     /**
      * 以异步的方式接收Publisher发布的事件清单 </br>
@@ -47,7 +45,7 @@ public interface PropertyOfficer{
      * @param manifest 事件清单
      * @return 关于事件清单的处理结果
      */
-    @NotNull CompletableFuture<PublisherManifestResult> receiveAsync(@NotNull PublisherManifest manifest);
+     CompletableFuture<PublisherManifestResult> receiveAsync( PublisherManifest manifest);
 
     /**
      * 当属性发布者不在线时，属性管理平台将接收到通知，并进行相应的处理 </br>
@@ -57,7 +55,7 @@ public interface PropertyOfficer{
      *
      * @param publisher 被销毁的属性发布者
      */
-    void offPublisher(@NotNull PropertyPublisher publisher);
+    void offPublisher( PropertyPublisher publisher);
 
     /**
      * 订阅属性更新事件 </br>
@@ -65,7 +63,7 @@ public interface PropertyOfficer{
      *
      * @param subscription 订阅者客户端
      */
-    void subscribe(@NotNull PropertySubscription subscription);
+    void subscribe( PropertySubscription subscription);
 
     /**
      * 取消订阅属性更新事件 </br>
@@ -73,7 +71,7 @@ public interface PropertyOfficer{
      *
      * @param subscription 取消订阅的订阅者客户端
      */
-    void unsubscribe(@NotNull PropertySubscription subscription);
+    void unsubscribe( PropertySubscription subscription);
 
     /**
      * 判断当前 Officer 是否已关闭

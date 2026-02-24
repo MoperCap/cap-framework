@@ -1,6 +1,5 @@
 package org.moper.cap.context.bootstrap;
 
-import jakarta.validation.constraints.NotNull;
 import org.moper.cap.context.context.BootstrapContext;
 import org.moper.cap.context.exception.ContextException;
 import org.moper.cap.context.exception.InitializerException;
@@ -45,7 +44,7 @@ public abstract class Initializer implements AutoCloseable, Comparable<Initializ
      * @param name 构造机名(不要求唯一, 可以为""，但不可以为null)
      * @param description 构造机相关描述(可以为""，但不可以为null)
      */
-    public Initializer(InitializerType type, int order, @NotNull String name, @NotNull String description) {
+    public Initializer(InitializerType type, int order,  String name,  String description) {
         this.type = type;
         this.order = order;
         this.name = name;
@@ -73,14 +72,14 @@ public abstract class Initializer implements AutoCloseable, Comparable<Initializ
     /**
      * 构造机名(不要求唯一, 可以为""，但不可以为null)
      */
-    public @NotNull String name() {
+    public  String name() {
         return name;
     }
 
     /**
      * 构造机相关描述(可以为""，但不可以为null)
      */
-    public @NotNull String description() {
+    public  String description() {
         return description;
     }
 
@@ -101,7 +100,7 @@ public abstract class Initializer implements AutoCloseable, Comparable<Initializ
      * 若构造机类型相同，则比较同级别构造机优先级，数值越小优先执行
      */
     @Override
-   public int compareTo(@NotNull Initializer o){
+   public int compareTo( Initializer o){
         if(type() != o.type()) {
             return Integer.compare(type().priority(), o.type().priority());
         }else {

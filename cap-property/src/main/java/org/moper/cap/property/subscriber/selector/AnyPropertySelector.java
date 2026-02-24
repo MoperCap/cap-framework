@@ -1,6 +1,5 @@
 package org.moper.cap.property.subscriber.selector;
 
-import jakarta.validation.constraints.NotBlank;
 import org.moper.cap.property.subscriber.PropertySelector;
 
 /**
@@ -19,7 +18,7 @@ public final class AnyPropertySelector implements PropertySelector {
      * @return 如果属性键匹配订阅者的兴趣范围，则返回true；否则返回false
      */
     @Override
-    public boolean matches(@NotBlank String key) {
+    public boolean matches( String key) {
         return true;
     }
 }

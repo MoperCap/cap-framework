@@ -1,7 +1,5 @@
 package org.moper.cap.property.officer.impl;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import org.moper.cap.property.PropertyDefinition;
 import org.moper.cap.property.event.PropertyOperation;
@@ -55,10 +53,10 @@ import java.util.stream.Collectors;
 @Builder
 public final class DefaultPropertyOfficer implements PropertyOfficer {
 
-    private final @NotBlank String name;
+    private final  String name;
 
     @Builder.Default
-    private final @NotNull AtomicInteger version = new AtomicInteger(0);
+    private final  AtomicInteger version = new AtomicInteger(0);
 
     /**
      * 发布者版本映射表 </br>
@@ -66,7 +64,7 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
      * 值：该发布者的下一个期望版本号 </br>
      */
     @Builder.Default
-    private final @NotNull Map<PropertyPublisher, Integer> publishers = new ConcurrentHashMap<>();
+    private final  Map<PropertyPublisher, Integer> publishers = new ConcurrentHashMap<>();
 
     /**
      * 属性核心池 </br>
@@ -74,7 +72,7 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
      * 值：属性定义（PropertyDefinition） </br>
      */
     @Builder.Default
-    private final @NotNull Map<String, PropertyDefinition> core = new ConcurrentHashMap<>();
+    private final  Map<String, PropertyDefinition> core = new ConcurrentHashMap<>();
 
     /**
      * 订阅者缓存映射 </br>
@@ -84,16 +82,16 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
      * 该缓存用于在通知订阅者时，快速过滤出该订阅者关心的属性操作
      */
     @Builder.Default
-    private final @NotNull Map<PropertySubscription, Set<String>> subscriptions = new ConcurrentHashMap<>();
+    private final  Map<PropertySubscription, Set<String>> subscriptions = new ConcurrentHashMap<>();
 
     /**
      * 异步事件处理线程池
      */
     @Builder.Default
-    private final @NotNull ExecutorService executorService = Executors.newFixedThreadPool(4);
+    private final  ExecutorService executorService = Executors.newFixedThreadPool(4);
 
     @Builder.Default
-    private final @NotNull AtomicBoolean closed = new AtomicBoolean(false);
+    private final  AtomicBoolean closed = new AtomicBoolean(false);
 
     /**
      * 获取当前属性管理平台的名称
@@ -101,7 +99,7 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
      * @return 当前属性管理平台的名称
      */
     @Override
-    public @NotBlank String name() {
+    public  String name() {
         return name;
     }
 
@@ -131,7 +129,7 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
      * @return 关于事件清单的处理结果。若 Officer 已关闭，返回失败结果。
      */
     @Override
-    public @NotNull PublisherManifestResult receive(@NotNull PublisherManifest manifest) {
+    public  PublisherManifestResult receive( PublisherManifest manifest) {
         if(isClosed()) return PublisherManifestResult.error(this, manifest, "Officer is closed");
 
         PropertyPublisher publisher = manifest.publisher();
@@ -173,7 +171,7 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
      * @return 关于事件清单的处理结果的异步包装。 若 Officer 已关闭，返回已完成的失败 Future。
      */
     @Override
-    public @NotNull CompletableFuture<PublisherManifestResult> receiveAsync(@NotNull PublisherManifest manifest) {
+    public  CompletableFuture<PublisherManifestResult> receiveAsync( PublisherManifest manifest) {
         if(isClosed())
             return CompletableFuture.completedFuture(
                     PublisherManifestResult.error(this, manifest, "Officer is closed")
@@ -229,7 +227,7 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
      * @param publisher 被销毁的属性发布者
      */
     @Override
-    public void offPublisher(@NotNull PropertyPublisher publisher) {
+    public void offPublisher( PropertyPublisher publisher) {
         if(isClosed()) return;
 
         version.incrementAndGet();
@@ -268,7 +266,7 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
      * @param subscription 订阅者客户端
      */
     @Override
-    public void subscribe(@NotNull PropertySubscription subscription) {
+    public void subscribe( PropertySubscription subscription) {
         if (isClosed()) return;
 
         PropertySelector selector = subscription.selector();
@@ -305,7 +303,7 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
      * @param subscription 取消订阅的订阅者客户端
      */
     @Override
-    public void unsubscribe(@NotNull PropertySubscription subscription) {
+    public void unsubscribe( PropertySubscription subscription) {
         if (isClosed()) return;
         subscriptions.remove(subscription);
     }

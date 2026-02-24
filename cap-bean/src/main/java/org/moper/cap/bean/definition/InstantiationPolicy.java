@@ -1,8 +1,5 @@
 package org.moper.cap.bean.definition;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.moper.cap.bean.exception.BeanDefinitionStoreException;
 
 /**
@@ -29,9 +26,9 @@ import org.moper.cap.bean.exception.BeanDefinitionStoreException;
  *                          无参时为空数组
  */
 public record InstantiationPolicy(
-        @Nullable String   factoryBeanName,
-        @Nullable String   factoryMethodName,
-        @NotNull Class<?>[] argTypes
+        String   factoryBeanName,
+        String   factoryMethodName,
+        Class<?>[] argTypes
 ) {
 
     /**
@@ -49,7 +46,7 @@ public record InstantiationPolicy(
      * @param argTypes 构造函数参数类型，按顺序排列，不能为 null
      * @return 新的 InstantiationPolicy 实例
      */
-    public static InstantiationPolicy constructor(@NotNull Class<?>... argTypes) {
+    public static InstantiationPolicy constructor(Class<?>... argTypes) {
         return new InstantiationPolicy(null, null, argTypes);
     }
 
@@ -62,8 +59,8 @@ public record InstantiationPolicy(
      * @throws BeanDefinitionStoreException 如果 methodName 为空
      */
     public static InstantiationPolicy staticFactory(
-            @NotBlank String methodName,
-            @NotNull Class<?>... argTypes) {
+            String methodName,
+            Class<?>... argTypes) {
         if (methodName == null || methodName.isBlank()) {
             throw new BeanDefinitionStoreException(
                     "Static factory method name must not be blank");
@@ -81,9 +78,9 @@ public record InstantiationPolicy(
      * @throws BeanDefinitionStoreException 如果 factoryBeanName 或 methodName 为空
      */
     public static InstantiationPolicy instanceFactory(
-            @NotBlank String factoryBeanName,
-            @NotBlank String methodName,
-            @NotNull Class<?>... argTypes) {
+            String factoryBeanName,
+            String methodName,
+            Class<?>... argTypes) {
         if (factoryBeanName == null || factoryBeanName.isBlank()) {
             throw new BeanDefinitionStoreException(
                     "Factory bean name must not be blank");

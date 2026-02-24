@@ -40,26 +40,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- 校验 -->
-        <dependency>
-            <groupId>org.hibernate.validator</groupId>
-            <artifactId>hibernate-validator</artifactId>
-        </dependency>
-
-        <!-- Lombok -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- Nullable / NotNull（语义注解） -->
-
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-        </dependency>
-
         <!-- Junit-Jupiter -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

@@ -43,7 +43,7 @@ public interface BeanContainer extends BeanProvider, BeanInspector, BeanRegistry
      *
      * @param interceptor 不能为 null
      */
-    void addBeanInterceptor(@NotNull BeanInterceptor interceptor);
+    void addBeanInterceptor(BeanInterceptor interceptor);
 
     /**
      * 获取所有已注册的拦截器（只读视图，已按 {@link BeanInterceptor#getOrder()} 升序排列）。
@@ -77,7 +77,7 @@ public interface BeanContainer extends BeanProvider, BeanInspector, BeanRegistry
      *
      * @throws BeanDestructionException 如果销毁失败
      */
-    void destroyBean(@NotBlank String beanName) throws BeanDestructionException;
+    void destroyBean(String beanName) throws BeanDestructionException;
 
     /**
      * 销毁容器中所有已缓存的单例 Bean。

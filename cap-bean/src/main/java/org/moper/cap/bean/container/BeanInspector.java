@@ -1,8 +1,5 @@
 package org.moper.cap.bean.container;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.exception.BeanCreationException;
 import org.moper.cap.bean.exception.NoSuchBeanDefinitionException;
@@ -23,24 +20,24 @@ public interface BeanInspector {
     /**
      * 判断容器中是否包含指定名称的 Bean（含别名和已注册单例）
      */
-    boolean containsBean(@NotBlank String beanName);
+    boolean containsBean(String beanName);
 
     /**
      * 判断是否存在指定名称的 BeanDefinition（不含纯单例注册）
      */
-    boolean containsBeanDefinition(@NotBlank String beanName);
+    boolean containsBeanDefinition(String beanName);
 
     /**
      * 获取指定名称的 BeanDefinition。
      *
      * @throws NoSuchBeanDefinitionException 如果不存在
      */
-    @NotNull BeanDefinition getBeanDefinition(@NotBlank String beanName) throws NoSuchBeanDefinitionException;
+    BeanDefinition getBeanDefinition(String beanName) throws NoSuchBeanDefinitionException;
 
     /**
      * 获取所有 BeanDefinition 的名称，无则返回空数组
      */
-    @NotNull String[] getBeanDefinitionNames();
+    String[] getBeanDefinitionNames();
 
     /**
      * 获取 BeanDefinition 的总数
@@ -50,12 +47,12 @@ public interface BeanInspector {
     /**
      * 获取所有匹配指定类型的 Bean 名称（含子类型），不触发实例化，无则返回空数组
      */
-    @NotNull String[] getBeanNamesForType(@NotNull Class<?> type);
+    String[] getBeanNamesForType(Class<?> type);
 
     /**
      * 获取所有标注了指定注解的 Bean 名称，不触发实例化，无则返回空数组
      */
-    @NotNull String[] getBeanNamesForAnnotation(@NotNull Class<? extends Annotation> annotationType);
+    String[] getBeanNamesForAnnotation(Class<? extends Annotation> annotationType);
 
     /**
      * 获取所有匹配指定类型的 Bean 实例，会触发实例化。
@@ -63,7 +60,7 @@ public interface BeanInspector {
      * @return 名称 → 实例 的映射，无则返回空 Map
      * @throws BeanCreationException 如果任意 Bean 实例化失败
      */
-    <T> @NotNull Map<String, T> getBeansOfType(@NotNull Class<T> type) throws BeanCreationException;
+    <T> Map<String, T> getBeansOfType(Class<T> type) throws BeanCreationException;
 
     /**
      * 获取所有标注了指定注解的 Bean 实例，会触发实例化。
@@ -71,35 +68,35 @@ public interface BeanInspector {
      * @return 名称 → 实例 的映射，无则返回空 Map
      * @throws BeanCreationException 如果任意 Bean 实例化失败
      */
-    @NotNull Map<String, Object> getBeansWithAnnotation(@NotNull Class<? extends Annotation> annotationType) throws BeanCreationException;
+    Map<String, Object> getBeansWithAnnotation(Class<? extends Annotation> annotationType) throws BeanCreationException;
 
     /**
      * 判断指定 Bean 是否为单例作用域。
      *
      * @throws NoSuchBeanDefinitionException 如果 Bean 不存在
      */
-    boolean isSingleton(@NotBlank String beanName) throws NoSuchBeanDefinitionException;
+    boolean isSingleton(String beanName) throws NoSuchBeanDefinitionException;
 
     /**
      * 判断指定 Bean 是否为原型作用域。
      *
      * @throws NoSuchBeanDefinitionException 如果 Bean 不存在
      */
-    boolean isPrototype(@NotBlank String beanName) throws NoSuchBeanDefinitionException;
+    boolean isPrototype(String beanName) throws NoSuchBeanDefinitionException;
 
     /**
      * 判断指定 Bean 是否可赋值为目标类型。
      *
      * @throws NoSuchBeanDefinitionException 如果 Bean 不存在
      */
-    boolean isTypeMatch(@NotBlank String beanName, @NotNull Class<?> targetType) throws NoSuchBeanDefinitionException;
+    boolean isTypeMatch(String beanName, Class<?> targetType) throws NoSuchBeanDefinitionException;
 
     /**
      *  获取指定 Bean 的实际类型
      *
      * @throws NoSuchBeanDefinitionException 如果 Bean 不存在
      */
-    @NotNull Class<?> getType(@NotBlank String beanName) throws NoSuchBeanDefinitionException;
+    Class<?> getType(String beanName) throws NoSuchBeanDefinitionException;
 
     /**
      * 获取指定 Bean 的所有别名，无别名则返回空数组。
@@ -114,12 +111,12 @@ public interface BeanInspector {
      * @return 所有别名数组（含入参自身，若入参为别名），无别名则返回空数组
      * @throws NoSuchBeanDefinitionException 如果 Bean 不存在
      */
-    @NotNull String[] getAliases(@NotBlank String beanName) throws NoSuchBeanDefinitionException;
+    String[] getAliases(String beanName) throws NoSuchBeanDefinitionException;
 
     /**
      * 在指定 Bean 上查找注解（含继承层级），不存在则返回 null。
      *
      * @throws NoSuchBeanDefinitionException 如果 Bean 不存在
      */
-    <A extends Annotation> @Nullable A findAnnotationOnBean(@NotBlank String beanName, @NotNull Class<A> annotationType) throws NoSuchBeanDefinitionException;
+    <A extends Annotation> A findAnnotationOnBean(String beanName, Class<A> annotationType) throws NoSuchBeanDefinitionException;
 }

@@ -1,11 +1,9 @@
 package org.moper.cap.property.subscriber;
 
-import jakarta.validation.constraints.NotBlank;
-
 public abstract class AbstractSubscriber implements PropertySubscriber {
-    private final @NotBlank String propertyKey;
+    private final  String propertyKey;
 
-    public AbstractSubscriber(@NotBlank String propertyKey) {
+    public AbstractSubscriber( String propertyKey) {
         this.propertyKey = propertyKey;
     }
 
@@ -15,7 +13,7 @@ public abstract class AbstractSubscriber implements PropertySubscriber {
      * @return 订阅的属性键
      */
     @Override
-    public @NotBlank String getPropertyKey() {
+    public  String getPropertyKey() {
         return this.propertyKey;
     }
 }

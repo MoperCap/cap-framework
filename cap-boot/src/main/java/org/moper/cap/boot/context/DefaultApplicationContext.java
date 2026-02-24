@@ -1,8 +1,5 @@
 package org.moper.cap.boot.context;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.exception.*;
@@ -70,19 +67,19 @@ public class DefaultApplicationContext implements ApplicationContext {
     // ===== BeanProvider delegation =====
 
     @Override
-    public @NotNull Object getBean(@NotBlank String beanName)
+    public  Object getBean( String beanName)
             throws NoSuchBeanDefinitionException, BeanCreationException {
         return beanContainer.getBean(beanName);
     }
 
     @Override
-    public <T> @NotNull T getBean(@NotBlank String beanName, @NotNull Class<T> requiredType)
+    public <T>  T getBean( String beanName,  Class<T> requiredType)
             throws NoSuchBeanDefinitionException, BeanCreationException, BeanNotOfRequiredTypeException {
         return beanContainer.getBean(beanName, requiredType);
     }
 
     @Override
-    public <T> @NotNull T getBean(@NotNull Class<T> requiredType)
+    public <T>  T getBean( Class<T> requiredType)
             throws NoSuchBeanDefinitionException, BeanCreationException, NoUniqueBeanDefinitionException {
         return beanContainer.getBean(requiredType);
     }
@@ -90,23 +87,23 @@ public class DefaultApplicationContext implements ApplicationContext {
     // ===== BeanInspector delegation =====
 
     @Override
-    public boolean containsBean(@NotBlank String beanName) {
+    public boolean containsBean( String beanName) {
         return beanContainer.containsBean(beanName);
     }
 
     @Override
-    public boolean containsBeanDefinition(@NotBlank String beanName) {
+    public boolean containsBeanDefinition( String beanName) {
         return beanContainer.containsBeanDefinition(beanName);
     }
 
     @Override
-    public @NotNull BeanDefinition getBeanDefinition(@NotBlank String beanName)
+    public  BeanDefinition getBeanDefinition( String beanName)
             throws NoSuchBeanDefinitionException {
         return beanContainer.getBeanDefinition(beanName);
     }
 
     @Override
-    public @NotNull String[] getBeanDefinitionNames() {
+    public  String[] getBeanDefinitionNames() {
         return beanContainer.getBeanDefinitionNames();
     }
 
@@ -116,55 +113,55 @@ public class DefaultApplicationContext implements ApplicationContext {
     }
 
     @Override
-    public @NotNull String[] getBeanNamesForType(@NotNull Class<?> type) {
+    public  String[] getBeanNamesForType( Class<?> type) {
         return beanContainer.getBeanNamesForType(type);
     }
 
     @Override
-    public @NotNull String[] getBeanNamesForAnnotation(@NotNull Class<? extends Annotation> annotationType) {
+    public  String[] getBeanNamesForAnnotation( Class<? extends Annotation> annotationType) {
         return beanContainer.getBeanNamesForAnnotation(annotationType);
     }
 
     @Override
-    public <T> @NotNull Map<String, T> getBeansOfType(@NotNull Class<T> type) throws BeanCreationException {
+    public <T>  Map<String, T> getBeansOfType( Class<T> type) throws BeanCreationException {
         return beanContainer.getBeansOfType(type);
     }
 
     @Override
-    public @NotNull Map<String, Object> getBeansWithAnnotation(
-            @NotNull Class<? extends Annotation> annotationType) throws BeanCreationException {
+    public  Map<String, Object> getBeansWithAnnotation(
+             Class<? extends Annotation> annotationType) throws BeanCreationException {
         return beanContainer.getBeansWithAnnotation(annotationType);
     }
 
     @Override
-    public boolean isSingleton(@NotBlank String beanName) throws NoSuchBeanDefinitionException {
+    public boolean isSingleton( String beanName) throws NoSuchBeanDefinitionException {
         return beanContainer.isSingleton(beanName);
     }
 
     @Override
-    public boolean isPrototype(@NotBlank String beanName) throws NoSuchBeanDefinitionException {
+    public boolean isPrototype( String beanName) throws NoSuchBeanDefinitionException {
         return beanContainer.isPrototype(beanName);
     }
 
     @Override
-    public boolean isTypeMatch(@NotBlank String beanName, @NotNull Class<?> targetType)
+    public boolean isTypeMatch( String beanName,  Class<?> targetType)
             throws NoSuchBeanDefinitionException {
         return beanContainer.isTypeMatch(beanName, targetType);
     }
 
     @Override
-    public @NotNull Class<?> getType(@NotBlank String beanName) throws NoSuchBeanDefinitionException {
+    public  Class<?> getType( String beanName) throws NoSuchBeanDefinitionException {
         return beanContainer.getType(beanName);
     }
 
     @Override
-    public @NotNull String[] getAliases(@NotBlank String beanName) throws NoSuchBeanDefinitionException {
+    public  String[] getAliases( String beanName) throws NoSuchBeanDefinitionException {
         return beanContainer.getAliases(beanName);
     }
 
     @Override
-    public <A extends Annotation> @Nullable A findAnnotationOnBean(
-            @NotBlank String beanName, @NotNull Class<A> annotationType)
+    public <A extends Annotation>  A findAnnotationOnBean(
+             String beanName,  Class<A> annotationType)
             throws NoSuchBeanDefinitionException {
         return beanContainer.findAnnotationOnBean(beanName, annotationType);
     }

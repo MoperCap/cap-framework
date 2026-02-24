@@ -1,6 +1,5 @@
 package org.moper.cap.boot.config;
 
-import jakarta.validation.constraints.NotNull;
 import org.moper.cap.context.annotation.ComponentScan;
 import org.moper.cap.context.annotation.InitializerExtensions;
 import org.moper.cap.context.annotation.ResourceScan;
@@ -23,7 +22,6 @@ public final class DefaultConfigurationClass implements ConfigurationClass {
      * @return 若配置类上的软件包扫描路径不为空，则返回对应的路径集合; 否则返回配置类所在软件包路径
      */
     @Override
-    @NotNull
     public Collection<String> getComponentScanPaths(){
         ComponentScan scan = configClass.getAnnotation(ComponentScan.class);
         if(scan == null) return Set.of(configClass.getPackageName());
@@ -36,7 +34,6 @@ public final class DefaultConfigurationClass implements ConfigurationClass {
      * @return 若配置上的资源包扫描路径不为空，则返回对应的路径集合; 否则返回 { "" }
      */
     @Override
-    @NotNull
     public Collection<String> getResourceScanPaths(){
         ResourceScan scan = configClass.getAnnotation(ResourceScan.class);
         if(scan == null) return Set.of("");

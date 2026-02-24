@@ -29,7 +29,7 @@ public interface BeanRegistry {
      * @param beanDefinition 不能为 null
      * @throws BeanDefinitionStoreException 如果同名 BeanDefinition 已存在
      */
-    void registerBeanDefinition(@NotNull BeanDefinition beanDefinition) throws BeanDefinitionStoreException;
+    void registerBeanDefinition(BeanDefinition beanDefinition) throws BeanDefinitionStoreException;
 
     /**
      * 移除指定名称的 BeanDefinition 及其对应的单例缓存（如果存在）。
@@ -37,7 +37,7 @@ public interface BeanRegistry {
      * @param beanName 不能为空
      * @throws NoSuchBeanDefinitionException 如果不存在
      */
-    void removeBeanDefinition(@NotBlank String beanName) throws NoSuchBeanDefinitionException;
+    void removeBeanDefinition(String beanName) throws NoSuchBeanDefinitionException;
 
     /**
      * 为指定 Bean 注册别名。
@@ -49,7 +49,7 @@ public interface BeanRegistry {
      * @throws NoSuchBeanDefinitionException 如果 Bean 不存在
      * @throws BeanDefinitionStoreException 如果目别名已被占用
      */
-    void registerAlias(@NotBlank String beanName, @NotBlank String alias) throws NoSuchBeanDefinitionException, BeanDefinitionStoreException;
+    void registerAlias(String beanName, String alias) throws NoSuchBeanDefinitionException, BeanDefinitionStoreException;
 
     /**
      * 移除指定别名。
@@ -57,7 +57,7 @@ public interface BeanRegistry {
      * @param alias 不能为空
      * @throws BeanDefinitionStoreException 如果别名不存在
      */
-    void removeAlias(@NotBlank String alias) throws BeanDefinitionStoreException;
+    void removeAlias(String alias) throws BeanDefinitionStoreException;
 
     /**
      * 直接注册一个已存在的单例对象，绕过完整创建流程，不触发任何生命周期回调。
@@ -71,7 +71,7 @@ public interface BeanRegistry {
      * @param singletonObject 单例对象，不能为 null
      * @throws BeanDefinitionStoreException 如果名称已被占用
      */
-    void registerSingleton(@NotBlank String beanName, @NotNull Object singletonObject) throws BeanDefinitionStoreException;
+    void registerSingleton(String beanName, Object singletonObject) throws BeanDefinitionStoreException;
 
     /**
      * 判断指定名称是否已被使用（含已注册的 BeanDefinition、单例实例或别名）。
@@ -81,5 +81,5 @@ public interface BeanRegistry {
      * @param beanName 不能为空
      * @return 已被使用则返回 {@code true}
      */
-    boolean isBeanNameInUse(@NotBlank String beanName);
+    boolean isBeanNameInUse(String beanName);
 }

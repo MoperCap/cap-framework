@@ -1,7 +1,5 @@
 package org.moper.cap.property.subscriber;
 
-import jakarta.validation.constraints.NotBlank;
-
 /**
  * 属性选择器接口 </br>
  *
@@ -16,5 +14,5 @@ public interface PropertySelector {
      * @param key 属性键
      * @return 如果属性键匹配订阅者的兴趣范围，则返回true；否则返回false
      */
-    boolean matches(@NotBlank String key);
+    boolean matches( String key);
 }

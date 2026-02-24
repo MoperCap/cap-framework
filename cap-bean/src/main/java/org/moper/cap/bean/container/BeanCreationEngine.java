@@ -48,7 +48,7 @@ public interface BeanCreationEngine {
      * @return 创建并初始化完成的 Bean 实例（可能是代理对象）
      * @throws BeanException 如果创建过程中任意阶段失败
      */
-    @NotNull Object createBean(@NotBlank String beanName, @NotNull BeanDefinition beanDefinition) throws BeanException;
+    Object createBean(String beanName, BeanDefinition beanDefinition) throws BeanException;
 
     /**
      * 销毁指定的单例 Bean，触发其
@@ -59,7 +59,7 @@ public interface BeanCreationEngine {
      * @param beanName Bean 名称，不能为空
      * @throws BeanDestructionException 如果 {@code destroy()} 执行失败
      */
-    void destroyBean(@NotBlank String beanName) throws BeanDestructionException;
+    void destroyBean(String beanName) throws BeanDestructionException;
 
     /**
      * 销毁所有已注册的可销毁单例 Bean。
@@ -79,14 +79,14 @@ public interface BeanCreationEngine {
      * @param interceptor 不能为 null
      * @throws IllegalArgumentException 如果 interceptor 为 null
      */
-    void addBeanInterceptor(@NotNull BeanInterceptor interceptor);
+    void addBeanInterceptor(BeanInterceptor interceptor);
 
     /**
      * 获取所有已注册的拦截器（只读视图，已按 {@link BeanInterceptor#getOrder()} 升序排列）。
      *
      * @return 不可变的拦截器列表，永不为 null
      */
-    @NotNull List<BeanInterceptor> getBeanInterceptors();
+    List<BeanInterceptor> getBeanInterceptors();
 
     /**
      * 获取已注册的拦截器数量。

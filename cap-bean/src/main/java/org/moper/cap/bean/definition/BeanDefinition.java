@@ -1,8 +1,5 @@
 package org.moper.cap.bean.definition;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
 /**
  * Bean 的完整元数据描述（不可变）。
  *
@@ -45,15 +42,15 @@ import jakarta.validation.constraints.NotNull;
  * @param description         可读描述信息，不能为 null，默认为空字符串
  */
 public record BeanDefinition(
-        @NotBlank String name,
-        @NotNull Class<?> type,
-        @NotNull BeanScope scope,
-        @NotNull InstantiationPolicy instantiationPolicy,
-        @NotNull String[] dependsOn,
+        String name,
+        Class<?> type,
+        BeanScope scope,
+        InstantiationPolicy instantiationPolicy,
+        String[] dependsOn,
         boolean lazy,
         boolean primary,
         boolean autowired,
-        @NotNull String description
+        String description
 ) {
 
     /**
@@ -67,7 +64,7 @@ public record BeanDefinition(
      * @return 新的 BeanDefinition 实例
      * @throws IllegalArgumentException 如果 name 为空或 type 为 null
      */
-    public static BeanDefinition of(@NotBlank String name, @NotNull Class<?> type) {
+    public static BeanDefinition of(String name, Class<?> type) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Bean name must not be blank");
         }
@@ -91,7 +88,7 @@ public record BeanDefinition(
      * @see InstantiationPolicy#staticFactory(String, Class[])
      * @see InstantiationPolicy#instanceFactory(String, String, Class[])
      */
-    public BeanDefinition withInstantiationPolicy(@NotNull InstantiationPolicy policy) {
+    public BeanDefinition withInstantiationPolicy(InstantiationPolicy policy) {
         return new BeanDefinition(
                 name, type, scope, policy, dependsOn,
                 lazy, primary, autowired, description
@@ -104,7 +101,7 @@ public record BeanDefinition(
      * @param scope 作用域，不能为 null
      * @return 新的 BeanDefinition 实例
      */
-    public BeanDefinition withScope(@NotNull BeanScope scope) {
+    public BeanDefinition withScope(BeanScope scope) {
         return new BeanDefinition(
                 name, type, scope, instantiationPolicy, dependsOn,
                 lazy, primary, autowired, description
@@ -117,7 +114,7 @@ public record BeanDefinition(
      * @param beanNames 强依赖的 Bean 名称，不能为 null
      * @return 新的 BeanDefinition 实例
      */
-    public BeanDefinition dependsOn(@NotNull String... beanNames) {
+    public BeanDefinition dependsOn(String... beanNames) {
         return new BeanDefinition(
                 name, type, scope, instantiationPolicy, beanNames,
                 lazy, primary, autowired, description
@@ -169,7 +166,7 @@ public record BeanDefinition(
      * @param description 描述信息，不能为 null
      * @return 新的 BeanDefinition 实例
      */
-    public BeanDefinition withDescription(@NotNull String description) {
+    public BeanDefinition withDescription(String description) {
         return new BeanDefinition(
                 name, type, scope, instantiationPolicy, dependsOn,
                 lazy, primary, autowired, description

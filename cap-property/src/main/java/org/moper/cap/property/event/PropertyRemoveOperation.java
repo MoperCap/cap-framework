@@ -1,11 +1,9 @@
 package org.moper.cap.property.event;
 
-import jakarta.validation.constraints.NotBlank;
-
 import java.util.Objects;
 
 public record PropertyRemoveOperation(
-        @NotBlank String key
+         String key
 ) implements PropertyOperation {
 
     @Override

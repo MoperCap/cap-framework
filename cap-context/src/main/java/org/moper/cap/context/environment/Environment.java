@@ -1,6 +1,5 @@
 package org.moper.cap.context.environment;
 
-import jakarta.validation.constraints.NotNull;
 import org.moper.cap.property.officer.PropertyOfficer;
 import org.moper.cap.property.publisher.PropertyPublisher;
 import org.moper.cap.property.subscriber.PropertyViewPool;
@@ -14,21 +13,21 @@ import org.moper.cap.property.subscriber.PropertyViewPool;
 public interface Environment extends AutoCloseable {
 
     /** 获取属性管理平台，供 Initializer 向其发布属性变更事件 */
-    @NotNull PropertyOfficer getOfficer();
+     PropertyOfficer getOfficer();
 
     /** 获取只读属性视图池，供运行期查询属性值 */
-    @NotNull PropertyViewPool getViewPool();
+     PropertyViewPool getViewPool();
 
     /**
      * 注册并托管一个 PropertyPublisher 的生命周期。
      * 调用方在 publisher.contract(officer) 之后，应立即调用此方法。
      */
-    void registerPublisher(@NotNull PropertyPublisher publisher);
+    void registerPublisher( PropertyPublisher publisher);
 
     /**
      * 注销一个已托管的 PropertyPublisher（不自动解约）。
      */
-    void unregisterPublisher(@NotNull PropertyPublisher publisher);
+    void unregisterPublisher( PropertyPublisher publisher);
 
     /**
      * 关闭 Environment：

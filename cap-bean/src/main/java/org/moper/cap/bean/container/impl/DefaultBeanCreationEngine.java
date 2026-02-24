@@ -1,7 +1,5 @@
 package org.moper.cap.bean.container.impl;
 
-import jakarta.validation.constraints.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.moper.cap.bean.container.BeanCreationEngine;
 import org.moper.cap.bean.container.BeanProvider;
 import org.moper.cap.bean.definition.BeanDefinition;
@@ -42,24 +40,24 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
     /**
      * 用于解析构造函数 / 工厂方法参数的依赖
      */
-    private final @NotNull BeanProvider beanProvider;
+    private final BeanProvider beanProvider;
 
     /**
      * 已注册的拦截器，按 {@link BeanInterceptor#getOrder()} 升序维护
      */
-    private final @NotNull List<BeanInterceptor> interceptors = new ArrayList<>();
+    private final List<BeanInterceptor> interceptors = new ArrayList<>();
 
     /**
      * 可销毁单例列表，按注册顺序存储，销毁时逆序执行。
      * key = beanName，value = bean 实例
      */
-    private final @NotNull LinkedHashMap<String, Object> disposableBeans = new LinkedHashMap<>();
+    private final LinkedHashMap<String, Object> disposableBeans = new LinkedHashMap<>();
 
     /**
      * 构造函数，注入 {@link BeanProvider} 以支持实例化阶段的依赖解析。
      * @param beanProvider BeanProvider 实例，不能为 null
      */
-    public DefaultBeanCreationEngine(@NotNull BeanProvider beanProvider) {
+    public DefaultBeanCreationEngine(BeanProvider beanProvider) {
         this.beanProvider = beanProvider;
     }
 
@@ -303,7 +301,7 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
      *
      * @return 短路用的 Bean 实例；所有拦截器均返回 null 时返回 null
      */
-    private @Nullable Object applyBeforeInstantiation(BeanDefinition definition) throws BeanException {
+    private Object applyBeforeInstantiation(BeanDefinition definition) throws BeanException {
         for (BeanInterceptor interceptor : interceptors) {
             Object result = interceptor.beforeInstantiation(definition);
             if (result != null) {

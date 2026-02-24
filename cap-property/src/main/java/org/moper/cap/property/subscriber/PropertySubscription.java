@@ -1,8 +1,5 @@
 package org.moper.cap.property.subscriber;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import org.moper.cap.property.event.PropertyOperation;
 import org.moper.cap.property.officer.PropertyOfficer;
 
@@ -81,7 +78,7 @@ public interface PropertySubscription {
      *
      * @return 当前属性订阅客户端的名称
      */
-    @NotBlank String name();
+     String name();
 
     /**
      * 获取当前属性订阅客户端的属性选择器。</br>
@@ -95,7 +92,7 @@ public interface PropertySubscription {
      *
      * @return 当前属性订阅客户端的属性选择器（不可变）
      */
-    @NotNull PropertySelector selector();
+     PropertySelector selector();
 
     /**
      * 接收属性管理平台发送的事件清单。</br>
@@ -117,7 +114,7 @@ public interface PropertySubscription {
      *
      * @param operations 属性管理平台发送的事件清单
      */
-    void dispatch(@NotEmpty PropertyOperation... operations);
+    void dispatch( PropertyOperation... operations);
 
     /**
      * 当属性发布者不在线时，属性管理平台将接收到通知，并进行相应的处理。</br>
@@ -129,7 +126,7 @@ public interface PropertySubscription {
      *
      * @param officer 不在线的属性官管理平台
      */
-    void offOfficer(@NotNull PropertyOfficer officer);
+    void offOfficer( PropertyOfficer officer);
 
     /**
      * 判断当前订阅客户端是否已关闭。</br>

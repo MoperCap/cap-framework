@@ -22,7 +22,7 @@ public interface BeanProvider {
      * @throws NoSuchBeanDefinitionException 如果 Bean 不存在
      * @throws BeanCreationException         如果创建失败
      */
-    @NotNull Object getBean(@NotBlank String beanName) throws NoSuchBeanDefinitionException, BeanCreationException;
+    Object getBean(String beanName) throws NoSuchBeanDefinitionException, BeanCreationException;
 
     /**
      * 按名称获取指定类型的 Bean 实例，含类型校验。
@@ -35,7 +35,7 @@ public interface BeanProvider {
      * @throws BeanCreationException           如果创建失败
      * @throws BeanNotOfRequiredTypeException 如果类型不匹配
      */
-    <T> @NotNull T getBean(@NotBlank String beanName, @NotNull Class<T> requiredType)throws NoSuchBeanDefinitionException, BeanCreationException, BeanNotOfRequiredTypeException;
+    <T> T getBean(String beanName, Class<T> requiredType)throws NoSuchBeanDefinitionException, BeanCreationException, BeanNotOfRequiredTypeException;
 
     /**
      * 按类型获取唯一匹配的 Bean 实例。
@@ -50,5 +50,5 @@ public interface BeanProvider {
      * @throws BeanCreationException           如果创建失败
      * @throws NoUniqueBeanDefinitionException 如果存在多个匹配 Bean 且没有唯一的 primary
      */
-    <T> @NotNull T getBean(@NotNull Class<T> requiredType) throws NoSuchBeanDefinitionException, BeanCreationException, NoUniqueBeanDefinitionException;
+    <T> T getBean(Class<T> requiredType) throws NoSuchBeanDefinitionException, BeanCreationException, NoUniqueBeanDefinitionException;
 }

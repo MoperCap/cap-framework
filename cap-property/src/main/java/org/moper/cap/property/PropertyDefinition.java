@@ -1,8 +1,5 @@
 package org.moper.cap.property;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.moper.cap.property.publisher.PropertyPublisher;
 
 import java.time.Instant;
@@ -17,10 +14,10 @@ import java.util.Objects;
  * @param lastModified 最后修改时间
  */
 public record PropertyDefinition(
-        @NotBlank String name,
-        @Nullable Object value,
-        @NotNull PropertyPublisher publisher,
-        @NotNull Instant lastModified
+         String name,
+         Object value,
+         PropertyPublisher publisher,
+         Instant lastModified
 ) {
 
     @Override

@@ -1,8 +1,5 @@
 package org.moper.cap.property.subscriber;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.moper.cap.property.subscriber.selector.AnyPropertySelector;
 
 import java.util.Optional;
@@ -13,17 +10,17 @@ import java.util.Set;
  */
 public interface PropertyViewPool extends PropertySubscription {
 
-    @Nullable Object getRawPropertyValue(@NotBlank String key);
+     Object getRawPropertyValue( String key);
 
-    <T> @Nullable T getPropertyValue(@NotBlank String key, @NotNull Class<T> type);
+    <T>  T getPropertyValue( String key,  Class<T> type);
 
-    <T> @NotNull T getPropertyValueOrDefault(@NotBlank String key, @NotNull Class<T> type, @NotNull T defaultValue);
+    <T>  T getPropertyValueOrDefault( String key,  Class<T> type,  T defaultValue);
 
-    <T> @NotNull Optional<T> getPropertyValueOptional(@NotBlank String key, @NotNull Class<T> type);
+    <T>  Optional<T> getPropertyValueOptional( String key,  Class<T> type);
 
-    boolean containsProperty(@NotBlank String key);
+    boolean containsProperty( String key);
 
-    @NotNull
+    
     Set<String> keySet();
 
     @Override

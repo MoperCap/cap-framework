@@ -1,8 +1,5 @@
 package org.moper.cap.bean.container.impl;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bean.container.BeanCreationEngine;
 import org.moper.cap.bean.definition.BeanDefinition;
@@ -40,7 +37,7 @@ public class DefaultBeanContainer implements BeanContainer {
     private final BeanCreationEngine creationEngine = new DefaultBeanCreationEngine(this);
 
     @Override
-    public void registerBeanDefinition(@NotNull BeanDefinition beanDefinition) throws BeanDefinitionStoreException {
+    public void registerBeanDefinition(BeanDefinition beanDefinition) throws BeanDefinitionStoreException {
         String name = beanDefinition.name();
         if (beanDefinitionMap.containsKey(name)) {
             throw new BeanDefinitionStoreException("Bean definition with name '" + name + "' already exists.");
@@ -49,7 +46,7 @@ public class DefaultBeanContainer implements BeanContainer {
     }
 
     @Override
-    public void removeBeanDefinition(@NotBlank String beanName) throws NoSuchBeanDefinitionException {
+    public void removeBeanDefinition(String beanName) throws NoSuchBeanDefinitionException {
         if (!beanDefinitionMap.containsKey(beanName)) {
             throw new NoSuchBeanDefinitionException(beanName);
         }
@@ -58,7 +55,7 @@ public class DefaultBeanContainer implements BeanContainer {
     }
 
     @Override
-    public void registerAlias(@NotBlank String beanName, @NotBlank String alias) throws NoSuchBeanDefinitionException, BeanDefinitionStoreException {
+    public void registerAlias(String beanName, String alias) throws NoSuchBeanDefinitionException, BeanDefinitionStoreException {
         if (!beanDefinitionMap.containsKey(beanName) && !singletonObjects.containsKey(beanName)) {
             throw new NoSuchBeanDefinitionException(beanName);
         }
@@ -69,7 +66,7 @@ public class DefaultBeanContainer implements BeanContainer {
     }
 
     @Override
-    public void removeAlias(@NotBlank String alias) throws BeanDefinitionStoreException {
+    public void removeAlias(String alias) throws BeanDefinitionStoreException {
         if (!aliasMap.containsKey(alias)) {
             throw new BeanDefinitionStoreException("Alias '" + alias + "' is not registered");
         }
@@ -77,7 +74,7 @@ public class DefaultBeanContainer implements BeanContainer {
     }
 
     @Override
-    public void registerSingleton(@NotBlank String beanName, @NotNull Object singletonObject) throws BeanDefinitionStoreException {
+    public void registerSingleton(String beanName, Object singletonObject) throws BeanDefinitionStoreException {
         if (singletonObjects.containsKey(beanName) || beanDefinitionMap.containsKey(beanName)) {
             throw new BeanDefinitionStoreException("Name '" + beanName + "' is already in use");
         }
@@ -85,17 +82,17 @@ public class DefaultBeanContainer implements BeanContainer {
     }
 
     @Override
-    public boolean isBeanNameInUse(@NotBlank String beanName) {
+    public boolean isBeanNameInUse(String beanName) {
         return beanDefinitionMap.containsKey(beanName) || singletonObjects.containsKey(beanName) || aliasMap.containsKey(beanName);
     }
 
     @Override
-    public @NotNull Object getBean(@NotBlank String beanName) throws NoSuchBeanDefinitionException, BeanCreationException {
+    public Object getBean(String beanName) throws NoSuchBeanDefinitionException, BeanCreationException {
         return doGetBean(beanName, null);
     }
 
     @Override
-    public <T> @NotNull T getBean(@NotBlank String beanName, @NotNull Class<T> requiredType) throws NoSuchBeanDefinitionException, BeanCreationException, BeanNotOfRequiredTypeException {
+    public <T> T getBean(String beanName, Class<T> requiredType) throws NoSuchBeanDefinitionException, BeanCreationException, BeanNotOfRequiredTypeException {
         Object bean = doGetBean(beanName, requiredType);
         if (!requiredType.isInstance(bean)) {
             throw new BeanNotOfRequiredTypeException(beanName, requiredType, bean.getClass());
@@ -104,7 +101,7 @@ public class DefaultBeanContainer implements BeanContainer {
     }
 
     @Override
-    public <T> @NotNull T getBean(@NotNull Class<T> requiredType) throws NoSuchBeanDefinitionException, BeanCreationException, NoUniqueBeanDefinitionException {
+    public <T> T getBean(Class<T> requiredType) throws NoSuchBeanDefinitionException, BeanCreationException, NoUniqueBeanDefinitionException {
         String[] names = getBeanNamesForType(requiredType);
         if (names.length == 0) {
             throw new NoSuchBeanDefinitionException(requiredType);
@@ -124,7 +121,7 @@ public class DefaultBeanContainer implements BeanContainer {
         throw new NoUniqueBeanDefinitionException(requiredType, names);
     }
 
-    private Object doGetBean(String beanName, @Nullable Class<?> requiredType) throws NoSuchBeanDefinitionException, BeanCreationException {
+    private Object doGetBean(String beanName, Class<?> requiredType) throws NoSuchBeanDefinitionException, BeanCreationException {
         String resolvedName = resolveAlias(beanName);
 
         // 1. 单例缓存命中
@@ -180,19 +177,19 @@ public class DefaultBeanContainer implements BeanContainer {
     }
 
     @Override
-    public boolean containsBean(@NotBlank String beanName) {
+    public boolean containsBean(String beanName) {
         String resolved = resolveAlias(beanName);
         return beanDefinitionMap.containsKey(resolved) || singletonObjects.containsKey(resolved);
     }
 
     @Override
-    public boolean containsBeanDefinition(@NotBlank String beanName) {
+    public boolean containsBeanDefinition(String beanName) {
         String resolved = resolveAlias(beanName);
         return beanDefinitionMap.containsKey(resolved);
     }
 
     @Override
-    public @NotNull BeanDefinition getBeanDefinition(@NotBlank String beanName) throws NoSuchBeanDefinitionException {
+    public BeanDefinition getBeanDefinition(String beanName) throws NoSuchBeanDefinitionException {
         String resolved = resolveAlias(beanName);
         BeanDefinition def = beanDefinitionMap.get(resolved);
         if (def == null) {
@@ -202,7 +199,7 @@ public class DefaultBeanContainer implements BeanContainer {
     }
 
     @Override
-    public @NotNull String[] getBeanDefinitionNames() {
+    public String[] getBeanDefinitionNames() {
         return beanDefinitionMap.keySet().toArray(String[]::new);
     }
 
@@ -212,7 +209,7 @@ public class DefaultBeanContainer implements BeanContainer {
     }
 
     @Override
-    public @NotNull String[] getBeanNamesForType(@NotNull Class<?> type) {
+    public String[] getBeanNamesForType(Class<?> type) {
         List<String> result = new ArrayList<>();
 
         // 1. 遍历 beanDefinitionMap
@@ -233,7 +230,7 @@ public class DefaultBeanContainer implements BeanContainer {
     }
 
     @Override
-    public @NotNull String[] getBeanNamesForAnnotation(@NotNull Class<? extends Annotation> annotationType) {
+    public String[] getBeanNamesForAnnotation(Class<? extends Annotation> annotationType) {
         List<String> result = new ArrayList<>();
 
         // 1. 遍历 beanDefinitionMap
@@ -253,7 +250,7 @@ public class DefaultBeanContainer implements BeanContainer {
     }
 
     @Override
-    public <T> @NotNull Map<String, T> getBeansOfType(@NotNull Class<T> type) throws BeanCreationException {
+    public <T> Map<String, T> getBeansOfType(Class<T> type) throws BeanCreationException {
         Map<String, T> result = new LinkedHashMap<>();
         for (String name : getBeanNamesForType(type)) {
             result.put(name, getBean(name, type));
@@ -262,7 +259,7 @@ public class DefaultBeanContainer implements BeanContainer {
     }
 
     @Override
-    public @NotNull Map<String, Object> getBeansWithAnnotation(@NotNull Class<? extends Annotation> annotationType) throws BeanCreationException {
+    public Map<String, Object> getBeansWithAnnotation(Class<? extends Annotation> annotationType) throws BeanCreationException {
         Map<String, Object> result = new LinkedHashMap<>();
         for (String name : getBeanNamesForAnnotation(annotationType)) {
             result.put(name, getBean(name));
@@ -271,25 +268,25 @@ public class DefaultBeanContainer implements BeanContainer {
     }
 
     @Override
-    public boolean isSingleton(@NotBlank String beanName) throws NoSuchBeanDefinitionException {
+    public boolean isSingleton(String beanName) throws NoSuchBeanDefinitionException {
         String resolved = resolveAlias(beanName);
         return getBeanDefinition(resolved).isSingleton();
     }
 
     @Override
-    public boolean isPrototype(@NotBlank String beanName) throws NoSuchBeanDefinitionException {
+    public boolean isPrototype(String beanName) throws NoSuchBeanDefinitionException {
         String resolved = resolveAlias(beanName);
         return getBeanDefinition(resolved).isPrototype();
     }
 
     @Override
-    public boolean isTypeMatch(@NotBlank String beanName, @NotNull Class<?> targetType) throws NoSuchBeanDefinitionException {
+    public boolean isTypeMatch(String beanName, Class<?> targetType) throws NoSuchBeanDefinitionException {
         Class<?> type = getType(beanName);
         return type != null && targetType.isAssignableFrom(type);
     }
 
     @Override
-    public @NotNull Class<?> getType(@NotBlank String beanName) throws NoSuchBeanDefinitionException {
+    public Class<?> getType(String beanName) throws NoSuchBeanDefinitionException {
         String resolved = resolveAlias(beanName);
         Object singleton = singletonObjects.get(resolved);
         if (singleton != null) {
@@ -302,7 +299,7 @@ public class DefaultBeanContainer implements BeanContainer {
     }
 
     @Override
-    public @NotNull String[] getAliases(@NotBlank String beanName) throws NoSuchBeanDefinitionException {
+    public String[] getAliases(String beanName) throws NoSuchBeanDefinitionException {
         String resolved = resolveAlias(beanName);
 
         if(!beanDefinitionMap.containsKey(resolved) && !singletonObjects.containsKey(resolved)) {
@@ -316,8 +313,8 @@ public class DefaultBeanContainer implements BeanContainer {
     }
 
     @Override
-    public <A extends Annotation> @Nullable A findAnnotationOnBean(@NotBlank String beanName,
-                                                                   @NotNull Class<A> annotationType) throws NoSuchBeanDefinitionException {
+    public <A extends Annotation> A findAnnotationOnBean(String beanName,
+                                                                   Class<A> annotationType) throws NoSuchBeanDefinitionException {
         Class<?> type = getType(beanName);
         if (type == null) {
             throw new NoSuchBeanDefinitionException(beanName);
@@ -326,7 +323,7 @@ public class DefaultBeanContainer implements BeanContainer {
     }
 
     @Override
-    public void addBeanInterceptor(@NotNull BeanInterceptor interceptor) {
+    public void addBeanInterceptor(BeanInterceptor interceptor) {
         creationEngine.addBeanInterceptor(interceptor);
     }
 
@@ -336,7 +333,7 @@ public class DefaultBeanContainer implements BeanContainer {
      * @return 不可变的拦截器列表，永不为 null
      */
     @Override
-    public @NotNull List<BeanInterceptor> getBeanInterceptors() {
+    public List<BeanInterceptor> getBeanInterceptors() {
         return creationEngine.getBeanInterceptors();
     }
 
@@ -362,7 +359,7 @@ public class DefaultBeanContainer implements BeanContainer {
     }
 
     @Override
-    public void destroyBean(@NotBlank String beanName) throws BeanDestructionException {
+    public void destroyBean(String beanName) throws BeanDestructionException {
         String resolved = resolveAlias(beanName);
         creationEngine.destroyBean(resolved);
         singletonObjects.remove(resolved);
@@ -374,7 +371,7 @@ public class DefaultBeanContainer implements BeanContainer {
         singletonObjects.clear();
     }
 
-    private @NotBlank String resolveAlias(@NotBlank String nameOrAlias) {
+    private String resolveAlias(String nameOrAlias) {
         return aliasMap.getOrDefault(nameOrAlias, nameOrAlias);
     }
 }

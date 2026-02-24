@@ -1,9 +1,5 @@
 package org.moper.cap.property.subscriber.view;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.moper.cap.property.event.PropertyOperation;
 import org.moper.cap.property.officer.PropertyOfficer;
 import org.moper.cap.property.subscriber.PropertySelector;
@@ -89,7 +85,7 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
     /**
      * 视图池的名称
      */
-    private final @NotBlank String name;
+    private final  String name;
 
     /**
      * 属性值存储 </br>
@@ -98,13 +94,13 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      *
      * 该映射缓存了所有从 Officer 接收到的属性值。
      */
-    private final @NotNull Map<String, Object> properties;
+    private final  Map<String, Object> properties;
 
     /**
      * 视图池的关闭标志 </br>
      * 使用原子布尔值保证线程安全性 </br>
      */
-    private final @NotNull AtomicBoolean closed;
+    private final  AtomicBoolean closed;
 
     /**
      * 构造函数 </br>
@@ -119,7 +115,7 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      * @param name 视图池的名称，不能为 null 或空字符串
      * @throws IllegalArgumentException 如果 name 为 null 或空
      */
-    public DefaultPropertyViewPool(@NotBlank String name) {
+    public DefaultPropertyViewPool( String name) {
         this.name = name;
         this.properties = new ConcurrentHashMap<>();
         this.closed = new AtomicBoolean(false);
@@ -131,7 +127,7 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      * @return 视图池的名称
      */
     @Override
-    public @NotBlank String name() {
+    public  String name() {
         return name;
     }
 
@@ -143,7 +139,7 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      * @return AnyPropertySelector 实例
      */
     @Override
-    public @NotNull PropertySelector selector() {
+    public  PropertySelector selector() {
         return new AnyPropertySelector();
     }
 
@@ -155,7 +151,7 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      * @param operations 属性管理平台发送的事件清单
      */
     @Override
-    public void dispatch(@NotEmpty PropertyOperation... operations) {
+    public void dispatch( PropertyOperation... operations) {
         if (closed.get()) {
             return;
         }
@@ -174,7 +170,7 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      * @param officer 不在线的属性官管理平台
      */
     @Override
-    public void offOfficer(@NotNull PropertyOfficer officer) {
+    public void offOfficer( PropertyOfficer officer) {
         if (closed.get()) {
             return;
         }
@@ -218,7 +214,7 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      * @return 属性值，如果属性不存在则返回 null
      */
     @Override
-    public @Nullable Object getRawPropertyValue(@NotBlank String key) {
+    public  Object getRawPropertyValue( String key) {
         return properties.get(key);
     }
 
@@ -233,7 +229,7 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      * @return 转换后的属性值，如果属性不存在或类型转换失败则返回 null
      */
     @Override
-    public <T> @Nullable T getPropertyValue(@NotBlank String key, @NotNull Class<T> type) {
+    public <T>  T getPropertyValue( String key,  Class<T> type) {
         Object value = properties.get(key);
         if (value == null) {
             return null;
@@ -254,7 +250,7 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      * @return 转换后的属性值，如果属性不存在或类型转换失败则返回 defaultValue
      */
     @Override
-    public <T> @NotNull T getPropertyValueOrDefault(@NotBlank String key, @NotNull Class<T> type, @NotNull T defaultValue) {
+    public <T>  T getPropertyValueOrDefault( String key,  Class<T> type,  T defaultValue) {
         Object value = properties.get(key);
         if (value == null) {
             return defaultValue;
@@ -275,7 +271,7 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      * @return 包含属性值的 Optional，如果属性不存在或类型转换失败则返回 Optional.empty()
      */
     @Override
-    public <T> @NotNull Optional<T> getPropertyValueOptional(@NotBlank String key, @NotNull Class<T> type) {
+    public <T>  Optional<T> getPropertyValueOptional( String key,  Class<T> type) {
         Object value = properties.get(key);
         if (value == null) {
             return Optional.empty();
@@ -292,7 +288,7 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      * @return 如果属性存在则返回 true，否则返回 false
      */
     @Override
-    public boolean containsProperty(@NotBlank String key) {
+    public boolean containsProperty( String key) {
         return properties.containsKey(key);
     }
 
@@ -302,7 +298,7 @@ public final class DefaultPropertyViewPool implements PropertyViewPool {
      * @return 属性键集合的不可修改副本
      */
     @Override
-    public @NotNull Set<String> keySet() {
+    public  Set<String> keySet() {
         return Collections.unmodifiableSet(properties.keySet());
     }
 

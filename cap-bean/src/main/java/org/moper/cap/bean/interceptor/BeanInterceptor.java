@@ -1,8 +1,5 @@
 package org.moper.cap.bean.interceptor;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.exception.BeanException;
 
@@ -56,8 +53,8 @@ public interface BeanInterceptor {
      * @return 短路用的 Bean 实例；返回 null 则继续正常流程
      * @throws BeanException 处理失败
      */
-    default @Nullable Object beforeInstantiation(
-            @NotNull BeanDefinition definition) throws BeanException {
+    default Object beforeInstantiation(
+            BeanDefinition definition) throws BeanException {
         return null;
     }
 
@@ -69,9 +66,9 @@ public interface BeanInterceptor {
      * @return 要继续使用的 Bean 实例，不能为 null
      * @throws BeanException 处理失败
      */
-    default @NotNull Object afterInstantiation(
-            @NotNull Object bean,
-            @NotNull BeanDefinition definition) throws BeanException {
+    default Object afterInstantiation(
+            Object bean,
+            BeanDefinition definition) throws BeanException {
         return bean;
     }
 
@@ -83,9 +80,9 @@ public interface BeanInterceptor {
      * @return 要继续使用的 Bean 实例，不能为 null
      * @throws BeanException 处理失败
      */
-    default @NotNull Object afterPropertyInjection(
-            @NotNull Object bean,
-            @NotNull BeanDefinition definition) throws BeanException {
+    default Object afterPropertyInjection(
+            Object bean,
+            BeanDefinition definition) throws BeanException {
         return bean;
     }
 
@@ -98,10 +95,10 @@ public interface BeanInterceptor {
      * @return 要继续使用的 Bean 实例，不能为 null
      * @throws BeanException 处理失败
      */
-    default @NotNull Object beforeInitialization(
-            @NotNull Object bean,
-            @NotBlank String beanName,
-            @NotNull BeanDefinition definition) throws BeanException {
+    default Object beforeInitialization(
+            Object bean,
+            String beanName,
+            BeanDefinition definition) throws BeanException {
         return bean;
     }
 
@@ -116,10 +113,10 @@ public interface BeanInterceptor {
      * @return 最终暴露给外部的 Bean 实例（可以是代理），不能为 null
      * @throws BeanException 处理失败
      */
-    default @NotNull Object afterInitialization(
-            @NotNull Object bean,
-            @NotBlank String beanName,
-            @NotNull BeanDefinition definition) throws BeanException {
+    default Object afterInitialization(
+            Object bean,
+            String beanName,
+            BeanDefinition definition) throws BeanException {
         return bean;
     }
 

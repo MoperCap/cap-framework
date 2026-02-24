@@ -1,7 +1,5 @@
 package org.moper.cap.property.result;
 
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import org.moper.cap.property.event.PublisherManifest;
 import org.moper.cap.property.officer.PropertyOfficer;
 
@@ -9,12 +7,12 @@ import java.time.Instant;
 import java.util.List;
 
 public record PublisherManifestResult(
-        @NotNull PropertyOfficer officer,
-        @NotNull PublisherManifest manifest,
-        @NotEmpty List<PropertyOperationResult> operationResults,
-        @NotNull Status status,
-        @NotNull String description,
-        @NotNull Instant timestamp
+         PropertyOfficer officer,
+         PublisherManifest manifest,
+         List<PropertyOperationResult> operationResults,
+         Status status,
+         String description,
+         Instant timestamp
 ) {
 
     /**
