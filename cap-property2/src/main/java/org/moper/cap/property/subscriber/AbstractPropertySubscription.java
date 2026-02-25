@@ -8,9 +8,9 @@ import java.util.Set;
 public abstract class AbstractPropertySubscription implements PropertySubscription {
     private final PropertySelector selector;
 
-    private final Collection<PropertySubscriber> subscribers;
+    private final Collection<PropertySubscriber<?>> subscribers;
 
-    protected AbstractPropertySubscription(Collection<PropertySubscriber> subscribers) {
+    protected AbstractPropertySubscription(Collection<PropertySubscriber<?>> subscribers) {
         if(subscribers == null || subscribers.isEmpty()) {
             throw new IllegalArgumentException("PropertySubscription subscribers must not be null or empty");
         }
@@ -23,7 +23,7 @@ public abstract class AbstractPropertySubscription implements PropertySubscripti
         this.subscribers = subscribers;
     }
 
-    protected AbstractPropertySubscription(PropertySelector selector, Collection<PropertySubscriber> subscribers) {
+    protected AbstractPropertySubscription(PropertySelector selector, Collection<PropertySubscriber<?>> subscribers) {
         if(selector == null) {
             throw new IllegalArgumentException("PropertySubscription selector must not be null");
         }

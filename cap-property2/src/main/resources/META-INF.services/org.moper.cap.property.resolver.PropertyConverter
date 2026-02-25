@@ -1,0 +1,14 @@
+org.moper.cap.property.resolver.converters.StringToIntegerConverter
+org.moper.cap.property.resolver.converters.StringToLongConverter
+org.moper.cap.property.resolver.converters.StringToBooleanConverter
+org.moper.cap.property.resolver.converters.StringToDoubleConverter
+org.moper.cap.property.resolver.converters.StringToFloatConverter
+org.moper.cap.property.resolver.converters.StringToShortConverter
+org.moper.cap.property.resolver.converters.StringToByteConverter
+org.moper.cap.property.resolver.converters.IntegerToStringConverter
+org.moper.cap.property.resolver.converters.LongToStringConverter
+org.moper.cap.property.resolver.converters.DoubleToStringConverter
+org.moper.cap.property.resolver.converters.BooleanToStringConverter
+org.moper.cap.property.resolver.converters.FloatToStringConverter
+org.moper.cap.property.resolver.converters.ShortToStringConverter
+org.moper.cap.property.resolver.converters.ByteToStringConverter

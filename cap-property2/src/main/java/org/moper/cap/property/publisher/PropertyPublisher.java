@@ -1,11 +1,12 @@
 package org.moper.cap.property.publisher;
 
+import org.moper.cap.core.context.ResourceContext;
 import org.moper.cap.property.event.PropertyManifest;
 import org.moper.cap.property.event.PropertyOperation;
 
 import java.util.List;
 
-public interface PropertyPublisher {
+public interface PropertyPublisher extends ResourceContext {
 
     String name();
 

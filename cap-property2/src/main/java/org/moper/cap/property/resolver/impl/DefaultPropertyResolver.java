@@ -1,55 +1,64 @@
 package org.moper.cap.property.resolver.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.property.exception.PropertyTypeMismatchException;
 import org.moper.cap.property.resolver.PropertyConverter;
 import org.moper.cap.property.resolver.PropertyResolver;
-import org.moper.cap.property.resolver.converters.BasicConverters;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 public class DefaultPropertyResolver implements PropertyResolver {
-
     private final Map<ConverterKey, PropertyConverter<?, ?>> converters;
 
-    private DefaultPropertyResolver(Map<ConverterKey, PropertyConverter<?, ?>> converters) {
-        this.converters = converters;
+    public DefaultPropertyResolver() {
+        Map<ConverterKey, PropertyConverter<?, ?>> map = new ConcurrentHashMap<>();
+
+        // ServiceLoader发现所有cap-property2默认+用户自定义
+        @SuppressWarnings("rawtypes")
+        ServiceLoader<PropertyConverter> loader = ServiceLoader.load(PropertyConverter.class);
+        for (PropertyConverter<?, ?> c : loader) {
+            ConverterKey key = new ConverterKey(c.getSourceType(), c.getTargetType());
+            PropertyConverter<?, ?> prev = map.get(key);
+            if(prev == null){
+                log.debug("注册类型转换器 [{} -> {}]: {} (priority={})", key.source, key.target, c.getClass().getName(), c.getOrder());
+                map.put(key, c);
+            }else if(c.getOrder() < prev.getOrder()){
+                log.debug("覆盖类型转换器 [{} -> {}]: {} <== {} ({} < {})",
+                        key.source, key.target, prev.getClass().getName(), c.getClass().getName(), prev.getOrder(), c.getOrder());
+                map.put(key, c);
+            }else {
+                log.debug("忽略较低优先级的类型转换器 [{} -> {}]: {} (priority={}), 被 {} (priority={}) 覆盖",
+                        key.source, key.target, c.getClass().getName(), c.getOrder(), prev.getClass().getName(), prev.getOrder());
+            }
+        }
+        this.converters = Collections.unmodifiableMap(map);
+        log.info("DefaultPropertyResolver 共注册 {} 种类型转换器", converters.size());
     }
 
-    /**
-     * 类型安全地将对象value转换为目标类型targetType。
-     * 找不到合适转换器或转换失败时抛出异常。
-     *
-     * @param value
-     * @param targetType
-     */
-    @SuppressWarnings("unchecked")
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T resolve(Object value, Class<T> targetType) {
         if (value == null) return null;
         if (targetType.isInstance(value)) return (T) value;
-
         @SuppressWarnings("rawtypes")
         PropertyConverter converter = converters.get(new ConverterKey(value.getClass(), targetType));
         if (converter != null) {
             try {
                 return (T) converter.convert(value);
             } catch (Exception e) {
-                throw new PropertyTypeMismatchException("PropertyConverter failed to cast: " + value.getClass().getName() + " -> " + targetType.getName(), e);
+                log.warn("类型转换失败 [{} -> {}]，异常：{}", value.getClass().getName(), targetType.getName(), e.getMessage(), e);
+                throw new PropertyTypeMismatchException("类型转换失败: " + value.getClass().getName() + " -> " + targetType.getName(), e);
             }
         }
         if (targetType.isEnum()) {
             return parseEnum(value, targetType);
         }
-        throw new PropertyTypeMismatchException("PropertyConverter not found: " + value.getClass().getName() + " -> " + targetType.getName());
+        log.warn("找不到类型转换器 [{} -> {}]，值: {}", value.getClass().getName(), targetType.getName(), value);
+        throw new PropertyTypeMismatchException("未找到类型转换器: " + value.getClass().getName() + " -> " + targetType.getName());
     }
 
-    /**
-     * 判定是否存在从sourceType到targetType的转换器。
-     *
-     * @param sourceType
-     * @param targetType
-     */
     @Override
     public boolean hasConverter(Class<?> sourceType, Class<?> targetType) {
         return converters.containsKey(new ConverterKey(sourceType, targetType));
@@ -60,67 +69,9 @@ public class DefaultPropertyResolver implements PropertyResolver {
         if (value instanceof String s) {
             return (T) Enum.valueOf((Class<Enum>) targetType, s.trim());
         }
+        log.warn("枚举转换目前仅支持字符串类型，当前值类型: {}", value.getClass().getName());
         throw new IllegalArgumentException("枚举转换仅支持字符串类型");
     }
 
-    /**
-     * 内部记录类，用于唯一标识类型转换器的源类型和目标类型组合。
-     *
-     * @param sourceType 转换器的输入类型
-     * @param targetType 转换器的输出类型
-     */
-    private record ConverterKey(Class<?> sourceType, Class<?> targetType) {}
-
-    public static class Builder{
-        private final Map<ConverterKey, PropertyConverter<?, ?>> converters = new ConcurrentHashMap<>();
-        private boolean enableBasicConverters = true;
-        private boolean enableSPI = false;
-
-        public Builder enableBasicConverters() {
-            this.enableBasicConverters = true;
-            return this;
-        }
-
-        public Builder enableBasicConverters(boolean enable) {
-            this.enableBasicConverters = enable;
-            return this;
-        }
-
-        public Builder enableSPI() {
-            this.enableSPI = true;
-            return this;
-        }
-
-        public Builder enableSPI(boolean enable) {
-            this.enableSPI = enable;
-            return this;
-        }
-
-        public Builder addConverter(PropertyConverter<?, ?> converter) {
-            converters.put(new ConverterKey(converter.getSourceType(), converter.getTargetType()), converter);
-            return this;
-        }
-
-        public DefaultPropertyResolver build() {
-            if(enableSPI){
-                @SuppressWarnings("rawtypes")
-                ServiceLoader<PropertyConverter> loader = ServiceLoader.load(PropertyConverter.class);
-                for(PropertyConverter<?, ?> converter : loader) {
-                    ConverterKey key = new ConverterKey(converter.getSourceType(), converter.getTargetType());
-                    converters.putIfAbsent(key, converter);
-                }
-            }
-
-            if(enableBasicConverters){
-                List<PropertyConverter<?, ?>> basicConverters = BasicConverters.getAllBasicConverters();
-                for (PropertyConverter<?, ?> converter : basicConverters) {
-                    ConverterKey key = new ConverterKey(converter.getSourceType(), converter.getTargetType());
-                    converters.putIfAbsent(key, converter);
-                }
-            }
-
-            return new DefaultPropertyResolver(Collections.unmodifiableMap(converters));
-        }
-
-    }
+    private record ConverterKey(Class<?> source, Class<?> target) {}
 }

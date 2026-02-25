@@ -13,6 +13,11 @@
 
     <dependencies>
 
+        <dependency>
+            <groupId>org.moper.cap</groupId>
+            <artifactId>cap-core</artifactId>
+        </dependency>
+
         <!-- 日志 -->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -29,6 +34,11 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
         </dependency>
 
     </dependencies>
