@@ -1,90 +1,100 @@
 package org.moper.cap.property.officer;
 
-import org.moper.cap.property.event.PublisherManifest;
+import org.moper.cap.core.context.ResourceContext;
+import org.moper.cap.property.event.PropertyManifest;
 import org.moper.cap.property.publisher.PropertyPublisher;
-import org.moper.cap.property.result.PublisherManifestResult;
 import org.moper.cap.property.subscriber.PropertySubscription;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.Collection;
+import java.util.function.Supplier;
 
 /**
- * 属性官管理平台接口 </br>
- * 属性官管理平台负责接收属性发布者发布的事件清单，并根据事件清单更新内部状态 </br>
- * 属性官管理平台还负责通知相关的订阅者和视图池进行相应的更新 </br>
- * 属性管理平台的生命周期由用户自行管理，用户可以根据需要创建和销毁属性管理平台 </br>
+ * 属性管理平台 </br>
+ *
+ * 负责管理属性发布者与属性订阅者客户端，提供获取（创建）、删除等功能。 </br>
  */
-public interface PropertyOfficer{
+public interface PropertyOfficer extends PropertyView, ResourceContext {
 
     /**
-     * 获取当前属性管理平台的名称
+     * 以同步的方式接收来自属性发布者发送的属性操作清单
      *
-     * @return 当前属性管理平台的名称
+     * @param manifest 属性操作清单，不可为null
      */
-     String name();
+    void receive(PropertyManifest manifest);
 
     /**
-     * 获取当前属性管理平台的版本号
+     * 以异步的方式接收来自属性发布者发送的属性操作清单
      *
-     * @return 当前属性管理平台的版本号
+     * @param manifest 属性操作清单，不可为null
      */
-    int currentVersion();
+    void receiveAsync(PropertyManifest manifest);
 
     /**
-     * 已同步的方式接收Publisher发布的事件清单 </br>
-     * 属性管理平台将根据事件清单更新内部状态，并通知相关Subscriber和ViewPool进行相应的更新 </br>
+     * 获取指定名的属性发布者 </br>
      *
-     * @param manifest 事件清单
-     * @return 关于事件清单的处理结果
+     * @param name 属性发布者名称，不可为null或blank
+     * @return 若存在指定的属性发布者则返回；否则创建默认的属性发布者并返回
      */
-     PublisherManifestResult receive( PublisherManifest manifest);
+    PropertyPublisher getPublisher(String name);
 
     /**
-     * 以异步的方式接收Publisher发布的事件清单 </br>
-     * 属性管理平台将根据事件清单更新内部状态，并通知相关Subscriber和ViewPool进行相应的更新 </br>
+     * 获取指定名的属性发布者 </br>
      *
-     * @param manifest 事件清单
-     * @return 关于事件清单的处理结果
+     * @param name 属性发布者名称，不可为null或blank
+     * @param supplier 属性发布者获取方法，不能为null，且返回的属性发布者也不能为null
+     * @return 若存在指定的属性发布者则返回；否则根据指定的属性发布者获取方法创建并返回
      */
-     CompletableFuture<PublisherManifestResult> receiveAsync( PublisherManifest manifest);
+    PropertyPublisher getPublisher(String name, Supplier<PropertyPublisher> supplier);
 
     /**
-     * 当属性发布者不在线时，属性管理平台将接收到通知，并进行相应的处理 </br>
-     * 处理可能包括清理相关的状态、通知相关的订阅者和视图池等 </br>
-     * 注意：属性发布者被销毁后，属性管理平台将不再接收该发布者的事件清单 </br>
+     * 检查是否存在指定名的属性发布者
      *
-     *
-     * @param publisher 被销毁的属性发布者
+     * @param name 属性发布者名称，不可为null或blank
+     * @return 若存在则返回true；否则返回false
      */
-    void offPublisher( PropertyPublisher publisher);
+    boolean containsPublisher(String name);
 
     /**
-     * 订阅属性更新事件 </br>
-     * 当属性管理平台接收到新的事件清单并更新状态后，将通知所有相关的订阅者进行相应的处理 </br>
+     * 销毁指定名的属性发布者 </br>
      *
-     * @param subscription 订阅者客户端
+     * @param name 属性发布者名称，不可为null或blank
      */
-    void subscribe( PropertySubscription subscription);
+    void destroyPublisher(String name);
 
     /**
-     * 取消订阅属性更新事件 </br>
-     * 取消订阅后，属性管理平台将不再通知该订阅者相关属性的更新事件 </br>
+     * 获取所有的属性发布者的集合
      *
-     * @param subscription 取消订阅的订阅者客户端
+     * @return 属性发布者集合。若不存在任何属性发布者，则返回一个空集合
      */
-    void unsubscribe( PropertySubscription subscription);
+    Collection<PropertyPublisher> getAllPublishers();
 
     /**
-     * 判断当前 Officer 是否已关闭
+     * 根据指定的属性订阅者客户端生成方法获取对应的客户端
      *
-     * @return 如果 Officer 已关闭则返回 true，否则返回 false
+     * @param supplier 属性订阅者客户端生成方法，不能为null，且返回的属性订阅客户端也不能为null
+     * @return 属性订阅者客户端生成方法生成的客户端
      */
-    boolean isClosed();
+    PropertySubscription createSubscription(Supplier<PropertySubscription> supplier);
 
     /**
-     * 关闭属性管理平台 </br>
+     * 检查是否存在指定名的属性订阅客户端
      *
-     * 关闭后，Officer 将不再接收新的事件清单和订阅请求。
-     * 该方法是幂等的，可以被重复调用。
+     * @param subscription 属性订阅客户端，不能为null
+     * @return 若存在则返回true；否则返回false
      */
-    void close();
+    boolean containsSubscription(PropertySubscription subscription);
+
+    /**
+     * 销毁指定的属性订阅客户端
+     *
+     * @param subscription 属性订阅客户端，不能为null
+     */
+    void destroySubscription(PropertySubscription subscription);
+
+    /**
+     * 获取所有的属性订阅客户端的集合
+     *
+     * @return 属性订阅客户端集合。若不存在任何属性订阅客户端，则返回一个空集合
+     */
+    Collection<PropertySubscription> getAllSubscriptions();
 }

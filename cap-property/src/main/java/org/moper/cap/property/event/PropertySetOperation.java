@@ -1,19 +1,28 @@
 package org.moper.cap.property.event;
 
-import java.util.Objects;
-
+/**
+ * 属性设置操作 </br>
+ * 即添加、更新操作的整合
+ *
+ * @param key 属性键，不能为null或blank
+ * @param value 属性值，可以为null
+ */
 public record PropertySetOperation(
-         String key,
-         Object value
+        String key,
+        Object value
 ) implements PropertyOperation {
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof PropertySetOperation that)) return false;
-        return Objects.equals(key, that.key) && Objects.equals(value, that.value);
+
+    public PropertySetOperation {
+        if(key == null || key.isBlank()){
+            throw new IllegalArgumentException("PropertySetOperation Key cannot be null or blank");
+        }
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(key, value);
+    public String toString() {
+        return "PropertySetOperation{" +
+                "key='" + key + '\'' +
+                ", value=" + value.toString() +
+                '}';
     }
 }

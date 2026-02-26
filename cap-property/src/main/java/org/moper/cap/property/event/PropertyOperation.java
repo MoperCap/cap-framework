@@ -1,4 +1,9 @@
 package org.moper.cap.property.event;
 
-public sealed interface PropertyOperation extends PropertyEvent permits PropertySetOperation, PropertyRemoveOperation{
+import java.io.Serializable;
+
+/**
+ * 属性操作相关基接口
+ */
+public sealed interface PropertyOperation extends Serializable permits PropertySetOperation, PropertyRemoveOperation {
 }

@@ -1,19 +1,24 @@
 package org.moper.cap.property.event;
 
-import java.util.Objects;
-
+/**
+ * 属性移除操作
+ *
+ * @param key 属性键，不能为null或blank
+ */
 public record PropertyRemoveOperation(
-         String key
+        String key
 ) implements PropertyOperation {
 
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof PropertyRemoveOperation that)) return false;
-        return Objects.equals(key, that.key);
+    public PropertyRemoveOperation {
+        if(key == null || key.isBlank()) {
+            throw new IllegalArgumentException("PropertyRemoveOperation Key cannot be null or blank");
+        }
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hashCode(key);
+    public String toString() {
+        return "PropertyRemoveOperation{" +
+                "key='" + key + '\'' +
+                '}';
     }
 }

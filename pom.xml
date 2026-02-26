@@ -12,12 +12,11 @@
         <module>cap-boot</module>
         <module>cap-web</module>
         <module>cap-data</module>
-        <module>cap-property</module>
         <module>cap-bean</module>
         <module>cap-context</module>
         <module>cap-aop</module>
         <module>cap-example</module>
-        <module>cap-property2</module>
+        <module>cap-property</module>
         <module>cap-core</module>
     </modules>
 
@@ -35,7 +34,6 @@
         <classgraph.version>4.8.172</classgraph.version>
         <jackson.version>2.16.1</jackson.version>
         <snakeyaml.version>2.2</snakeyaml.version>
-
     </properties>
 
     <dependencyManagement>
@@ -52,12 +50,6 @@
             <dependency>
                 <groupId>org.moper.cap</groupId>
                 <artifactId>cap-property</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.moper.cap</groupId>
-                <artifactId>cap-property2</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
