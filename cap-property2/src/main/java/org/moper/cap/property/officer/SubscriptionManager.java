@@ -7,13 +7,11 @@ import java.util.function.Supplier;
 
 public interface SubscriptionManager {
 
-    PropertySubscription createSubscription(String name);
+    PropertySubscription createSubscription(Supplier<PropertySubscription> supplier);
 
-    PropertySubscription createSubscription(String name, Supplier<PropertySubscription> supplier);
+    boolean containsSubscription(PropertySubscription subscription);
 
-    boolean containsSubscription(String name);
-
-    void destroySubscription(String name);
+    void destroySubscription(PropertySubscription subscription);
 
     Collection<PropertySubscription> getAllSubscriptions();
 }
