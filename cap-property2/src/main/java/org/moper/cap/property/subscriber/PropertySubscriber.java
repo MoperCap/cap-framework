@@ -9,7 +9,7 @@ public interface PropertySubscriber<T> {
 
     PropertySelector selector();
 
-    Class<?> getSubscribeType();
+    Class<T> getSubscribeType();
 
     void onSet(T value);
 

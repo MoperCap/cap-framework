@@ -1,4 +1,4 @@
-package org.moper.cap.property.subscriber.selector;
+package org.moper.cap.property.subscriber.impl;
 
 import org.moper.cap.property.subscriber.PropertySelector;
 

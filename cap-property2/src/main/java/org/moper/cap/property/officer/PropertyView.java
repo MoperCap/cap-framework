@@ -15,5 +15,5 @@ public interface PropertyView {
 
     boolean containsProperty( String key);
 
-    Set<String> keySet();
+    Set<String> getAllPropertyKey();
 }

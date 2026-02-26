@@ -40,6 +40,10 @@ public class DefaultPropertyResolver implements PropertyResolver {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T resolve(Object value, Class<T> targetType) {
+        if(targetType == null) {
+            throw new IllegalArgumentException("Target type cannot be null");
+        }
+
         if (value == null) return null;
         if (targetType.isInstance(value)) return (T) value;
         @SuppressWarnings("rawtypes")
