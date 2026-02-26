@@ -7,6 +7,7 @@ import org.moper.cap.property.event.PropertyOperation;
 import org.moper.cap.property.event.PropertyRemoveOperation;
 import org.moper.cap.property.event.PropertySetOperation;
 import org.moper.cap.property.exception.PropertyConflictException;
+import org.moper.cap.property.exception.PropertyNotFoundException;
 import org.moper.cap.property.exception.PropertyValidationException;
 import org.moper.cap.property.officer.PropertyOfficer;
 import org.moper.cap.property.publisher.PropertyPublisher;
@@ -22,6 +23,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -60,53 +62,25 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
         String operator = manifest.operator();
         log.info("PropertyOfficer Received property manifest, operator: {}, operations: {}", operator, manifest.operations().size());
 
-        for (PropertyOperation operation : manifest.operations()) {
-            switch (operation) {
-                case PropertySetOperation(String propertyKey, Object newValue) -> {
-                    PropertyDefinition oldDef = core.get(propertyKey);
-                    if (oldDef != null && !oldDef.publisher().equals(operator)) {
-                        log.warn("Property [{}] already exists and owned by [{}], forbidden to update by [{}]", propertyKey, oldDef.publisher(), operator);
-                        throw new PropertyConflictException("Property key " + propertyKey + " already exists and is owned by publisher " + oldDef.publisher());
-                    }
-                    PropertyDefinition newDef = oldDef.withValue(newValue);
-                    core.put(propertyKey, newDef);
-                    log.info("Property [{}] set/updated by [{}], newValue: {}", propertyKey, operator, newValue);
-
-                    for (PropertySubscription subscription : subscriptions) {
-                        for (@SuppressWarnings("rawtypes") PropertySubscriber subscriber : subscription) {
-                            if (!subscriber.selector().matches(propertyKey)) continue;
-                            subscriber.onSet(resolver.resolve(newValue, subscriber.getSubscribeType()));
-                            log.debug("Subscriber [{}] notified of property [{}] set", subscriber, propertyKey);
-                        }
-                    }
-                }
-
-                case PropertyRemoveOperation(String propertyKey) -> {
-                    PropertyDefinition oldDef = core.get(propertyKey);
-                    if (oldDef != null && !oldDef.publisher().equals(operator)) {
-                        log.warn("Property [{}] already exists and owned by [{}], forbidden to remove by [{}]", propertyKey, oldDef.publisher(), operator);
-                        throw new PropertyConflictException("Property key " + propertyKey + " already exists and is owned by publisher " + oldDef.publisher());
-                    }
-                    core.remove(propertyKey);
-                    log.info("Property [{}] removed by [{}]", propertyKey, operator);
-                    for (PropertySubscription subscription : subscriptions) {
-                        for (@SuppressWarnings("rawtypes") PropertySubscriber subscriber : subscription) {
-                            if (!subscriber.selector().matches(propertyKey)) continue;
-                            subscriber.onRemoved();
-                            log.debug("Subscriber [{}] notified of property [{}] remove", subscriber, propertyKey);
-                        }
-                    }
-                }
-
-            }
-        }
+        processAllPropertyOperations(operator, manifest.operations());
         log.info("Property manifest from [{}] processed, total subscriptions: {}", operator, subscriptions.size());
     }
 
     @Override
     public void receiveAsync(PropertyManifest manifest) {
+        checkClosed();
+        checkManifest(manifest);
+
+        String operator = manifest.operator();
+        log.info("PropertyOfficer Received property manifest, operator: {}, operations: {}", operator, manifest.operations().size());
+
         executorService.submit(() -> {
-            receive(manifest);
+            try {
+                processAllPropertyOperations(operator, manifest.operations());
+                log.info("Property manifest from [{}] processed asynchronously, total subscriptions: {}", operator, subscriptions.size());
+            } catch (Exception e) {
+                log.error("Failed to process property manifest from [{}] asynchronously", operator, e);
+            }
         });
     }
 
@@ -287,7 +261,6 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
                 log.warn("Failed to close publisher {}", publisher.name(), e);
             }
         }
-        publishers.clear();
 
         for(PropertySubscription subscription : subscriptions) {
             try {
@@ -296,7 +269,6 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
                 log.warn("Failed to close subscription {}", subscription, e);
             }
         }
-        subscriptions.clear();
 
         executorService.shutdown();
 
@@ -316,6 +288,63 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
 
         if (!publishers.containsKey(manifest.operator())) {
             throw new PropertyValidationException("Publisher {} does not exist", manifest.operator());
+        }
+    }
+
+    private void processAllPropertyOperations(String operator, List<PropertyOperation> operations) {
+        for (PropertyOperation operation : operations) {
+            switch (operation) {
+                case PropertySetOperation(String propertyKey, Object newValue) -> processPropertySetOperation(operator, propertyKey, newValue);
+                case PropertyRemoveOperation(String propertyKey) -> processPropertyRemoveOperation(operator, propertyKey);
+            }
+        }
+    }
+
+    private void processPropertySetOperation(String operator, String propertyKey, Object newValue) {
+        PropertyDefinition oldDef = core.get(propertyKey);
+        if(oldDef != null && !oldDef.publisher().equals(operator)){
+            log.warn("Property [{}] already exists and owned by [{}], forbidden to update by [{}]", propertyKey, oldDef.publisher(), operator);
+            throw new PropertyConflictException("Property key " + propertyKey + " already exists and is owned by publisher " + oldDef.publisher());
+        }
+
+        PropertyDefinition newDef = oldDef == null ? PropertyDefinition.of(propertyKey, newValue, operator) : oldDef.withValue(newValue);
+        core.put(propertyKey, newDef);
+        log.info("Property [{}] set by [{}], newValue: {}", propertyKey, operator, newValue);
+        notifyAllSubscriberSetOperation(propertyKey, newValue);
+    }
+
+    private void processPropertyRemoveOperation(String operator, String propertyKey) {
+        PropertyDefinition oldDef = core.get(propertyKey);
+        if (oldDef == null) {
+            log.warn("Property [{}] does not exist, cannot be removed by [{}]", propertyKey, operator);
+            throw new PropertyNotFoundException("Property key " + propertyKey + " does not exist");
+        } else if (!oldDef.publisher().equals(operator)) {
+            log.warn("Property [{}] already exists and owned by [{}], forbidden to remove by [{}]", propertyKey, oldDef.publisher(), operator);
+            throw new PropertyConflictException("Property key " + propertyKey + " already exists and is owned by publisher " + oldDef.publisher());
+        } else {
+            core.remove(propertyKey);
+            log.info("Property [{}] removed by [{}]", propertyKey, operator);
+            notifyAllSubscriberRemoveOperation(propertyKey);
+        }
+    }
+
+    private void notifyAllSubscriberSetOperation(String propertyKey, Object newValue) {
+        for (PropertySubscription subscription : subscriptions) {
+            for (@SuppressWarnings("rawtypes") PropertySubscriber subscriber : subscription) {
+                if (!subscriber.selector().matches(propertyKey)) continue;
+                subscriber.onSet(resolver.resolve(newValue, subscriber.getSubscribeType()));
+                log.debug("Subscriber [{}] notified of property [{}] set", subscriber, propertyKey);
+            }
+        }
+    }
+
+    private void notifyAllSubscriberRemoveOperation(String propertyKey) {
+        for (PropertySubscription subscription : subscriptions) {
+            for (@SuppressWarnings("rawtypes") PropertySubscriber subscriber : subscription) {
+                if (!subscriber.selector().matches(propertyKey)) continue;
+                subscriber.onRemoved();
+                log.debug("Subscriber [{}] notified of property [{}] remove", subscriber, propertyKey);
+            }
         }
     }
 }

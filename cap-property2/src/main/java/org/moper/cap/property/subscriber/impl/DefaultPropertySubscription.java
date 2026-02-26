@@ -46,6 +46,5 @@ public final class DefaultPropertySubscription implements PropertySubscription {
         for(PropertySubscriber<?> subscriber : subscribers) {
             subscriber.onRemoved();
         }
-        subscribers.clear();
     }
 }

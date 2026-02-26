@@ -15,7 +15,7 @@ public class DefaultPropertyResolver implements PropertyResolver {
     public DefaultPropertyResolver() {
         Map<ConverterKey, PropertyConverter<?, ?>> map = new ConcurrentHashMap<>();
 
-        // ServiceLoader发现所有cap-property2默认+用户自定义
+        // ServiceLoader发现所有cap-property默认+用户自定义
         @SuppressWarnings("rawtypes")
         ServiceLoader<PropertyConverter> loader = ServiceLoader.load(PropertyConverter.class);
         for (PropertyConverter<?, ?> c : loader) {
