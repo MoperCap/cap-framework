@@ -8,12 +8,12 @@ public final class ExactPropertySelector implements PropertySelector {
 
     private final Set<String> keys;
 
-    public ExactPropertySelector( Set<String> keys) {
+    public ExactPropertySelector(Set<String> keys) {
         this.keys = keys;
     }
 
     @Override
-    public boolean matches( String key) {
+    public boolean matches(String key) {
         return keys.contains(key);
     }
 

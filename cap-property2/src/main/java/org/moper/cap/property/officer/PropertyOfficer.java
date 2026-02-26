@@ -19,7 +19,9 @@ public interface PropertyOfficer extends PropertyView, ResourceContext {
 
     void receiveAsync(PropertyManifest manifest);
 
-    PropertyPublisher registerPublisher(String name, Supplier<PropertyPublisher> supplier);
+    PropertyPublisher getPublisher(String name);
+
+    PropertyPublisher getPublisher(String name, Supplier<PropertyPublisher> supplier);
 
     boolean containsPublisher(String name);
 
@@ -27,11 +29,7 @@ public interface PropertyOfficer extends PropertyView, ResourceContext {
 
     Collection<? extends PropertyPublisher> getAllPublishers();
 
-    PropertySubscription registerSubscription(String name, Supplier<PropertySubscription> supplier);
+    void subscribe(PropertySubscription subscription);
 
-    boolean containsSubscription(String name);
-
-    void destroySubscription(String name);
-
-    Collection<? extends PropertySubscription> getAllSubscriptions();
+    void unsubscribe(PropertySubscription subscription);
 }

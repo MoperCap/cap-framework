@@ -1,17 +1,30 @@
 package org.moper.cap.property.subscriber;
 
+import org.moper.cap.property.subscriber.selector.SinglePropertySelector;
+
 public abstract class AbstractPropertySubscriber<T> implements PropertySubscriber<T> {
+
     private final String propertyKey;
 
-    public AbstractPropertySubscriber(String propertyKey) {
-        if(propertyKey == null || propertyKey.isBlank()){
-            throw new IllegalArgumentException("PropertySubscriber Key cannot be null or blank");
-        }
+    private final Class<T> subscribeType;
+
+    private final PropertySelector selector;
+
+    public AbstractPropertySubscriber(String propertyKey, Class<T> subscribeType) {
         this.propertyKey = propertyKey;
+        this.subscribeType = subscribeType;
+
+        this.selector = new SinglePropertySelector(propertyKey);
     }
 
     @Override
-    public String getPropertyKey() {
-        return propertyKey;
+    public PropertySelector selector() {
+        return selector;
     }
+
+    @Override
+    public Class<?> getSubscribeType() {
+        return subscribeType;
+    }
+
 }
