@@ -19,6 +19,6 @@ public class AutowiredInitializer extends Initializer {
     @Override
     public void initialize(BootstrapContext context) throws ContextException {
         context.getBeanContainer().addBeanInterceptor(
-                new AutowiredBeanInterceptor(context.getBeanContainer(), context.getEnvironment()));
+                new AutowiredBeanInterceptor(context.getBeanContainer(), context.getPropertyOfficer()));
     }
 }

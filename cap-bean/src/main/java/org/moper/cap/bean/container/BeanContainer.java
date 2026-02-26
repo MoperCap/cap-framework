@@ -1,7 +1,5 @@
 package org.moper.cap.bean.container;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import org.moper.cap.bean.exception.BeanCreationException;
 import org.moper.cap.bean.exception.BeanDestructionException;
 import org.moper.cap.bean.interceptor.BeanInterceptor;
@@ -50,7 +48,6 @@ public interface BeanContainer extends BeanProvider, BeanInspector, BeanRegistry
      *
      * @return 不可变的拦截器列表，永不为 null
      */
-    @NotNull
     List<BeanInterceptor> getBeanInterceptors();
 
     /**

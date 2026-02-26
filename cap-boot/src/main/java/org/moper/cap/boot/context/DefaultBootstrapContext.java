@@ -8,9 +8,9 @@ import org.moper.cap.context.config.ConfigurationClass;
 import org.moper.cap.context.context.ApplicationContext;
 import org.moper.cap.context.context.ApplicationContextFactory;
 import org.moper.cap.context.context.BootstrapContext;
-import org.moper.cap.context.environment.DefaultEnvironment;
-import org.moper.cap.context.environment.Environment;
 import org.moper.cap.context.exception.ContextException;
+import org.moper.cap.property.officer.PropertyOfficer;
+import org.moper.cap.property.officer.impl.DefaultPropertyOfficer;
 
 import java.util.ServiceLoader;
 import java.util.TreeSet;
@@ -23,13 +23,13 @@ import java.util.TreeSet;
 public class DefaultBootstrapContext implements BootstrapContext {
 
     private final BeanContainer beanContainer;
-    private final Environment environment;
+    private final PropertyOfficer propertyOfficer;
     private final ConfigurationClass configurationClass;
 
     public DefaultBootstrapContext(Class<?> primarySource, String... args) {
         // ① 初始化核心组件
         this.beanContainer = new DefaultBeanContainer();
-        this.environment = new DefaultEnvironment("cap");
+        this.propertyOfficer = new DefaultPropertyOfficer();
         this.configurationClass = new DefaultConfigurationClass(primarySource);
 
         // 1、 通过 SPI 发现所有 Initializer，收集到有序集合
@@ -65,8 +65,13 @@ public class DefaultBootstrapContext implements BootstrapContext {
     @Override
     public BeanContainer getBeanContainer() { return beanContainer; }
 
+    /**
+     * 获取属性管理平台
+     */
     @Override
-    public Environment getEnvironment() { return environment; }
+    public PropertyOfficer getPropertyOfficer() {
+        return propertyOfficer;
+    }
 
     @Override
     public ConfigurationClass getConfigurationClass() { return configurationClass; }

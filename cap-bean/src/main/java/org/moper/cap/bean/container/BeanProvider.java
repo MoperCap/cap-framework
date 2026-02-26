@@ -1,7 +1,5 @@
 package org.moper.cap.bean.container;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import org.moper.cap.bean.exception.BeanCreationException;
 import org.moper.cap.bean.exception.BeanNotOfRequiredTypeException;
 import org.moper.cap.bean.exception.NoSuchBeanDefinitionException;

@@ -3,12 +3,9 @@ package org.moper.cap.boot.initializer;
 import org.moper.cap.context.bootstrap.Initializer;
 import org.moper.cap.context.bootstrap.InitializerType;
 import org.moper.cap.context.context.BootstrapContext;
-import org.moper.cap.context.environment.Environment;
 import org.moper.cap.context.exception.ContextException;
 import org.moper.cap.property.event.PropertySetOperation;
-import org.moper.cap.property.publisher.impl.DefaultPropertyPublisher;
-import org.moper.cap.property.result.PropertyOperationResult;
-import org.moper.cap.property.result.PublisherManifestResult;
+import org.moper.cap.property.publisher.PropertyPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
@@ -31,7 +28,6 @@ public class PropertyInitializer extends Initializer {
     @Override
     public void initialize(BootstrapContext context) throws ContextException {
         Collection<String> resourcePaths = context.getConfigurationClass().getResourceScanPaths();
-        Environment environment = context.getEnvironment();
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         if (classLoader == null) classLoader = getClass().getClassLoader();
 
@@ -42,15 +38,8 @@ public class PropertyInitializer extends Initializer {
                 if (props == null || props.isEmpty()) continue;
 
                 // 为每个配置文件创建独立的 Publisher
-                DefaultPropertyPublisher publisher = DefaultPropertyPublisher.builder()
-                        .name("property-publisher-" + resourceName)
-                        .build();
+                PropertyPublisher publisher = context.getPropertyOfficer().getPublisher("property-publisher-" + resourceName);
 
-                // 签约
-                publisher.contract(environment.getOfficer());
-
-                // 立即托管到 Environment，防止 GC 回收
-                environment.registerPublisher(publisher);
 
                 // 将所有属性转换为 PropertySetOperation 发布
                 PropertySetOperation[] operations = props.entrySet().stream()
@@ -58,24 +47,7 @@ public class PropertyInitializer extends Initializer {
                         .toArray(PropertySetOperation[]::new);
 
                 // 发布属性
-                List<PublisherManifestResult> results =  publisher.publish(operations);
-
-                // 校验发布结果
-                for(PublisherManifestResult result : results) {
-                    if(result.status().equals(PublisherManifestResult.Status.TOTAL_SUCCESS))
-                        log.info("Successfully published properties from: {}", resourceName);
-                    else if(result.status().equals(PublisherManifestResult.Status.ERROR)){
-                        log.error("Failed to publish properties from: {}, reason: {}", resourceName, result.description());
-                    } else if(result.status().equals(PublisherManifestResult.Status.PARTIAL_SUCCESS)) {
-                        for(PropertyOperationResult operationResult : result.operationResults()) {
-                            if(operationResult.status().isFailed()){
-                                log.warn("Property publish event filed: " + operationResult.operation() + ", reason: " + operationResult.message());
-                            }
-                        }
-                        throw new ContextException("Property publish event filed: " + resourceName);
-                    }
-                }
-
+                publisher.publish(operations);
             }
         }
     }

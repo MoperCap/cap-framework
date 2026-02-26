@@ -51,6 +51,7 @@ public class DefaultPropertyPublisher implements PropertyPublisher {
 
         PropertyManifest manifest = PropertyManifest.of(name(), List.of(operations));
 
+        log.info("PropertyPublisher {} Publishing Manifest {}",name(), manifest);
         officer.receive(manifest);
     }
 
@@ -68,6 +69,7 @@ public class DefaultPropertyPublisher implements PropertyPublisher {
 
         PropertyManifest manifest = PropertyManifest.of(name(), List.of(operations));
 
+        log.info("PropertyPublisher {} Publishing Manifest {}",name(), manifest);
         officer.receiveAsync(manifest);
     }
 

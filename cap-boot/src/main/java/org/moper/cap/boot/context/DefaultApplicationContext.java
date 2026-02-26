@@ -5,8 +5,8 @@ import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.exception.*;
 import org.moper.cap.context.context.ApplicationContext;
 import org.moper.cap.context.context.BootstrapContext;
-import org.moper.cap.context.environment.Environment;
 import org.moper.cap.context.exception.ContextException;
+import org.moper.cap.property.officer.PropertyOfficer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,14 +23,14 @@ public class DefaultApplicationContext implements ApplicationContext {
     private static final Logger log = LoggerFactory.getLogger(DefaultApplicationContext.class);
 
     private final BeanContainer beanContainer;
-    private final Environment environment;
+    private final PropertyOfficer propertyOfficer;
 
     private final AtomicBoolean running = new AtomicBoolean(false);
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
     public DefaultApplicationContext(BootstrapContext bootstrapContext) {
         this.beanContainer = bootstrapContext.getBeanContainer();
-        this.environment = bootstrapContext.getEnvironment();
+        this.propertyOfficer = bootstrapContext.getPropertyOfficer();
     }
 
     @Override
@@ -46,9 +46,11 @@ public class DefaultApplicationContext implements ApplicationContext {
         Runtime.getRuntime().addShutdownHook(new Thread(this::close));
     }
 
+
+
     @Override
     public void close() {
-        if (!closed.compareAndSet(false, true)) {
+        if (!closed.compareAndSet(false, true)){
             return;
         }
         try {
@@ -56,12 +58,20 @@ public class DefaultApplicationContext implements ApplicationContext {
         } catch (BeanDestructionException e) {
             log.error("Error destroying singletons during context close", e);
         }
-        environment.close();
+
+        try {
+            propertyOfficer.close();
+        } catch (Exception e) {
+            log.error("Error closing property officer", e);
+        }
     }
 
+    /**
+     * 获取属性管理平台
+     */
     @Override
-    public Environment getEnvironment() {
-        return environment;
+    public PropertyOfficer getPropertyOfficer() {
+        return propertyOfficer;
     }
 
     // ===== BeanProvider delegation =====

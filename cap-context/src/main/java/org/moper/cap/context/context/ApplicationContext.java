@@ -2,8 +2,8 @@ package org.moper.cap.context.context;
 
 import org.moper.cap.bean.container.BeanInspector;
 import org.moper.cap.bean.container.BeanProvider;
-import org.moper.cap.context.environment.Environment;
 import org.moper.cap.context.exception.ContextException;
+import org.moper.cap.property.officer.PropertyOfficer;
 
 /**
  * 框架运行期系统上下文。
@@ -25,14 +25,8 @@ public interface ApplicationContext extends BeanProvider, BeanInspector, AutoClo
      */
     void run() throws ContextException;
 
-    /** 获取环境上下文 */
-    Environment getEnvironment();
-
     /**
-     * 关闭，释放所有资源。幂等。
-     * 1. destroySingletons()
-     * 2. environment.close()
+     * 获取属性管理平台
      */
-    @Override
-    void close();
+    PropertyOfficer getPropertyOfficer();
 }

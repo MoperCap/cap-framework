@@ -2,8 +2,8 @@ package org.moper.cap.context.context;
 
 import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.context.config.ConfigurationClass;
-import org.moper.cap.context.environment.Environment;
 import org.moper.cap.context.exception.ContextException;
+import org.moper.cap.property.officer.PropertyOfficer;
 
 /**
  * 框架初始化完成后的系统上下文。
@@ -15,8 +15,10 @@ public interface BootstrapContext {
     /** 获取已完成 BeanDefinition 注册的 Bean 容器 */
     BeanContainer getBeanContainer();
 
-    /** 获取已完成属性加载的环境上下文 */
-    Environment getEnvironment();
+    /**
+     * 获取属性管理平台
+     */
+    PropertyOfficer getPropertyOfficer();
 
     /** 获取配置类信息视图 */
     ConfigurationClass getConfigurationClass();
@@ -25,6 +27,5 @@ public interface BootstrapContext {
      * 纯转换：将已初始化完成的 BootstrapContext 转换为 ApplicationContext。
      * 不执行任何初始化逻辑。
      */
-    <T extends ApplicationContext> T build(ApplicationContextFactory<T> factory)
-            throws ContextException;
+    <T extends ApplicationContext> T build(ApplicationContextFactory<T> factory) throws ContextException;
 }

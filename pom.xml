@@ -57,6 +57,12 @@
 
             <dependency>
                 <groupId>org.moper.cap</groupId>
+                <artifactId>cap-property2</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.moper.cap</groupId>
                 <artifactId>cap-bean</artifactId>
                 <version>${project.version}</version>
             </dependency>

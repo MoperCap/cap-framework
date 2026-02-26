@@ -22,7 +22,7 @@
         <!-- cap-property -->
         <dependency>
             <groupId>org.moper.cap</groupId>
-            <artifactId>cap-property</artifactId>
+            <artifactId>cap-property2</artifactId>
         </dependency>
 
         <!-- 日志 -->

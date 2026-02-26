@@ -9,11 +9,12 @@ import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.exception.BeanException;
 import org.moper.cap.bean.interceptor.BeanInterceptor;
-import org.moper.cap.context.environment.Environment;
 import org.moper.cap.property.officer.PropertyOfficer;
+import org.moper.cap.property.officer.PropertyView;
 import org.moper.cap.property.subscriber.PropertySubscriber;
-import org.moper.cap.property.subscriber.subcription.DefaultPropertySubscription;
-import org.moper.cap.property.subscriber.PropertyViewPool;
+import org.moper.cap.property.subscriber.PropertySubscription;
+import org.moper.cap.property.subscriber.impl.DefaultAbstractPropertySubscriber;
+import org.moper.cap.property.subscriber.impl.DefaultPropertySubscription;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -22,11 +23,11 @@ import java.util.*;
 public class AutowiredBeanInterceptor implements BeanInterceptor {
 
     private final BeanContainer beanContainer;
-    private final Environment environment;
+    private final PropertyOfficer propertyOfficer;
 
-    public AutowiredBeanInterceptor(BeanContainer beanContainer, Environment environment) {
+    public AutowiredBeanInterceptor(BeanContainer beanContainer, PropertyOfficer propertyOfficer) {
         this.beanContainer = beanContainer;
-        this.environment = environment;
+        this.propertyOfficer = propertyOfficer;
     }
 
     @Override
@@ -62,7 +63,6 @@ public class AutowiredBeanInterceptor implements BeanInterceptor {
     /** 支持 @Value 注入 */
     private void injectValue(Object bean, BeanDefinition definition) {
         Class<?> beanClass = bean.getClass();
-        PropertyViewPool viewPool = environment.getViewPool();
         for (Field field : getAllFields(beanClass)) {
             if (field.isAnnotationPresent(Value.class)) {
                 try {
@@ -70,7 +70,7 @@ public class AutowiredBeanInterceptor implements BeanInterceptor {
                     Value valueAnnotation = field.getAnnotation(Value.class);
 
                     String expression = valueAnnotation.value();
-                    Object resolved = resolveValueExpression(expression, field.getType(), viewPool);
+                    Object resolved = resolveValueExpression(expression, field.getType(), propertyOfficer);
                     if (resolved != null) {
                         field.set(bean, resolved);
                     }
@@ -82,35 +82,20 @@ public class AutowiredBeanInterceptor implements BeanInterceptor {
     }
 
     /** 解析 SpEL 格式: ${key} 或 ${key:default} */
-    private Object resolveValueExpression(String expression, Class<?> fieldType, PropertyViewPool viewPool) {
+    private Object resolveValueExpression(String expression, Class<?> fieldType, PropertyView view) {
         if (expression.startsWith("${") && expression.endsWith("}")) {
             String inner = expression.substring(2, expression.length() - 1);
             int colonIdx = inner.indexOf(':');
             String key = colonIdx >= 0 ? inner.substring(0, colonIdx) : inner;
             String defaultValue = colonIdx >= 0 ? inner.substring(colonIdx + 1) : null;
 
-            Object raw = viewPool.getRawPropertyValue(key);
+            Object raw = view.getRawPropertyValue(key);
+
             String valueStr = raw != null ? raw.toString() : defaultValue;
-            return convertToFieldType(valueStr, fieldType);
+            return view.getPropertyValue(valueStr, fieldType);
         }
         // 非表达式，直接按类型赋值
-        return convertToFieldType(expression, fieldType);
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T> T convertToFieldType(String value, Class<T> type) {
-        if (value == null) return null;
-        try {
-            if (type == String.class) return (T) value;
-            if (type == int.class || type == Integer.class) return (T) Integer.valueOf(value);
-            if (type == long.class || type == Long.class) return (T) Long.valueOf(value);
-            if (type == double.class || type == Double.class) return (T) Double.valueOf(value);
-            if (type == float.class || type == Float.class) return (T) Float.valueOf(value);
-            if (type == boolean.class || type == Boolean.class) return (T) Boolean.valueOf(value);
-            if (type == short.class || type == Short.class) return (T) Short.valueOf(value);
-            if (type == byte.class || type == Byte.class) return (T) Byte.valueOf(value);
-        } catch (Exception ignore) {}
-        return null;
+        return view.getPropertyValue(expression, fieldType);
     }
 
     /** 增强：处理 @Subscription 类 + @Subscriber 字段自动属性订阅和回调 */
@@ -120,7 +105,7 @@ public class AutowiredBeanInterceptor implements BeanInterceptor {
         String subscriptionName = clazz.getAnnotation(Subscription.class).value();
         if (subscriptionName.isEmpty()) subscriptionName = clazz.getSimpleName() + "Subscription";
 
-        List<PropertySubscriber> subscribers = new ArrayList<>();
+        List<PropertySubscriber<?>> subscribers = new ArrayList<>();
         for (Field field : clazz.getDeclaredFields()) {
             Subscriber subscriberAnn = field.getAnnotation(Subscriber.class);
             if (subscriberAnn == null) continue;
@@ -129,10 +114,7 @@ public class AutowiredBeanInterceptor implements BeanInterceptor {
             String onSetMethod = subscriberAnn.onSet();
             String onRemovedMethod = subscriberAnn.onRemoved();
 
-            PropertySubscriber subscriber = new PropertySubscriber() {
-                @Override
-                public String getPropertyKey() { return propertyKey; }
-
+            PropertySubscriber<?> subscriber = new DefaultAbstractPropertySubscriber(propertyKey, field.getType()) {
                 @Override
                 public void onSet(Object value) {
                     try {
@@ -167,10 +149,7 @@ public class AutowiredBeanInterceptor implements BeanInterceptor {
         }
 
         if (!subscribers.isEmpty()) {
-            DefaultPropertySubscription subscription =
-                    new DefaultPropertySubscription(subscriptionName, subscribers);
-            PropertyOfficer officer = environment.getOfficer();
-            officer.subscribe(subscription);
+            propertyOfficer.createSubscription(() -> new DefaultPropertySubscription(subscribers));
         }
     }
 

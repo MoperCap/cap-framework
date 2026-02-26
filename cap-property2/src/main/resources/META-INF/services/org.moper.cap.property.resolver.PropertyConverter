@@ -1,3 +1,4 @@
+
 org.moper.cap.property.resolver.converters.StringToIntegerConverter
 org.moper.cap.property.resolver.converters.StringToLongConverter
 org.moper.cap.property.resolver.converters.StringToBooleanConverter

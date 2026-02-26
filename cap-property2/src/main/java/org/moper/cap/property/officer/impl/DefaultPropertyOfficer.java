@@ -115,7 +115,8 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
     @Override
     public <T> Optional<T> getPropertyValueOptional(String key, Class<T> type) {
         Object value = getRawPropertyValue(key);
-        return Optional.of(resolver.resolve(value, type));
+        if(value == null) return Optional.empty();
+        else return Optional.of(resolver.resolve(value, type));
     }
 
     @Override
@@ -148,6 +149,11 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Publisher name cannot be null or blank");
         }
+
+        if(supplier == null) {
+            throw new IllegalArgumentException("Publisher supplier cannot be null");
+        }
+
         if (publishers.containsKey(name)) {
             return publishers.get(name);
         }
@@ -198,6 +204,10 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
     @Override
     public PropertySubscription createSubscription(Supplier<PropertySubscription> supplier) {
         checkClosed();
+
+        if(supplier == null) {
+            throw new IllegalArgumentException("Subscription supplier cannot be null");
+        }
 
         PropertySubscription subscription = supplier.get();
         if (subscription == null) {
