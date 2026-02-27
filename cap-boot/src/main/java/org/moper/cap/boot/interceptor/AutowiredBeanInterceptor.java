@@ -2,7 +2,7 @@ package org.moper.cap.boot.interceptor;
 
 import org.moper.cap.bean.annotation.Autowired;
 import org.moper.cap.bean.annotation.Qualifier;
-import org.moper.cap.context.annotation.Component;
+import org.moper.cap.core.annotation.Component;
 import org.moper.cap.property.annotation.Value;
 import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bean.definition.BeanDefinition;

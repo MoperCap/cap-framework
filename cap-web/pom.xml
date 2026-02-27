@@ -15,7 +15,7 @@
 
         <dependency>
             <groupId>org.moper.cap</groupId>
-            <artifactId>cap-context</artifactId>
+            <artifactId>cap-core</artifactId>
         </dependency>
 
         <!-- Servlet API -->

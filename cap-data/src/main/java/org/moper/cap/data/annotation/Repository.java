@@ -1,6 +1,6 @@
 package org.moper.cap.data.annotation;
 
-import org.moper.cap.context.annotation.Component;
+import org.moper.cap.core.annotation.Component;
 
 import java.lang.annotation.*;
 

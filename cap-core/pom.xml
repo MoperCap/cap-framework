@@ -9,17 +9,19 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>cap-aop</artifactId>
+    <artifactId>cap-core</artifactId>
 
     <dependencies>
-        <dependency>
-            <groupId>org.moper.cap</groupId>
-            <artifactId>cap-core</artifactId>
-        </dependency>
-
+        <!-- cap-bean -->
         <dependency>
             <groupId>org.moper.cap</groupId>
             <artifactId>cap-bean</artifactId>
+        </dependency>
+
+        <!-- cap-property -->
+        <dependency>
+            <groupId>org.moper.cap</groupId>
+            <artifactId>cap-property</artifactId>
         </dependency>
 
         <!-- 日志 -->
@@ -39,12 +41,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
-        </dependency>
-
-        <!-- Junit-Jupiter -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
         </dependency>
 
     </dependencies>

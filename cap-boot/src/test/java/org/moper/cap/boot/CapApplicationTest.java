@@ -3,8 +3,8 @@ package org.moper.cap.boot;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.moper.cap.boot.application.impl.DefaultCapApplication;
-import org.moper.cap.context.annotation.ComponentScan;
-import org.moper.cap.context.context.RuntimeContext;
+import org.moper.cap.core.annotation.ComponentScan;
+import org.moper.cap.core.context.RuntimeContext;
 
 @Slf4j
 @ComponentScan("org.moper.cap")
