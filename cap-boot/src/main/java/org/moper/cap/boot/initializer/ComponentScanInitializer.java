@@ -3,16 +3,15 @@ package org.moper.cap.boot.initializer;
 import io.github.classgraph.*;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.definition.InstantiationPolicy;
-import org.moper.cap.boot.annotation.Autowired;
-import org.moper.cap.boot.annotation.Lazy;
-import org.moper.cap.boot.annotation.Primary;
-import org.moper.cap.context.annotation.Bean;
-import org.moper.cap.context.annotation.Component;
+import org.moper.cap.bean.annotation.Autowired;
+import org.moper.cap.bean.annotation.Lazy;
+import org.moper.cap.bean.annotation.Primary;
+import org.moper.cap.bean.annotation.Bean;
+import org.moper.cap.core.annotation.Component;
 import org.moper.cap.context.annotation.Configuration;
-import org.moper.cap.context.bootstrap.Initializer;
-import org.moper.cap.context.bootstrap.InitializerType;
+import org.moper.cap.context.initializer.Initializer;
+import org.moper.cap.context.initializer.InitializerType;
 import org.moper.cap.context.context.BootstrapContext;
-import org.moper.cap.context.exception.ContextException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +32,7 @@ public class ComponentScanInitializer extends Initializer {
     }
 
     @Override
-    public void initialize(BootstrapContext context) throws ContextException {
+    public void initialize(BootstrapContext context) throws Exception {
         Collection<String> scanPackages = context.getConfigurationClass().getComponentScanPaths();
 
         try (ScanResult scanResult = new ClassGraph()

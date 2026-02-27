@@ -1,6 +1,6 @@
 package org.moper.cap.context.config;
 
-import org.moper.cap.context.bootstrap.Initializer;
+import org.moper.cap.context.initializer.Initializer;
 
 import java.util.Collection;
 
@@ -21,12 +21,4 @@ public interface ConfigurationClass {
      */
     
     Collection<String> getResourceScanPaths();
-
-    /**
-     * 获取配置上指定的Initializer类集合
-     *
-     * @return 若配置类上存在Initializer类，则返回对应集合; 否则返回空集合
-     */
-    
-    Collection<Class<? extends Initializer>> getInitializerExtensionClasses();
 }

@@ -1,10 +1,9 @@
 package org.moper.cap.boot.interceptor;
 
-import org.moper.cap.boot.annotation.Autowired;
-import org.moper.cap.boot.annotation.Qualifier;
-import org.moper.cap.context.annotation.Subscriber;
-import org.moper.cap.context.annotation.Subscription;
-import org.moper.cap.boot.annotation.Value;
+import org.moper.cap.bean.annotation.Autowired;
+import org.moper.cap.bean.annotation.Qualifier;
+import org.moper.cap.core.annotation.Component;
+import org.moper.cap.property.annotation.Value;
 import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.exception.BeanException;
@@ -12,7 +11,6 @@ import org.moper.cap.bean.interceptor.BeanInterceptor;
 import org.moper.cap.property.officer.PropertyOfficer;
 import org.moper.cap.property.officer.PropertyView;
 import org.moper.cap.property.subscriber.PropertySubscriber;
-import org.moper.cap.property.subscriber.PropertySubscription;
 import org.moper.cap.property.subscriber.impl.DefaultAbstractPropertySubscriber;
 import org.moper.cap.property.subscriber.impl.DefaultPropertySubscription;
 
@@ -101,13 +99,15 @@ public class AutowiredBeanInterceptor implements BeanInterceptor {
     /** 增强：处理 @Subscription 类 + @Subscriber 字段自动属性订阅和回调 */
     private void handleSubscription(Object bean) {
         Class<?> clazz = bean.getClass();
-        if (!clazz.isAnnotationPresent(Subscription.class)) return;
-        String subscriptionName = clazz.getAnnotation(Subscription.class).value();
-        if (subscriptionName.isEmpty()) subscriptionName = clazz.getSimpleName() + "Subscription";
+        if (!clazz.isAnnotationPresent(Component.Subscription.class)) return;
+
+        Component.Subscription subscriptionAnnotation = clazz.getAnnotation(Component.Subscription.class);
+
+        final String subscriptionName = subscriptionAnnotation.value().isEmpty() ? "Subscription-" +clazz.getSimpleName() : subscriptionAnnotation.value();
 
         List<PropertySubscriber<?>> subscribers = new ArrayList<>();
         for (Field field : clazz.getDeclaredFields()) {
-            Subscriber subscriberAnn = field.getAnnotation(Subscriber.class);
+            Component.Subscriber subscriberAnn = field.getAnnotation(Component.Subscriber.class);
             if (subscriberAnn == null) continue;
 
             String propertyKey = subscriberAnn.propertyKey();
@@ -149,7 +149,7 @@ public class AutowiredBeanInterceptor implements BeanInterceptor {
         }
 
         if (!subscribers.isEmpty()) {
-            propertyOfficer.createSubscription(() -> new DefaultPropertySubscription(subscribers));
+            propertyOfficer.getSubscription(subscriptionName, () -> new DefaultPropertySubscription(subscriptionName, subscribers));
         }
     }
 

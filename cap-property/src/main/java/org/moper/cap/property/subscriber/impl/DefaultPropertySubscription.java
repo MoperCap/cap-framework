@@ -8,16 +8,31 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class DefaultPropertySubscription implements PropertySubscription {
+    private final String name;
     private final List<PropertySubscriber<?>> subscribers;
 
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
-    public DefaultPropertySubscription(List<PropertySubscriber<?>> subscribers) {
+    public DefaultPropertySubscription(String name, List<PropertySubscriber<?>> subscribers) {
+        if(name == null || name.isBlank()){
+            throw new IllegalArgumentException("DefaultPropertySubscription name cannot be null or blank");
+        }
+
         if(subscribers == null || subscribers.isEmpty()) {
             throw new IllegalArgumentException("DefaultPropertySubscription subscribers list cannot be null or empty");
         }
 
+        this.name = name;
         this.subscribers = subscribers;
+    }
+
+
+    /**
+     * 获取属性订阅客户端名称
+     */
+    @Override
+    public String name() {
+        return name;
     }
 
     /**

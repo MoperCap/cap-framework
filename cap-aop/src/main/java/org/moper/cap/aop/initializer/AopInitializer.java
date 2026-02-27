@@ -4,8 +4,8 @@ import org.moper.cap.aop.annotation.After;
 import org.moper.cap.aop.annotation.Around;
 import org.moper.cap.aop.annotation.Aspect;
 import org.moper.cap.aop.annotation.Before;
-import org.moper.cap.context.bootstrap.Initializer;
-import org.moper.cap.context.bootstrap.InitializerType;
+import org.moper.cap.context.initializer.Initializer;
+import org.moper.cap.context.initializer.InitializerType;
 import org.moper.cap.context.context.BootstrapContext;
 import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.aop.advisor.Advisor;
@@ -21,7 +21,7 @@ public class AopInitializer extends Initializer {
     }
 
     @Override
-    public void initialize(BootstrapContext context) {
+    public void initialize(BootstrapContext context) throws Exception {
         BeanContainer beanContainer = context.getBeanContainer();
         List<Advisor> advisors = scanAdvisors(beanContainer);
         beanContainer.addBeanInterceptor(new AopBeanInterceptor(advisors));

@@ -12,6 +12,12 @@
     <artifactId>cap-boot</artifactId>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.moper.cap</groupId>
+            <artifactId>cap-core</artifactId>
+        </dependency>
+
         <!-- context -->
         <dependency>
             <groupId>org.moper.cap</groupId>

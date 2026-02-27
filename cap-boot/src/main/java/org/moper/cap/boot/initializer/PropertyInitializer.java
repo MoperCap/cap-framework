@@ -1,9 +1,8 @@
 package org.moper.cap.boot.initializer;
 
-import org.moper.cap.context.bootstrap.Initializer;
-import org.moper.cap.context.bootstrap.InitializerType;
+import org.moper.cap.context.initializer.Initializer;
+import org.moper.cap.context.initializer.InitializerType;
 import org.moper.cap.context.context.BootstrapContext;
-import org.moper.cap.context.exception.ContextException;
 import org.moper.cap.property.event.PropertySetOperation;
 import org.moper.cap.property.publisher.PropertyPublisher;
 import org.slf4j.Logger;
@@ -26,7 +25,7 @@ public class PropertyInitializer extends Initializer {
     }
 
     @Override
-    public void initialize(BootstrapContext context) throws ContextException {
+    public void initialize(BootstrapContext context) throws Exception {
         Collection<String> resourcePaths = context.getConfigurationClass().getResourceScanPaths();
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         if (classLoader == null) classLoader = getClass().getClassLoader();

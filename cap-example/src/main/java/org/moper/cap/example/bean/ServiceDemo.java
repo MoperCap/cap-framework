@@ -1,6 +1,6 @@
 package org.moper.cap.example.bean;
 
-import org.moper.cap.context.annotation.Component;
+import org.moper.cap.core.annotation.Component;
 
 @Component
 public class ServiceDemo {

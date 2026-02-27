@@ -24,7 +24,7 @@ class DefaultPropertyOfficerTest {
 
     @BeforeEach
     void setUp() {
-        officer = new DefaultPropertyOfficer();
+        officer = new DefaultPropertyOfficer("cap-test-officer");
     }
 
     @AfterEach
@@ -50,7 +50,7 @@ class DefaultPropertyOfficerTest {
                 subValue.set(-1);
             }
         };
-        officer.createSubscription(() -> new DefaultPropertySubscription(List.of(subscriber)));
+        officer.getSubscription("cap-test-subscription", () -> new DefaultPropertySubscription("cap-test-subscription", List.of(subscriber)));
 
         // 正确通过 publisher 封装属性变更并发布
         publisher.publish(new PropertySetOperation(key, 100));

@@ -1,7 +1,7 @@
 package org.moper.cap.example.boot;
 
-import org.moper.cap.context.annotation.Component;
-import org.moper.cap.boot.annotation.Autowired;
+import org.moper.cap.core.annotation.Component;
+import org.moper.cap.bean.annotation.Autowired;
 import org.moper.cap.example.bean.ServiceDemo;
 
 @Component

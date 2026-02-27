@@ -19,11 +19,9 @@ import org.moper.cap.property.subscriber.PropertySubscription;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -31,11 +29,13 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
 
     private final static int DEFAULT_THREAD_POOL_SIZE = 4;
 
+    private final String name;
+
     private final Map<String, PropertyDefinition> core = new ConcurrentHashMap<>();
 
     private final Map<String, PropertyPublisher> publishers = new ConcurrentHashMap<>();
 
-    private final Set<PropertySubscription> subscriptions = new CopyOnWriteArraySet<>();
+    private final Map<String, PropertySubscription> subscriptions = new ConcurrentHashMap<>();
 
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
@@ -43,15 +43,28 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
 
     private final PropertyResolver resolver = new DefaultPropertyResolver();
 
-    public DefaultPropertyOfficer() {
-        this.executorService = Executors.newFixedThreadPool(DEFAULT_THREAD_POOL_SIZE);
+    public DefaultPropertyOfficer(String name) {
+        this(name, DEFAULT_THREAD_POOL_SIZE);
     }
 
-    public DefaultPropertyOfficer(int threadPoolSize) {
+    public DefaultPropertyOfficer(String name, int threadPoolSize) {
+        if(name == null || name.isBlank()) {
+            throw new IllegalArgumentException("PropertyOfficer name cannot be null or blank");
+        }
+
         if (threadPoolSize <= 0) {
             throw new IllegalArgumentException("Thread pool size must be greater than 0");
         }
+        this.name = name;
         this.executorService = Executors.newFixedThreadPool(threadPoolSize);
+    }
+
+    /**
+     * 获取属性管理平台名称
+     */
+    @Override
+    public String name() {
+        return name;
     }
 
     @Override
@@ -202,46 +215,67 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
     }
 
     @Override
-    public PropertySubscription createSubscription(Supplier<PropertySubscription> supplier) {
+    public PropertySubscription getSubscription(String name) {
         checkClosed();
+
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Subscription name cannot be null or blank");
+        }
+
+        return subscriptions.get(name);
+    }
+
+    @Override
+    public PropertySubscription getSubscription(String name, Supplier<PropertySubscription> supplier) {
+        checkClosed();
+
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Subscription name cannot be null or blank");
+        }
 
         if(supplier == null) {
             throw new IllegalArgumentException("Subscription supplier cannot be null");
+        }
+
+        if(subscriptions.containsKey(name)) {
+            return subscriptions.get(name);
         }
 
         PropertySubscription subscription = supplier.get();
         if (subscription == null) {
             throw new IllegalArgumentException("Subscription supplier cannot return null");
         }
-        if (subscriptions.add(subscription)) return subscription;
-        else throw new IllegalArgumentException("Subscription already exists");
+
+        subscriptions.put(name, subscription);
+
+        return subscription;
     }
 
     @Override
-    public boolean containsSubscription(PropertySubscription subscription) {
+    public boolean containsSubscription(String name) {
         checkClosed();
 
-        if (subscription == null) {
-            throw new IllegalArgumentException("Subscription cannot be null");
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Subscription name cannot be null or blank");
         }
-        return subscriptions.contains(subscription);
+        return subscriptions.containsKey(name);
     }
 
     @Override
-    public void destroySubscription(PropertySubscription subscription) {
+    public void destroySubscription(String name) {
         checkClosed();
 
-        if (subscription == null) {
+        if (name == null) {
             throw new IllegalArgumentException("Subscription cannot be null");
         }
 
-        if (!subscriptions.contains(subscription)) return;
+        if (!subscriptions.containsKey(name)) return;
 
-        subscriptions.remove(subscription);
+        PropertySubscription subscription = subscriptions.remove(name);
         try {
             subscription.close();
         } catch (Exception ex) {
-            log.warn("Failed to close subscription {}", subscription, ex);
+            log.warn("Failed to close subscription {}", name, ex);
         }
 
     }
@@ -250,7 +284,7 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
     public Collection<PropertySubscription> getAllSubscriptions() {
         checkClosed();
 
-        return Set.copyOf(subscriptions);
+        return Set.copyOf(subscriptions.values());
     }
 
     @Override
@@ -272,7 +306,7 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
             }
         }
 
-        for(PropertySubscription subscription : subscriptions) {
+        for(PropertySubscription subscription : subscriptions.values()) {
             try {
                 subscription.close();
             } catch (Exception e) {
@@ -339,7 +373,7 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
     }
 
     private void notifyAllSubscriberSetOperation(String propertyKey, Object newValue) {
-        for (PropertySubscription subscription : subscriptions) {
+        for (PropertySubscription subscription : subscriptions.values()) {
             for (@SuppressWarnings("rawtypes") PropertySubscriber subscriber : subscription) {
                 if (!subscriber.selector().matches(propertyKey)) continue;
                 subscriber.onSet(resolver.resolve(newValue, subscriber.getSubscribeType()));
@@ -349,7 +383,7 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
     }
 
     private void notifyAllSubscriberRemoveOperation(String propertyKey) {
-        for (PropertySubscription subscription : subscriptions) {
+        for (PropertySubscription subscription : subscriptions.values()) {
             for (@SuppressWarnings("rawtypes") PropertySubscriber subscriber : subscription) {
                 if (!subscriber.selector().matches(propertyKey)) continue;
                 subscriber.onRemoved();
@@ -357,4 +391,5 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
             }
         }
     }
+
 }

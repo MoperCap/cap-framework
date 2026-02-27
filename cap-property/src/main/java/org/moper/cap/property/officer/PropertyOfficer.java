@@ -1,6 +1,6 @@
 package org.moper.cap.property.officer;
 
-import org.moper.cap.core.context.ResourceContext;
+import org.moper.cap.core.resource.CloseableResource;
 import org.moper.cap.property.event.PropertyManifest;
 import org.moper.cap.property.publisher.PropertyPublisher;
 import org.moper.cap.property.subscriber.PropertySubscription;
@@ -13,7 +13,7 @@ import java.util.function.Supplier;
  *
  * 负责管理属性发布者与属性订阅者客户端，提供获取（创建）、删除等功能。 </br>
  */
-public interface PropertyOfficer extends PropertyView, ResourceContext {
+public interface PropertyOfficer extends PropertyView, CloseableResource {
 
     /**
      * 以同步的方式接收来自属性发布者发送的属性操作清单
@@ -69,32 +69,41 @@ public interface PropertyOfficer extends PropertyView, ResourceContext {
     Collection<PropertyPublisher> getAllPublishers();
 
     /**
-     * 根据指定的属性订阅者客户端生成方法获取对应的客户端
+     * 根据指定的属性订阅者客户端
      *
-     * @param supplier 属性订阅者客户端生成方法，不能为null，且返回的属性订阅客户端也不能为null
-     * @return 属性订阅者客户端生成方法生成的客户端
+     * @param name 属性订阅者客户端名称，不能为null或blank
+     * @return 若存在指定的属性订阅者客户端则返回；否则返回null
      */
-    PropertySubscription createSubscription(Supplier<PropertySubscription> supplier);
+    PropertySubscription getSubscription(String name);
+
+    /**
+     * 根据指定的属性订阅者客户端
+     *
+     * @param name 属性订阅者客户端名称，不能为null或blank
+     * @param supplier 属性订阅者客户端生成方法，不能为null，且返回的属性订阅客户端也不能为null
+     * @return 若存在指定的属性订阅者客户端则返回；否则根据指定的属性订阅者客户端生成方法生成相应的客户端并返回
+     */
+    PropertySubscription getSubscription(String name, Supplier<PropertySubscription> supplier);
 
     /**
      * 检查是否存在指定名的属性订阅客户端
      *
-     * @param subscription 属性订阅客户端，不能为null
+     * @param name 属性订阅客户端，不能为null
      * @return 若存在则返回true；否则返回false
      */
-    boolean containsSubscription(PropertySubscription subscription);
+    boolean containsSubscription(String name);
 
     /**
      * 销毁指定的属性订阅客户端
      *
-     * @param subscription 属性订阅客户端，不能为null
+     * @param name 属性订阅客户端，不能为null
      */
-    void destroySubscription(PropertySubscription subscription);
+    void destroySubscription(String name);
 
     /**
      * 获取所有的属性订阅客户端的集合
      *
-     * @return 属性订阅客户端集合。若不存在任何属性订阅客户端，则返回一个空集合
+     * @return 属性订阅客户端集合。若不存在属性订阅客户端，则返回一个空集合
      */
     Collection<PropertySubscription> getAllSubscriptions();
 }
