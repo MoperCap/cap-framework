@@ -1,7 +1,5 @@
 package org.moper.cap.context.config;
 
-import org.moper.cap.context.initializer.Initializer;
-
 import java.util.Collection;
 
 public interface ConfigurationClass {

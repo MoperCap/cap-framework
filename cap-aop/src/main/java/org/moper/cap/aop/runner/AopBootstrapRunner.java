@@ -1,10 +1,11 @@
-package org.moper.cap.aop.initializer;
+package org.moper.cap.aop.runner;
 
 import org.moper.cap.aop.annotation.After;
 import org.moper.cap.aop.annotation.Around;
 import org.moper.cap.aop.annotation.Aspect;
 import org.moper.cap.aop.annotation.Before;
-import org.moper.cap.context.initializer.Initializer;
+import org.moper.cap.context.annotation.RunnerMeta;
+import org.moper.cap.context.runner.BootstrapRunner;
 import org.moper.cap.context.runner.RunnerType;
 import org.moper.cap.context.context.BootstrapContext;
 import org.moper.cap.bean.container.BeanContainer;
@@ -14,11 +15,8 @@ import org.moper.cap.aop.weaving.AopBeanInterceptor;
 import java.lang.reflect.Method;
 import java.util.*;
 
-public class AopInitializer extends Initializer {
-
-    public AopInitializer() {
-        super(RunnerType.FEATURE, 100, "CapAopInitializer", "Scans and installs AOP Advisors and Interceptors");
-    }
+@RunnerMeta(type = RunnerType.FEATURE, order = 100, name = "CapAopBootstrapRunner", description = "Scans and installs AOP Advisors and Interceptors")
+public class AopBootstrapRunner implements BootstrapRunner {
 
     @Override
     public void initialize(BootstrapContext context) throws Exception {

@@ -2,9 +2,14 @@ package org.moper.cap.boot.application.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.boot.application.CapApplication;
+import org.moper.cap.context.annotation.RunnerMeta;
 import org.moper.cap.context.context.RuntimeContext;
 import org.moper.cap.context.context.impl.DefaultBootstrapContext;
-import org.moper.cap.context.initializer.Initializer;
+import org.moper.cap.context.exception.BootstrapRunnerException;
+import org.moper.cap.context.runner.BootstrapRunner;
+import org.moper.cap.context.runner.RunnerDefinition;
+import org.moper.cap.context.runner.RunnerType;
+import org.moper.cap.context.runner.RuntimeRunner;
 
 import java.util.ServiceLoader;
 import java.util.TreeSet;
@@ -20,19 +25,31 @@ public class DefaultCapApplication implements CapApplication {
 
         DefaultBootstrapContext bootstrapContext = new DefaultBootstrapContext(primarySource);
 
-        // 通过 SPI 发现所有 Initializer，收集到有序集合
-        TreeSet<Initializer> initializers = new TreeSet<>();
-        ServiceLoader<Initializer> loader = ServiceLoader.load(Initializer.class);
-        for (Initializer initializer : loader) {
-            initializers.add(initializer);
+        // 通过 SPI 发现所有 BootstrapRunner 收集到有序集合
+        TreeSet<RunnerDefinition<BootstrapRunner>> runners = new TreeSet<>();
+        ServiceLoader<BootstrapRunner> loader = ServiceLoader.load(BootstrapRunner.class);
+        for (BootstrapRunner runner : loader) {
+            Class<? extends BootstrapRunner> clazz = runner.getClass();
+            RunnerMeta meta = clazz.getAnnotation(RunnerMeta.class);
+            if(meta == null){
+                throw new BootstrapRunnerException("BootstrapRunner[" + clazz.getName() + "] is missing @RunnerMeta annotation");
+            }
+            RunnerType type = meta.type();
+            int order = meta.order();
+            String name = meta.name();
+            String description = meta.description();
+
+            runners.add(new RunnerDefinition<>(type, order, clazz, runner, name, description));
         }
 
         // 按顺序执行所有 Initializer
-        for (Initializer initializer : initializers) {
-            log.info("Initializing {} {}", initializer.name(), initializer.getClass().getName());
-            initializer.initialize(bootstrapContext);
-            initializer.close();
+        for(RunnerDefinition<BootstrapRunner> runner : runners){
+            log.info("Running BootstrapRunner {} ({})", runner.name(), runner.clazz().getName());
+            BootstrapRunner instance = runner.runner();
+            instance.initialize(bootstrapContext);
+            instance.close();
         }
+
         // 构造完成后，BootstrapContext 处于完全初始化状态
         this.runtimeContext = bootstrapContext.build();
     }
@@ -43,8 +60,29 @@ public class DefaultCapApplication implements CapApplication {
             return runtimeContext;
         }
 
+        // 通过 SPI 发现所有 RuntimeRunner 收集到有序集合
+        TreeSet<RunnerDefinition<RuntimeRunner>> runners = new TreeSet<>();
+        ServiceLoader<RuntimeRunner> loader = ServiceLoader.load(RuntimeRunner.class);
+        for (RuntimeRunner runner : loader) {
+            Class<? extends RuntimeRunner> clazz = runner.getClass();
+            RunnerMeta meta = clazz.getAnnotation(RunnerMeta.class);
+            if(meta == null){
+                throw new BootstrapRunnerException("RuntimeRunner[" + clazz.getName() + "] is missing @RunnerMeta annotation");
+            }
+            RunnerType type = meta.type();
+            int order = meta.order();
+            String name = meta.name();
+            String description = meta.description();
 
+            runners.add(new RunnerDefinition<>(type, order, clazz, runner, name, description));
+        }
 
+        // 按顺序执行所有 Initializer
+        for(RunnerDefinition<RuntimeRunner> runner : runners){
+            log.info("Running BootstrapRunner {} ({})", runner.name(), runner.clazz().getName());
+            RuntimeRunner instance = runner.runner();
+            instance.onApplicationStarted(runtimeContext);
+        }
         return runtimeContext;
     }
 }

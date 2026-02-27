@@ -17,4 +17,8 @@ public non-sealed interface BootstrapRunner extends AutoCloseable, Runner {
      * @throws Exception 执行过程中可能抛出的异常
      */
     void initialize(BootstrapContext context) throws Exception;
+
+    default void close() throws Exception {
+        // do nothing
+    }
 }

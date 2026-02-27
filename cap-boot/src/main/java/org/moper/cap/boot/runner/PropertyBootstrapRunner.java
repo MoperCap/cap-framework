@@ -1,12 +1,12 @@
-package org.moper.cap.boot.initializer;
+package org.moper.cap.boot.runner;
 
-import org.moper.cap.context.initializer.Initializer;
+import lombok.extern.slf4j.Slf4j;
+import org.moper.cap.context.annotation.RunnerMeta;
+import org.moper.cap.context.runner.BootstrapRunner;
 import org.moper.cap.context.runner.RunnerType;
 import org.moper.cap.context.context.BootstrapContext;
 import org.moper.cap.property.event.PropertySetOperation;
 import org.moper.cap.property.publisher.PropertyPublisher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.InputStream;
@@ -16,13 +16,9 @@ import java.util.*;
  * 属性加载构造机，负责加载配置文件并注册到 Environment </br>
  * 支持 .properties 和 .yml/.yaml 格式
  */
-public class PropertyInitializer extends Initializer {
-
-    private static final Logger log = LoggerFactory.getLogger(PropertyInitializer.class);
-
-    public PropertyInitializer() {
-        super(RunnerType.KERNEL, 0, "PropertyInitializer", "Loads property files into Environment");
-    }
+@Slf4j
+@RunnerMeta(type = RunnerType.KERNEL, order = 0, name = "CapPropertyBootstrapRunner", description = "Loads property files into PropertyOfficer")
+public class PropertyBootstrapRunner implements BootstrapRunner {
 
     @Override
     public void initialize(BootstrapContext context) throws Exception {

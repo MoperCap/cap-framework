@@ -1,19 +1,16 @@
-package org.moper.cap.boot.initializer;
+package org.moper.cap.boot.runner;
 
 import org.moper.cap.boot.interceptor.AutowiredBeanInterceptor;
-import org.moper.cap.context.initializer.Initializer;
+import org.moper.cap.context.annotation.RunnerMeta;
+import org.moper.cap.context.runner.BootstrapRunner;
 import org.moper.cap.context.runner.RunnerType;
 import org.moper.cap.context.context.BootstrapContext;
 
 /**
  * 注册 {@link AutowiredBeanInterceptor} 的构造机
  */
-public class AutowiredInitializer extends Initializer {
-
-    public AutowiredInitializer() {
-        super(RunnerType.KERNEL, 20, "AutowiredInitializer",
-                "Registers AutowiredBeanInterceptor for @Autowired and @Value injection");
-    }
+@RunnerMeta(type = RunnerType.KERNEL, order = 20, name = "CapAutowiredBootstrapRunner", description = "Registers AutowiredBeanInterceptor for @Autowired and @Value injection")
+public class AutowiredBootstrapRunner implements BootstrapRunner {
 
     @Override
     public void initialize(BootstrapContext context) throws Exception {

@@ -1,19 +1,19 @@
-package org.moper.cap.boot.initializer;
+package org.moper.cap.boot.runner;
 
 import io.github.classgraph.*;
+import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.definition.InstantiationPolicy;
 import org.moper.cap.bean.annotation.Autowired;
 import org.moper.cap.bean.annotation.Lazy;
 import org.moper.cap.bean.annotation.Primary;
 import org.moper.cap.bean.annotation.Bean;
+import org.moper.cap.context.annotation.RunnerMeta;
+import org.moper.cap.context.runner.BootstrapRunner;
 import org.moper.cap.core.annotation.Component;
 import org.moper.cap.context.annotation.Configuration;
-import org.moper.cap.context.initializer.Initializer;
 import org.moper.cap.context.runner.RunnerType;
 import org.moper.cap.context.context.BootstrapContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -22,14 +22,9 @@ import java.util.Collection;
 /**
  * 组件扫描构造机，负责扫描 @Component 标注的类并注册 BeanDefinition
  */
-public class ComponentScanInitializer extends Initializer {
-
-    private static final Logger log = LoggerFactory.getLogger(ComponentScanInitializer.class);
-
-    public ComponentScanInitializer() {
-        super(RunnerType.KERNEL, 10, "ComponentScanInitializer",
-                "Scans for @Component annotated classes and registers BeanDefinitions");
-    }
+@Slf4j
+@RunnerMeta(type = RunnerType.KERNEL, order = 10, name = "CapComponentScanBootstrapRunner", description = "Scans for @Component annotated classes and registers BeanDefinitions")
+public class ComponentScanBootstrapRunner implements BootstrapRunner {
 
     @Override
     public void initialize(BootstrapContext context) throws Exception {

@@ -1,0 +1,3 @@
+org.moper.cap.boot.runner.AutowiredBootstrapRunner
+org.moper.cap.boot.runner.ComponentScanBootstrapRunner
+org.moper.cap.boot.runner.PropertyBootstrapRunner

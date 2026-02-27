@@ -29,7 +29,7 @@ public class LoggingAspect {
 
 cap-aop 会自动被 cap-boot SPI 扫描注册，不会强依赖主模块。  
 未引入 cap-aop 时，AOP功能不会生效。  
-添加 `org.moper.cap.aop.initializer.AopInitializer` 到 SPI 配置即可。
+添加 `org.moper.cap.aop.runner.AopBootstrapRunner` 到 SPI 配置即可。
 
 ## 4. 通知类型说明
 
