@@ -2,7 +2,8 @@ package org.moper.cap.boot.interceptor;
 
 import org.moper.cap.bean.annotation.Autowired;
 import org.moper.cap.bean.annotation.Qualifier;
-import org.moper.cap.core.annotation.Component;
+import org.moper.cap.property.annotation.Subscriber;
+import org.moper.cap.property.annotation.Subscription;
 import org.moper.cap.property.annotation.Value;
 import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bean.definition.BeanDefinition;
@@ -99,15 +100,15 @@ public class AutowiredBeanInterceptor implements BeanInterceptor {
     /** 增强：处理 @Subscription 类 + @Subscriber 字段自动属性订阅和回调 */
     private void handleSubscription(Object bean) {
         Class<?> clazz = bean.getClass();
-        if (!clazz.isAnnotationPresent(Component.Subscription.class)) return;
+        if (!clazz.isAnnotationPresent(Subscription.class)) return;
 
-        Component.Subscription subscriptionAnnotation = clazz.getAnnotation(Component.Subscription.class);
+        Subscription subscriptionAnnotation = clazz.getAnnotation(Subscription.class);
 
-        final String subscriptionName = subscriptionAnnotation.value().isEmpty() ? "Subscription-" +clazz.getSimpleName() : subscriptionAnnotation.value();
+        final String subscriptionName = subscriptionAnnotation.name().isEmpty() ? "Subscription-" +clazz.getSimpleName() : subscriptionAnnotation.name();
 
         List<PropertySubscriber<?>> subscribers = new ArrayList<>();
         for (Field field : clazz.getDeclaredFields()) {
-            Component.Subscriber subscriberAnn = field.getAnnotation(Component.Subscriber.class);
+            Subscriber subscriberAnn = field.getAnnotation(Subscriber.class);
             if (subscriberAnn == null) continue;
 
             String propertyKey = subscriberAnn.propertyKey();

@@ -1,5 +1,7 @@
 package org.moper.cap.core.annotation;
 
+import org.moper.cap.bean.annotation.Component;
+
 import java.lang.annotation.*;
 
 /**

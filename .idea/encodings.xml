@@ -3,8 +3,6 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/cap-aop/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cap-aop/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/cap-bean/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/cap-bean/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cap-boot/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cap-boot/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cap-core/src/main/java" charset="UTF-8" />
@@ -17,6 +15,8 @@
     <file url="file://$PROJECT_DIR$/cap-example/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cap-exception/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cap-exception/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/cap-oguri/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/cap-oguri/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cap-property/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cap-property/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cap-web/src/main/java" charset="UTF-8" />

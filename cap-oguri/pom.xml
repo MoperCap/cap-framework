@@ -9,7 +9,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>cap-bean</artifactId>
+    <artifactId>cap-oguri</artifactId>
 
     <dependencies>
         <!-- 日志 -->

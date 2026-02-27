@@ -10,7 +10,7 @@ import org.moper.cap.bean.annotation.Primary;
 import org.moper.cap.bean.annotation.Bean;
 import org.moper.cap.core.annotation.RunnerMeta;
 import org.moper.cap.core.runner.BootstrapRunner;
-import org.moper.cap.core.annotation.Component;
+import org.moper.cap.bean.annotation.Component;
 import org.moper.cap.core.annotation.Configuration;
 import org.moper.cap.core.runner.RunnerType;
 import org.moper.cap.core.context.BootstrapContext;
