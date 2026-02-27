@@ -1,11 +1,16 @@
-package org.moper.cap.core.resource;
+package org.moper.cap.property.util;
 
 /**
  * 可析构资源接口 </br>
  *
  * 表示一种允许析构的资源 </br>
  */
-public interface CloseableResource extends Resource{
+public interface PropertyLifecycle {
+
+    /**
+     * 资源名称
+     */
+    String name();
 
     boolean isClosed();
 

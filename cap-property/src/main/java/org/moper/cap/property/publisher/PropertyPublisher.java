@@ -1,6 +1,6 @@
 package org.moper.cap.property.publisher;
 
-import org.moper.cap.core.resource.CloseableResource;
+import org.moper.cap.property.util.PropertyLifecycle;
 import org.moper.cap.property.event.PropertyOperation;
 
 /**
@@ -8,7 +8,7 @@ import org.moper.cap.property.event.PropertyOperation;
  *
  * 不提供属性获取功能，仅对外提供向属性管理平台发布属性操作的能力。 </br>
  */
-public interface PropertyPublisher extends CloseableResource {
+public interface PropertyPublisher extends PropertyLifecycle {
     /**
      * 发布属性操作列表
      *

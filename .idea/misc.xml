@@ -9,6 +9,7 @@
     </option>
     <option name="ignoredFiles">
       <set>
+        <option value="$PROJECT_DIR$/cap-core/pom.xml" />
         <option value="$PROJECT_DIR$/cap-example/pom.xml" />
       </set>
     </option>

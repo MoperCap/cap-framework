@@ -16,7 +16,6 @@
         <module>cap-context</module>
         <module>cap-aop</module>
         <module>cap-property</module>
-        <module>cap-core</module>
     </modules>
 
     <properties>
@@ -39,13 +38,6 @@
         <dependencies>
 
             <!-- ===== cap 模块自身 ===== -->
-
-            <dependency>
-                <groupId>org.moper.cap</groupId>
-                <artifactId>cap-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.moper.cap</groupId>
                 <artifactId>cap-property</artifactId>

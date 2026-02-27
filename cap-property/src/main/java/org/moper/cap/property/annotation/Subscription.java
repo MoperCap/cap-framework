@@ -1,7 +1,5 @@
 package org.moper.cap.property.annotation;
 
-import org.moper.cap.core.annotation.Component;
-
 import java.lang.annotation.*;
 
 
@@ -13,7 +11,6 @@ import java.lang.annotation.*;
 @Documented
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Component
 public @interface Subscription {
     String value() default "";
 }

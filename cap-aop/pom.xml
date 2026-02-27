@@ -12,12 +12,6 @@
     <artifactId>cap-aop</artifactId>
 
     <dependencies>
-
-        <dependency>
-            <groupId>org.moper.cap</groupId>
-            <artifactId>cap-core</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.moper.cap</groupId>
             <artifactId>cap-context</artifactId>

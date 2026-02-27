@@ -12,12 +12,6 @@
     <artifactId>cap-property</artifactId>
 
     <dependencies>
-
-        <dependency>
-            <groupId>org.moper.cap</groupId>
-            <artifactId>cap-core</artifactId>
-        </dependency>
-
         <!-- 日志 -->
         <dependency>
             <groupId>org.slf4j</groupId>

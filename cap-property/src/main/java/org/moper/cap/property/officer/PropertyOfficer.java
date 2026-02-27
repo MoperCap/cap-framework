@@ -1,6 +1,6 @@
 package org.moper.cap.property.officer;
 
-import org.moper.cap.core.resource.CloseableResource;
+import org.moper.cap.property.util.PropertyLifecycle;
 import org.moper.cap.property.event.PropertyManifest;
 import org.moper.cap.property.publisher.PropertyPublisher;
 import org.moper.cap.property.subscriber.PropertySubscription;
@@ -13,7 +13,7 @@ import java.util.function.Supplier;
  *
  * 负责管理属性发布者与属性订阅者客户端，提供获取（创建）、删除等功能。 </br>
  */
-public interface PropertyOfficer extends PropertyView, CloseableResource {
+public interface PropertyOfficer extends PropertyView, PropertyLifecycle {
 
     /**
      * 以同步的方式接收来自属性发布者发送的属性操作清单
