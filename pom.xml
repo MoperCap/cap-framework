@@ -15,7 +15,6 @@
         <module>cap-bean</module>
         <module>cap-context</module>
         <module>cap-aop</module>
-        <module>cap-example</module>
         <module>cap-property</module>
         <module>cap-core</module>
     </modules>

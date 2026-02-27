@@ -2,13 +2,14 @@ package org.moper.cap.context.initializer;
 
 import org.moper.cap.context.context.BootstrapContext;
 import org.moper.cap.context.exception.InitializerException;
+import org.moper.cap.context.runner.RunnerType;
 
 /**
  * 框架启动阶段构造机
  */
 public abstract class Initializer implements AutoCloseable, Comparable<Initializer> {
 
-    private final InitializerType type;
+    private final RunnerType type;
 
     private final int order;
 
@@ -22,7 +23,7 @@ public abstract class Initializer implements AutoCloseable, Comparable<Initializ
      * @param order 同级别构造机优先级，数值越小优先执行
      */
     public Initializer(int order){
-        this(InitializerType.EXTENSION, order, "", "");
+        this(RunnerType.EXTENSION, order, "", "");
     }
 
     /**
@@ -31,7 +32,7 @@ public abstract class Initializer implements AutoCloseable, Comparable<Initializ
      * @param type 构造机类型，决定了构造机的执行顺序，框架最小运行内核构造机优先执行，第三方扩展能力构造机最后执行
      * @param order 同级别构造机优先级，数值越小优先执行
      */
-    public Initializer(InitializerType type, int order) {
+    public Initializer(RunnerType type, int order) {
         this(type, order, "", "");
     }
 
@@ -43,7 +44,7 @@ public abstract class Initializer implements AutoCloseable, Comparable<Initializ
      * @param name 构造机名(不要求唯一, 可以为""，但不可以为null)
      * @param description 构造机相关描述(可以为""，但不可以为null)
      */
-    public Initializer(InitializerType type, int order,  String name,  String description) {
+    public Initializer(RunnerType type, int order, String name, String description) {
         this.type = type;
         this.order = order;
         this.name = name;
@@ -55,7 +56,7 @@ public abstract class Initializer implements AutoCloseable, Comparable<Initializ
      *
      * @return 构造机类型
      */
-    public InitializerType type(){
+    public RunnerType type(){
         return type;
     }
 

@@ -10,7 +10,7 @@ import org.moper.cap.bean.annotation.Bean;
 import org.moper.cap.core.annotation.Component;
 import org.moper.cap.context.annotation.Configuration;
 import org.moper.cap.context.initializer.Initializer;
-import org.moper.cap.context.initializer.InitializerType;
+import org.moper.cap.context.runner.RunnerType;
 import org.moper.cap.context.context.BootstrapContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +27,7 @@ public class ComponentScanInitializer extends Initializer {
     private static final Logger log = LoggerFactory.getLogger(ComponentScanInitializer.class);
 
     public ComponentScanInitializer() {
-        super(InitializerType.KERNEL, 10, "ComponentScanInitializer",
+        super(RunnerType.KERNEL, 10, "ComponentScanInitializer",
                 "Scans for @Component annotated classes and registers BeanDefinitions");
     }
 

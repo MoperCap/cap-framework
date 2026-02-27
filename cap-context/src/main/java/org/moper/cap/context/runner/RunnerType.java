@@ -1,9 +1,9 @@
-package org.moper.cap.context.initializer;
+package org.moper.cap.context.runner;
 
 /**
- * 框架启动阶段构造机类型
+ * 框架执行器类型 </br>
  */
-public enum InitializerType {
+public enum RunnerType {
 
     /**
      * 框架最小运行内核
@@ -23,7 +23,7 @@ public enum InitializerType {
 
     private final int priority;
 
-    InitializerType(int priority) {
+    RunnerType(int priority) {
         this.priority = priority;
     }
 

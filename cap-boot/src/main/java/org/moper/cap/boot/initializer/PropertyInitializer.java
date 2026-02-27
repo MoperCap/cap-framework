@@ -1,7 +1,7 @@
 package org.moper.cap.boot.initializer;
 
 import org.moper.cap.context.initializer.Initializer;
-import org.moper.cap.context.initializer.InitializerType;
+import org.moper.cap.context.runner.RunnerType;
 import org.moper.cap.context.context.BootstrapContext;
 import org.moper.cap.property.event.PropertySetOperation;
 import org.moper.cap.property.publisher.PropertyPublisher;
@@ -21,7 +21,7 @@ public class PropertyInitializer extends Initializer {
     private static final Logger log = LoggerFactory.getLogger(PropertyInitializer.class);
 
     public PropertyInitializer() {
-        super(InitializerType.KERNEL, 0, "PropertyInitializer", "Loads property files into Environment");
+        super(RunnerType.KERNEL, 0, "PropertyInitializer", "Loads property files into Environment");
     }
 
     @Override

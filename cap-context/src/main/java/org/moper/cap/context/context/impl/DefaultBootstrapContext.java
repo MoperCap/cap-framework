@@ -4,7 +4,7 @@ import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bean.container.impl.DefaultBeanContainer;
 import org.moper.cap.context.config.ConfigurationClass;
 import org.moper.cap.context.config.impl.DefaultConfigurationClass;
-import org.moper.cap.context.context.ApplicationContext;
+import org.moper.cap.context.context.RuntimeContext;
 import org.moper.cap.context.context.BootstrapContext;
 import org.moper.cap.property.officer.PropertyOfficer;
 import org.moper.cap.property.officer.impl.DefaultPropertyOfficer;
@@ -49,12 +49,12 @@ public class DefaultBootstrapContext implements BootstrapContext {
         return configurationClass;
     }
 
-    public ApplicationContext build(){
-        return new DefaultApplicationContext(this);
+    public RuntimeContext build(){
+        return new DefaultRuntimeContext(this);
     }
 
     @Override
-    public <T extends ApplicationContext> T build(Function<BootstrapContext, T> factory) throws Exception {
+    public <T extends RuntimeContext> T build(Function<BootstrapContext, T> factory) throws Exception {
         return factory.apply(this);
     }
 

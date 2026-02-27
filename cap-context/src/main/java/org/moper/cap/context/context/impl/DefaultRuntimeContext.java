@@ -3,9 +3,8 @@ package org.moper.cap.context.context.impl;
 import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.exception.*;
-import org.moper.cap.context.context.ApplicationContext;
+import org.moper.cap.context.context.RuntimeContext;
 import org.moper.cap.context.context.BootstrapContext;
-import org.moper.cap.context.exception.ContextException;
 import org.moper.cap.property.officer.PropertyOfficer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,38 +14,22 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * {@link ApplicationContext} 的默认实现 </br>
+ * {@link RuntimeContext} 的默认实现 </br>
  * 委托 {@link BeanContainer} 实现 BeanProvider 和 BeanInspector 的所有方法
  */
-public class DefaultApplicationContext implements ApplicationContext {
+public class DefaultRuntimeContext implements RuntimeContext {
 
-    private static final Logger log = LoggerFactory.getLogger(DefaultApplicationContext.class);
+    private static final Logger log = LoggerFactory.getLogger(DefaultRuntimeContext.class);
 
     private final BeanContainer beanContainer;
     private final PropertyOfficer propertyOfficer;
 
-    private final AtomicBoolean running = new AtomicBoolean(false);
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
-    public DefaultApplicationContext(BootstrapContext bootstrapContext) {
+    public DefaultRuntimeContext(BootstrapContext bootstrapContext) {
         this.beanContainer = bootstrapContext.getBeanContainer();
         this.propertyOfficer = bootstrapContext.getPropertyOfficer();
     }
-
-    @Override
-    public void run() throws ContextException {
-        if (!running.compareAndSet(false, true)) {
-            return;
-        }
-        try {
-            beanContainer.preInstantiateSingletons();
-        } catch (BeanCreationException e) {
-            throw new ContextException("Failed to pre-instantiate singletons", e);
-        }
-        Runtime.getRuntime().addShutdownHook(new Thread(this::close));
-    }
-
-
 
     @Override
     public void close() {

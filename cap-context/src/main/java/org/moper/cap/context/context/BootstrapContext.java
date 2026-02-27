@@ -2,7 +2,6 @@ package org.moper.cap.context.context;
 
 import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.context.config.ConfigurationClass;
-import org.moper.cap.context.exception.ContextException;
 import org.moper.cap.property.officer.PropertyOfficer;
 
 import java.util.function.Function;
@@ -29,5 +28,5 @@ public interface BootstrapContext {
      */
     ConfigurationClass getConfigurationClass();
 
-    <T extends ApplicationContext> T build(Function<BootstrapContext, T> factory) throws Exception;
+    <T extends RuntimeContext> T build(Function<BootstrapContext, T> factory) throws Exception;
 }

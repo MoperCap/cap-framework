@@ -1,18 +1,20 @@
 package org.moper.cap.boot.application.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.boot.application.CapApplication;
-import org.moper.cap.context.context.ApplicationContext;
+import org.moper.cap.context.context.RuntimeContext;
 import org.moper.cap.context.context.impl.DefaultBootstrapContext;
 import org.moper.cap.context.initializer.Initializer;
 
-import java.io.Closeable;
 import java.util.ServiceLoader;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Slf4j
 public class DefaultCapApplication implements CapApplication {
 
-    private final ApplicationContext applicationContext;
+    private final RuntimeContext runtimeContext;
+    private final AtomicBoolean started = new AtomicBoolean(false);
 
     public DefaultCapApplication(Class<?> primarySource, String... args) throws Exception {
 
@@ -27,18 +29,22 @@ public class DefaultCapApplication implements CapApplication {
 
         // 按顺序执行所有 Initializer
         for (Initializer initializer : initializers) {
+            log.info("Initializing {} {}", initializer.name(), initializer.getClass().getName());
             initializer.initialize(bootstrapContext);
             initializer.close();
         }
         // 构造完成后，BootstrapContext 处于完全初始化状态
-        this.applicationContext = bootstrapContext.build();
+        this.runtimeContext = bootstrapContext.build();
     }
 
     @Override
-    public ApplicationContext run() throws Exception {
+    public RuntimeContext run() throws Exception {
+        if(!started.compareAndSet(false, true)) {
+            return runtimeContext;
+        }
 
 
 
-        return applicationContext;
+        return runtimeContext;
     }
 }

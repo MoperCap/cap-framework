@@ -5,7 +5,7 @@ import org.moper.cap.aop.annotation.Around;
 import org.moper.cap.aop.annotation.Aspect;
 import org.moper.cap.aop.annotation.Before;
 import org.moper.cap.context.initializer.Initializer;
-import org.moper.cap.context.initializer.InitializerType;
+import org.moper.cap.context.runner.RunnerType;
 import org.moper.cap.context.context.BootstrapContext;
 import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.aop.advisor.Advisor;
@@ -17,7 +17,7 @@ import java.util.*;
 public class AopInitializer extends Initializer {
 
     public AopInitializer() {
-        super(InitializerType.FEATURE, 100, "CapAopInitializer", "Scans and installs AOP Advisors and Interceptors");
+        super(RunnerType.FEATURE, 100, "CapAopInitializer", "Scans and installs AOP Advisors and Interceptors");
     }
 
     @Override

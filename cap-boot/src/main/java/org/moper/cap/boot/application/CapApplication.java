@@ -1,7 +1,7 @@
 package org.moper.cap.boot.application;
 
-import org.moper.cap.context.context.ApplicationContext;
+import org.moper.cap.context.context.RuntimeContext;
 
 public interface CapApplication{
-    ApplicationContext run() throws Exception;
+    RuntimeContext run() throws Exception;
 }
