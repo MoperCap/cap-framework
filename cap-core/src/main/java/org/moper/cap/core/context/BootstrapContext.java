@@ -1,7 +1,8 @@
 package org.moper.cap.core.context;
 
 import org.moper.cap.bean.container.BeanContainer;
-import org.moper.cap.core.config.ConfigurationClass;
+import org.moper.cap.core.argument.CommandArgumentParser;
+import org.moper.cap.core.config.ConfigurationClassParser;
 import org.moper.cap.property.officer.PropertyOfficer;
 
 import java.util.function.Function;
@@ -24,9 +25,14 @@ public interface BootstrapContext {
     PropertyOfficer getPropertyOfficer();
 
     /**
-     * 获取配置类信息视图
+     * 获取命令行参数解析器
      */
-    ConfigurationClass getConfigurationClass();
+    CommandArgumentParser getCommandArgumentParser();
+
+    /**
+     * 获取配置类解析器
+     */
+    ConfigurationClassParser getConfigurationClassParser();
 
     <T extends RuntimeContext> T build(Function<BootstrapContext, T> factory) throws Exception;
 }

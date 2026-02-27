@@ -2,7 +2,7 @@ package org.moper.cap.core.config;
 
 import java.util.Collection;
 
-public interface ConfigurationClass {
+public interface ConfigurationClassParser {
 
     /**
      * 获取配置类上指定的软件包扫描路径集合

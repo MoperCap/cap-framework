@@ -8,28 +8,17 @@ public enum RunnerType {
     /**
      * 框架最小运行内核
      */
-    KERNEL(0),
+    KERNEL,
 
     /**
      * 框架官方可选能力
      */
-    FEATURE(100),
+    FEATURE,
 
     /**
      * 第三方扩展能力
      * 通过依赖引入的插件
      */
-    EXTENSION(200);
-
-    private final int priority;
-
-    RunnerType(int priority) {
-        this.priority = priority;
-    }
-
-    public int priority() {
-        return priority;
-    }
-
+    EXTENSION;
 }
 

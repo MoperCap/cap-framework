@@ -2,15 +2,15 @@ package org.moper.cap.core.config.impl;
 
 import org.moper.cap.core.annotation.ComponentScan;
 import org.moper.cap.core.annotation.ResourceScan;
-import org.moper.cap.core.config.ConfigurationClass;
+import org.moper.cap.core.config.ConfigurationClassParser;
 
 import java.util.Collection;
 import java.util.Set;
 
-public final class DefaultConfigurationClass implements ConfigurationClass {
+public final class DefaultConfigurationClassParser implements ConfigurationClassParser {
     private final Class<?> configClass;
 
-    public DefaultConfigurationClass(Class<?> configClass) {
+    public DefaultConfigurationClassParser(Class<?> configClass) {
         this.configClass = configClass;
     }
 

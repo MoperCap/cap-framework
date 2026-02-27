@@ -1,5 +1,8 @@
 package org.moper.cap.property.officer;
 
+import org.moper.cap.property.PropertyDefinition;
+
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 

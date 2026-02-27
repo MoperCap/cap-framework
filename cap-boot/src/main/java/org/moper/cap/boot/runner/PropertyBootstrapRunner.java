@@ -22,7 +22,7 @@ public class PropertyBootstrapRunner implements BootstrapRunner {
 
     @Override
     public void initialize(BootstrapContext context) throws Exception {
-        Collection<String> resourcePaths = context.getConfigurationClass().getResourceScanPaths();
+        Collection<String> resourcePaths = context.getConfigurationClassParser().getResourceScanPaths();
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         if (classLoader == null) classLoader = getClass().getClassLoader();
 

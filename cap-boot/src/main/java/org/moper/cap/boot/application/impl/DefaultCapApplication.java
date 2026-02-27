@@ -1,8 +1,15 @@
 package org.moper.cap.boot.application.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.moper.cap.bean.container.BeanContainer;
+import org.moper.cap.bean.container.impl.DefaultBeanContainer;
 import org.moper.cap.boot.application.CapApplication;
 import org.moper.cap.core.annotation.RunnerMeta;
+import org.moper.cap.core.argument.CommandArgumentParser;
+import org.moper.cap.core.argument.impl.DefaultCommandArgumentParser;
+import org.moper.cap.core.config.ConfigurationClassParser;
+import org.moper.cap.core.config.impl.DefaultConfigurationClassParser;
+import org.moper.cap.core.constants.AppConstants;
 import org.moper.cap.core.context.RuntimeContext;
 import org.moper.cap.core.context.impl.DefaultBootstrapContext;
 import org.moper.cap.core.exception.BootstrapRunnerException;
@@ -10,6 +17,8 @@ import org.moper.cap.core.runner.BootstrapRunner;
 import org.moper.cap.core.runner.RunnerDefinition;
 import org.moper.cap.core.runner.RunnerType;
 import org.moper.cap.core.runner.RuntimeRunner;
+import org.moper.cap.property.officer.PropertyOfficer;
+import org.moper.cap.property.officer.impl.DefaultPropertyOfficer;
 
 import java.util.ServiceLoader;
 import java.util.TreeSet;
@@ -23,7 +32,7 @@ public class DefaultCapApplication implements CapApplication {
 
     public DefaultCapApplication(Class<?> primarySource, String... args) throws Exception {
 
-        DefaultBootstrapContext bootstrapContext = new DefaultBootstrapContext(primarySource);
+        DefaultBootstrapContext bootstrapContext = getDefaultBootstrapContext(primarySource, args);
 
         // 通过 SPI 发现所有 BootstrapRunner 收集到有序集合
         TreeSet<RunnerDefinition<BootstrapRunner>> runners = new TreeSet<>();
@@ -39,12 +48,12 @@ public class DefaultCapApplication implements CapApplication {
             String name = meta.name();
             String description = meta.description();
 
-            runners.add(new RunnerDefinition<>(type, order, clazz, runner, name, description));
+            runners.add(new RunnerDefinition<>(order, clazz, runner, type, name, description));
         }
 
         // 按顺序执行所有 Initializer
         for(RunnerDefinition<BootstrapRunner> runner : runners){
-            log.info("Running BootstrapRunner {} ({})", runner.name(), runner.clazz().getName());
+            log.info("Running BootstrapRunner [{}]", runner);
             BootstrapRunner instance = runner.runner();
             instance.initialize(bootstrapContext);
             instance.close();
@@ -52,6 +61,16 @@ public class DefaultCapApplication implements CapApplication {
 
         // 构造完成后，BootstrapContext 处于完全初始化状态
         this.runtimeContext = bootstrapContext.build();
+    }
+
+    private static DefaultBootstrapContext getDefaultBootstrapContext(Class<?> primarySource, String[] args) {
+        BeanContainer beanContainer = new DefaultBeanContainer();
+        PropertyOfficer propertyOfficer = new DefaultPropertyOfficer(AppConstants.PROPERTY_OFFICER);
+        CommandArgumentParser commandArgumentParser = new DefaultCommandArgumentParser(args);
+        ConfigurationClassParser configurationClassParser = new DefaultConfigurationClassParser(primarySource);
+
+        DefaultBootstrapContext bootstrapContext = new DefaultBootstrapContext(beanContainer, propertyOfficer, commandArgumentParser, configurationClassParser);
+        return bootstrapContext;
     }
 
     @Override
@@ -74,7 +93,7 @@ public class DefaultCapApplication implements CapApplication {
             String name = meta.name();
             String description = meta.description();
 
-            runners.add(new RunnerDefinition<>(type, order, clazz, runner, name, description));
+            runners.add(new RunnerDefinition<>(order, clazz, runner, type, name, description));
         }
 
         // 按顺序执行所有 Initializer

@@ -28,7 +28,7 @@ public class ComponentScanBootstrapRunner implements BootstrapRunner {
 
     @Override
     public void initialize(BootstrapContext context) throws Exception {
-        Collection<String> scanPackages = context.getConfigurationClass().getComponentScanPaths();
+        Collection<String> scanPackages = context.getConfigurationClassParser().getComponentScanPaths();
 
         try (ScanResult scanResult = new ClassGraph()
                 .enableAnnotationInfo()

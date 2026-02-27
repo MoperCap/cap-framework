@@ -7,7 +7,7 @@ import java.lang.annotation.*;
  * 依赖注入注解
  */
 @Documented
-@Target({ElementType.FIELD, ElementType.CONSTRUCTOR, ElementType.METHOD})
+@Target({ElementType.FIELD, ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Inject {
 }

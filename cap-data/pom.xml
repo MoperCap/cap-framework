@@ -18,20 +18,6 @@
             <artifactId>cap-core</artifactId>
         </dependency>
 
-        <!-- JDBC 连接池 -->
-        <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-            <version>5.1.0</version>
-        </dependency>
-
-        <!-- ORM 注解（只用注解，不用实现） -->
-        <dependency>
-            <groupId>jakarta.persistence</groupId>
-            <artifactId>jakarta.persistence-api</artifactId>
-            <version>3.1.0</version>
-        </dependency>
-
     </dependencies>
 
 </project>

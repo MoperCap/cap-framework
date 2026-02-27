@@ -6,18 +6,18 @@ import org.moper.cap.core.annotation.RunnerMeta;
 /**
  * 框架执行器定义字段 </br>
  *
- * @param type 执行器类型，不能为null
- * @param order 执行器顺序，数值越小优先级越高
+ * @param priority 执行器顺序，数值越小优先级越高
  * @param clazz 执行器类，不能为null，且必须被@RunnerMeta注解标注
  * @param runner 执行器实例，不能为null
+ * @param type 执行器类型，不能为null
  * @param name 执行器名称，默认为执行器类名
  * @param description 执行器描述
  */
 public record RunnerDefinition<T extends Runner>(
-        RunnerType type,
-        int order,
+        int priority,
         Class<? extends T> clazz,
         T runner,
+        RunnerType type,
         String name,
         String description
 ) implements Comparable<RunnerDefinition<T>> {
@@ -45,10 +45,17 @@ public record RunnerDefinition<T extends Runner>(
 
     @Override
     public int compareTo(RunnerDefinition<T> o) {
-        if(this.type != o.type) {
-            return Integer.compare(this.type.priority(), o.type.priority());
-        }else {
-            return Integer.compare(this.order, o.order);
-        }
+        return Integer.compare(this.priority, o.priority);
+    }
+
+    @Override
+    public String toString() {
+        return "RunnerDefinition{" +
+                "priority=" + priority +
+                ", clazz=" + clazz +
+                ", type=" + type +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                '}';
     }
 }

@@ -1,13 +1,11 @@
 package org.moper.cap.core.context.impl;
 
 import org.moper.cap.bean.container.BeanContainer;
-import org.moper.cap.bean.container.impl.DefaultBeanContainer;
-import org.moper.cap.core.config.ConfigurationClass;
-import org.moper.cap.core.config.impl.DefaultConfigurationClass;
+import org.moper.cap.core.argument.CommandArgumentParser;
+import org.moper.cap.core.config.ConfigurationClassParser;
 import org.moper.cap.core.context.RuntimeContext;
 import org.moper.cap.core.context.BootstrapContext;
 import org.moper.cap.property.officer.PropertyOfficer;
-import org.moper.cap.property.officer.impl.DefaultPropertyOfficer;
 
 import java.util.function.Function;
 
@@ -17,13 +15,34 @@ public class DefaultBootstrapContext implements BootstrapContext {
 
     private final PropertyOfficer propertyOfficer;
 
-    private final ConfigurationClass configurationClass;
+    private final CommandArgumentParser commandArgumentParser;
 
-    public DefaultBootstrapContext(Class<?> configClass) {
-        this.beanContainer = new DefaultBeanContainer();
-        this.propertyOfficer = new DefaultPropertyOfficer("cap-property-officer");
-        this.configurationClass = new DefaultConfigurationClass(configClass);
+    private final ConfigurationClassParser configurationClassParser;
+
+    public DefaultBootstrapContext(BeanContainer beanContainer, PropertyOfficer propertyOfficer, CommandArgumentParser commandArgumentParser, ConfigurationClassParser configurationClassParser) {
+        if(beanContainer == null){
+            throw new IllegalArgumentException("beanContainer cannot be null");
+        }
+
+        if(propertyOfficer == null){
+            throw new IllegalArgumentException("propertyOfficer cannot be null");
+        }
+
+        if(commandArgumentParser == null){
+            throw new IllegalArgumentException("commandArgumentParser cannot be null");
+        }
+
+        if(configurationClassParser == null){
+            throw new IllegalArgumentException("configurationClassParser cannot be null");
+        }
+
+        this.beanContainer = beanContainer;
+        this.propertyOfficer = propertyOfficer;
+        this.commandArgumentParser = commandArgumentParser;
+        this.configurationClassParser = configurationClassParser;
     }
+
+
 
     /**
      * 获取已完成 BeanDefinition 注册的 Bean 容器
@@ -42,11 +61,19 @@ public class DefaultBootstrapContext implements BootstrapContext {
     }
 
     /**
+     * 获取命令行参数解析器
+     */
+    @Override
+    public CommandArgumentParser getCommandArgumentParser() {
+        return commandArgumentParser;
+    }
+
+    /**
      * 获取配置类信息视图
      */
     @Override
-    public ConfigurationClass getConfigurationClass() {
-        return configurationClass;
+    public ConfigurationClassParser getConfigurationClassParser() {
+        return configurationClassParser;
     }
 
     public RuntimeContext build(){
