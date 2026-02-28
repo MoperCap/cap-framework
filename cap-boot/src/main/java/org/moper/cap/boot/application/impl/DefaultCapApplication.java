@@ -9,7 +9,7 @@ import org.moper.cap.core.argument.CommandArgumentParser;
 import org.moper.cap.core.argument.impl.DefaultCommandArgumentParser;
 import org.moper.cap.core.config.ConfigurationClassParser;
 import org.moper.cap.core.config.impl.DefaultConfigurationClassParser;
-import org.moper.cap.core.constants.AppConstants;
+import org.moper.cap.core.constants.ResourceConstants;
 import org.moper.cap.core.context.RuntimeContext;
 import org.moper.cap.core.context.impl.DefaultBootstrapContext;
 import org.moper.cap.core.exception.BootstrapRunnerException;
@@ -65,7 +65,7 @@ public class DefaultCapApplication implements CapApplication {
 
     private static DefaultBootstrapContext getDefaultBootstrapContext(Class<?> primarySource, String[] args) {
         BeanContainer beanContainer = new DefaultBeanContainer();
-        PropertyOfficer propertyOfficer = new DefaultPropertyOfficer(AppConstants.PROPERTY_OFFICER);
+        PropertyOfficer propertyOfficer = new DefaultPropertyOfficer(ResourceConstants.PROPERTY_OFFICER);
         CommandArgumentParser commandArgumentParser = new DefaultCommandArgumentParser(args);
         ConfigurationClassParser configurationClassParser = new DefaultConfigurationClassParser(primarySource);
 

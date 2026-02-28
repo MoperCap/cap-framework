@@ -1,0 +1,7 @@
+student:
+  name: "wang"
+  age: 21
+
+application:
+  profiles:
+    active: dev

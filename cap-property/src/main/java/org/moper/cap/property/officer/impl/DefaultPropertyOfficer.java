@@ -142,7 +142,7 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
     }
 
     @Override
-    public Set<String> getAllPropertyKey() {
+    public Set<String> getAllPropertyKeys() {
         return Set.copyOf(core.keySet());
     }
 

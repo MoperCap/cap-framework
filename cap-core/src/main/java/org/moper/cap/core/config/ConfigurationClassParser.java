@@ -2,6 +2,9 @@ package org.moper.cap.core.config;
 
 import java.util.Collection;
 
+/**
+ * 配置类解析器接口 </br>
+ */
 public interface ConfigurationClassParser {
 
     /**

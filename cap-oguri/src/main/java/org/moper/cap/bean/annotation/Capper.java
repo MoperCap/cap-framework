@@ -15,7 +15,7 @@ public @interface Capper {
     /**
      * Bean 名称/别名（可支持多个）
      */
-    String[] name() default {};
+    String[] names() default {""};
 
     /**
      * 是否为首选 Bean（当存在多个同类型 Bean 时，优先注入该 Bean）
@@ -31,4 +31,9 @@ public @interface Capper {
      * Bean 作用域（默认为单例）
      */
     BeanScope scope() default BeanScope.SINGLETON;
+
+    /**
+     * 可读描述信息（仅供开发者参考，不影响容器行为）
+     */
+    String description() default "";
 }

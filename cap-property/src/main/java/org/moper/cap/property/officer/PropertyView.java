@@ -1,8 +1,5 @@
 package org.moper.cap.property.officer;
 
-import org.moper.cap.property.PropertyDefinition;
-
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -65,5 +62,5 @@ public interface PropertyView {
      *
      * @return 属性键集合。若不包含任何属性，则返回空集合
      */
-    Set<String> getAllPropertyKey();
+    Set<String> getAllPropertyKeys();
 }

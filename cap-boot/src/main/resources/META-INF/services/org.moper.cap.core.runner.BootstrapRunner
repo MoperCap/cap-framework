@@ -1,3 +1,2 @@
-org.moper.cap.boot.runner.AutowiredBootstrapRunner
-org.moper.cap.boot.runner.ComponentScanBootstrapRunner
-org.moper.cap.boot.runner.PropertyBootstrapRunner
+org.moper.cap.boot.runner.CommandArgumentsBootstrapRunner
+org.moper.cap.boot.runner.StaticResourcePropertyBootstrapRunner

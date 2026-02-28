@@ -1,0 +1,7 @@
+student:
+    name: "zhang"
+    age: 20
+
+application:
+    profiles:
+        active: dev

@@ -37,8 +37,6 @@ package org.moper.cap.bean.definition;
  *                            默认 {@code false}
  * @param primary             是否为同类型 Bean 的首选候选，按类型查找时若存在多个匹配，
  *                            优先返回标记为 {@code primary} 的 Bean，默认 {@code false}
- * @param autowired           是否作为自动装配的候选者，设为 {@code false} 可将该 Bean
- *                            从自动装配中排除，默认 {@code true}
  * @param description         可读描述信息，不能为 null，默认为空字符串
  */
 public record BeanDefinition(
@@ -49,9 +47,17 @@ public record BeanDefinition(
         String[] dependsOn,
         boolean lazy,
         boolean primary,
-        boolean autowired,
         String description
 ) {
+
+    public BeanDefinition{
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Bean name must not be blank");
+        }
+        if (type == null) {
+            throw new IllegalArgumentException("Bean type must not be null");
+        }
+    }
 
     /**
      * 创建一个以无参构造函数实例化的单例 BeanDefinition。
@@ -65,18 +71,11 @@ public record BeanDefinition(
      * @throws IllegalArgumentException 如果 name 为空或 type 为 null
      */
     public static BeanDefinition of(String name, Class<?> type) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Bean name must not be blank");
-        }
-        if (type == null) {
-            throw new IllegalArgumentException("Bean type must not be null");
-        }
         return new BeanDefinition(
                 name, type, BeanScope.SINGLETON,
                 InstantiationPolicy.constructor(),
                 new String[0],
-                false, false, true, ""
-        );
+                false, false, "");
     }
 
     /**
@@ -90,9 +89,8 @@ public record BeanDefinition(
      */
     public BeanDefinition withInstantiationPolicy(InstantiationPolicy policy) {
         return new BeanDefinition(
-                name, type, scope, policy, dependsOn,
-                lazy, primary, autowired, description
-        );
+                name, type, scope, policy,
+                dependsOn, lazy, primary, description);
     }
 
     /**
@@ -103,9 +101,8 @@ public record BeanDefinition(
      */
     public BeanDefinition withScope(BeanScope scope) {
         return new BeanDefinition(
-                name, type, scope, instantiationPolicy, dependsOn,
-                lazy, primary, autowired, description
-        );
+                name, type, scope, instantiationPolicy,
+                dependsOn, lazy, primary, description);
     }
 
     /**
@@ -116,9 +113,8 @@ public record BeanDefinition(
      */
     public BeanDefinition dependsOn(String... beanNames) {
         return new BeanDefinition(
-                name, type, scope, instantiationPolicy, beanNames,
-                lazy, primary, autowired, description
-        );
+                name, type, scope, instantiationPolicy,
+                beanNames, lazy, primary, description);
     }
 
     /**
@@ -129,9 +125,8 @@ public record BeanDefinition(
      */
     public BeanDefinition withLazy(boolean lazy) {
         return new BeanDefinition(
-                name, type, scope, instantiationPolicy, dependsOn,
-                lazy, primary, autowired, description
-        );
+                name, type, scope, instantiationPolicy,
+                dependsOn, lazy, primary, description);
     }
 
     /**
@@ -142,23 +137,10 @@ public record BeanDefinition(
      */
     public BeanDefinition withPrimary(boolean primary) {
         return new BeanDefinition(
-                name, type, scope, instantiationPolicy, dependsOn,
-                lazy, primary, autowired, description
-        );
+                name, type, scope, instantiationPolicy,
+                dependsOn, lazy, primary, description);
     }
 
-    /**
-     * 返回一个 {@code autowired} 字段被修改的新 BeanDefinition。
-     *
-     * @param autowired 是否作为自动装配候选者
-     * @return 新的 BeanDefinition 实例
-     */
-    public BeanDefinition withAutowired(boolean autowired) {
-        return new BeanDefinition(
-                name, type, scope, instantiationPolicy, dependsOn,
-                lazy, primary, autowired, description
-        );
-    }
 
     /**
      * 返回一个 {@code description} 字段被修改的新 BeanDefinition。
@@ -168,9 +150,8 @@ public record BeanDefinition(
      */
     public BeanDefinition withDescription(String description) {
         return new BeanDefinition(
-                name, type, scope, instantiationPolicy, dependsOn,
-                lazy, primary, autowired, description
-        );
+                name, type, scope, instantiationPolicy,
+                dependsOn, lazy, primary, description);
     }
 
     /**
