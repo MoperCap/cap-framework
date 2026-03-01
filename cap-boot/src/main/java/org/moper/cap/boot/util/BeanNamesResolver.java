@@ -4,10 +4,8 @@ import org.moper.cap.bean.annotation.Capper;
 import org.moper.cap.bean.annotation.Inject;
 import org.moper.cap.bean.exception.BeanDefinitionException;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-
 /**
  * Bean 名称解析器，用于从类、方法或构造函数/方法参数的注解中提取 Bean 名称。
  */
@@ -66,65 +64,22 @@ public final class BeanNamesResolver {
     }
 
     /**
-     * 解析构造函数的参数，获取每个参数对应的 Bean 名称数组。
-     *
-     * <p>参数推导优先级（按顺序）：
-     * <ol>
-     *   <li>参数的 @Inject 注解中显式指定的 beanName（非空时）</li>
-     *   <li>参数类型的简单类名首字母小写（如 {@code MyService → myService}）</li>
-     * </ol>
-     *
-     * @param constructor 构造函数的反射对象，不能为 null
-     * @return 参数 Bean 名称数组，长度等于参数个数，按参数顺序排列
-     * @throws BeanDefinitionException 如果某个参数无法推导 Bean 名称
-     */
-    public static String[] resolveParameter(Constructor<?> constructor) {
-        if (constructor == null) {
-            throw new IllegalArgumentException("Constructor must not be null");
-        }
-        Parameter[] parameters = constructor.getParameters();
-        String[] beanNames = new String[parameters.length];
-        for (int i = 0; i < parameters.length; i++) {
-            beanNames[i] = resolveParameterBeanName(parameters[i], constructor.getDeclaringClass().getSimpleName(), i);
-        }
-        return beanNames;
-    }
-
-    /**
-     * 解析工厂方法的参数，获取每个参数对应的 Bean 名称数组。
-     *
-     * <p>参数推导优先级（按顺序）：
-     * <ol>
-     *   <li>参数的 @Inject 注解中显式指定的 beanName（非空时）</li>
-     *   <li>参数类型的简单类名首字母小写（如 {@code MyService → myService}）</li>
-     * </ol>
-     *
-     * @param method 方法的反射对象，不能为 null
-     * @return 参数 Bean 名称数组，长度等于参数个数，按参数顺序排列
-     * @throws BeanDefinitionException 如果某个参数无法推导 Bean 名称
-     */
-    public static String[] resolveParameter(Method method) {
-        if (method == null) {
-            throw new IllegalArgumentException("Method must not be null");
-        }
-        Parameter[] parameters = method.getParameters();
-        String[] beanNames = new String[parameters.length];
-        for (int i = 0; i < parameters.length; i++) {
-            beanNames[i] = resolveParameterBeanName(parameters[i], method.getName(), i);
-        }
-        return beanNames;
-    }
-
-    /**
      * 解析单个参数对应的 Bean 名称。
      *
-     * @param parameter 参数反射对象
-     * @param ownerName 参数所属的方法或构造函数名称（用于异常信息）
-     * @param index     参数的索引（用于异常信息）
-     * @return Bean 名称
+     * <p>参数推导优先级（按顺序）：
+     * <ol>
+     *   <li>参数的 @Inject 注解中显式指定的 beanName（非空时）</li>
+     *   <li>参数类型的简单类名首字母小写（如 {@code MyService → myService}）</li>
+     * </ol>
+     *
+     * @param parameter 参数反射对象，不能为 null
+     * @return 单个 Bean 名称字符串
      * @throws BeanDefinitionException 如果参数无法推导 Bean 名称
      */
-    private static String resolveParameterBeanName(Parameter parameter, String ownerName, int index) {
+    public static String resolveParameter(Parameter parameter) {
+        if (parameter == null) {
+            throw new IllegalArgumentException("Parameter must not be null");
+        }
         // 优先级 1：@Inject 注解中显式指定的 beanName
         Inject inject = parameter.getAnnotation(Inject.class);
         if (inject != null && !inject.beanName().isEmpty()) {
@@ -136,9 +91,19 @@ public final class BeanNamesResolver {
             return decapitalize(simpleName);
         }
         // 无法推导
+        Parameter[] params = parameter.getDeclaringExecutable().getParameters();
+        int index = 0;
+        for (int i = 0; i < params.length; i++) {
+            if (params[i].equals(parameter)) {
+                index = i;
+                break;
+            }
+        }
+        String ownerName = parameter.getDeclaringExecutable().getName();
         throw new BeanDefinitionException(
                 "Cannot resolve bean name for parameter " + index + " of '" + ownerName +
-                "': parameter type has no simple name. Use @Inject(beanName=\"...\") to specify explicitly.");
+                "' (type: " + parameter.getType().getName() + "): parameter type has no simple name. " +
+                "Use @Inject(beanName=\"...\") to specify explicitly.");
     }
 
     /**

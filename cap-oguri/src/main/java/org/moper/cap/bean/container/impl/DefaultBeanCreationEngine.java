@@ -165,7 +165,7 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
     }
 
     private Object instantiateByConstructor(String beanName, BeanDefinition def) throws BeanException {
-        String[] parameterBeanNames = def.constructorParameterBeanNames();
+        String[] parameterBeanNames = def.parameterBeanNames();
         Object[] args = resolveArguments(parameterBeanNames);
         try {
             Constructor<?> constructor = findMatchingConstructor(def.type(), args);
@@ -178,7 +178,7 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
 
     private Object instantiateByFactory(String beanName, BeanDefinition def) throws BeanException {
         Object factoryBean = beanProvider.getBean(def.factoryBeanName());
-        String[] parameterBeanNames = def.factoryMethodParameterBeanNames();
+        String[] parameterBeanNames = def.parameterBeanNames();
         Object[] args = resolveArguments(parameterBeanNames);
         try {
             Method method = findFactoryMethod(factoryBean.getClass(), def.factoryMethodName(), args);
