@@ -6,9 +6,6 @@ import org.moper.cap.bean.annotation.Capper;
 import org.moper.cap.bean.annotation.Inject;
 import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bean.definition.BeanDefinition;
-import org.moper.cap.bean.definition.instantiation.ConstructorInstantiation;
-import org.moper.cap.bean.definition.instantiation.FactoryInstantiation;
-import org.moper.cap.bean.definition.instantiation.InstantiationPolicy;
 import org.moper.cap.bean.exception.BeanDefinitionException;
 import org.moper.cap.boot.util.BeanNamesResolver;
 import org.moper.cap.core.annotation.RunnerMeta;
@@ -52,8 +49,8 @@ public class BeanDefinitionRegisterBootstrapRunner implements BootstrapRunner {
 
                 Class<?> clazz = classInfo.loadClass();
 
-                // Bean实例化策略
-                InstantiationPolicy policy = resolveConstructorPolicy(classInfo);
+                // Bean 构造函数参数 Bean 名称
+                String[] constructorArgBeanNames = resolveConstructorArgBeanNames(classInfo);
                 // Bean 名称（支持多个别名，第一个名称会被作为主要名称）
                 String[] beanNames = BeanNamesResolver.resolve(clazz);
                 String primaryBeanName = beanNames[0];
@@ -61,11 +58,11 @@ public class BeanDefinitionRegisterBootstrapRunner implements BootstrapRunner {
 
                 // 注册Bean定义
                 BeanDefinition def = BeanDefinition.of(primaryBeanName, clazz)
+                        .withConstructorArgs(constructorArgBeanNames)
                         .withPrimary(capper.primary())
                         .withLazy(capper.lazy())
                         .withScope(capper.scope())
-                        .withDescription(capper.description())
-                        .withInstantiationPolicy(policy);
+                        .withDescription(capper.description());
                 beanDefinitionMap.put(primaryBeanName, def);
                 // 注册别名
                 registerAlias(beanNames);
@@ -81,7 +78,6 @@ public class BeanDefinitionRegisterBootstrapRunner implements BootstrapRunner {
 
                     Method factoryMethod = methodInfo.loadClassAndGetMethod();
                     String factoryMethodName = factoryMethod.getName();
-                    Class<?>[] factoryMethodArgTypes = factoryMethod.getParameterTypes();
 
                     // 非静态工厂方法所在类必须是可实例化的，否则无法作为工厂类，抛出异常
                     if(!methodInfo.isStatic() && (classInfo.isInterface() || classInfo.isAbstract())) {
@@ -96,7 +92,8 @@ public class BeanDefinitionRegisterBootstrapRunner implements BootstrapRunner {
                         beanDefinitionMap.put(factoryClassBeanName, factoryDef);
                     }
 
-                    FactoryInstantiation policy = FactoryInstantiation.of(factoryClassBeanName, factoryMethodName, factoryMethodArgTypes);
+                    // 解析工厂方法参数 Bean 名称
+                    String[] factoryMethodArgBeanNames = resolveMethodArgBeanNames(factoryMethod);
 
                     // Bean 名称（支持多个别名，第一个名称会被作为主要名称）
                     String[] beanNames = BeanNamesResolver.resolve(factoryMethod);
@@ -106,11 +103,11 @@ public class BeanDefinitionRegisterBootstrapRunner implements BootstrapRunner {
 
                     // 注册Bean定义
                     BeanDefinition def = BeanDefinition.of(primaryBeanName, beanType)
+                            .withFactoryMethod(factoryClassBeanName, factoryMethodName, factoryMethodArgBeanNames)
                             .withPrimary(capper.primary())
                             .withLazy(capper.lazy())
                             .withScope(capper.scope())
-                            .withDescription(capper.description())
-                            .withInstantiationPolicy(policy);
+                            .withDescription(capper.description());
                     beanDefinitionMap.put(primaryBeanName, def);
                     // 注册别名
                     registerAlias(beanNames);
@@ -138,26 +135,35 @@ public class BeanDefinitionRegisterBootstrapRunner implements BootstrapRunner {
 
     }
 
-    private InstantiationPolicy resolveConstructorPolicy(ClassInfo info) {
+    private String[] resolveConstructorArgBeanNames(ClassInfo info) {
         MethodInfoList constructors = info.getDeclaredConstructorInfo();
         MethodInfoList injectConstructors = constructors.filter(mi -> mi.hasAnnotation(Inject.class));
-        if(injectConstructors.size() > 1)
+        Constructor<?> constructor;
+        if (injectConstructors.size() > 1) {
             throw new BeanDefinitionException("Multiple constructors annotated with @Inject found in class: " + info.getName());
-        else if(injectConstructors.size() == 1){
-            Constructor<?> constructor = injectConstructors.getFirst().loadClassAndGetConstructor();
-            Class<?>[] argTypes = constructor.getParameterTypes();
-            return ConstructorInstantiation.of(constructor, argTypes);
-        }else if(constructors.size() > 1){
+        } else if (injectConstructors.size() == 1) {
+            constructor = injectConstructors.getFirst().loadClassAndGetConstructor();
+        } else if (constructors.size() > 1) {
             throw new BeanDefinitionException("Multiple constructors found in class without @Inject annotation: " + info.getName());
-        }else if(constructors.size() == 1){
-            Constructor<?> constructor = constructors.getFirst().loadClassAndGetConstructor();
-            Class<?>[] argTypes = constructor.getParameterTypes();
-            return ConstructorInstantiation.of(constructor, argTypes);
-        }else {
+        } else if (constructors.size() == 1) {
+            constructor = constructors.getFirst().loadClassAndGetConstructor();
+        } else {
             // 无构造函数，使用默认无参构造函数
-            return ConstructorInstantiation.of(info.loadClass().getConstructors()[0], new Class<?>[0]);
+            return new String[0];
         }
+        return resolveMethodArgBeanNames(constructor.getParameterTypes());
+    }
 
+    private String[] resolveMethodArgBeanNames(Method method) {
+        return resolveMethodArgBeanNames(method.getParameterTypes());
+    }
+
+    private String[] resolveMethodArgBeanNames(Class<?>[] paramTypes) {
+        String[] argBeanNames = new String[paramTypes.length];
+        for (int i = 0; i < paramTypes.length; i++) {
+            argBeanNames[i] = BeanNamesResolver.resolve(paramTypes[i])[0];
+        }
+        return argBeanNames;
     }
 
     /**
