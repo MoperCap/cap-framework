@@ -17,8 +17,6 @@ public record PropertyRemoveOperation(
 
     @Override
     public String toString() {
-        return "PropertyRemoveOperation{" +
-                "key='" + key + '\'' +
-                '}';
+        return "REMOVE " + key;
     }
 }

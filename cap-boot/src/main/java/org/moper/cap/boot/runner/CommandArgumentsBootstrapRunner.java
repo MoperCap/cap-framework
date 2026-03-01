@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@RunnerMeta(type = RunnerType.KERNEL, order = 20, description = "Parse Command Line Arguments and set them as properties in the PropertyOfficer")
+@RunnerMeta(type = RunnerType.KERNEL, order = 110, description = "Parse Command Line Arguments and set them as properties in the PropertyOfficer")
 public class CommandArgumentsBootstrapRunner implements BootstrapRunner {
     /**
      * 以默认方式创建名为"command-property-publisher"的PropertyPublisher，

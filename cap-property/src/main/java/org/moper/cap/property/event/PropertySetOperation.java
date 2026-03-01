@@ -20,9 +20,6 @@ public record PropertySetOperation(
 
     @Override
     public String toString() {
-        return "PropertySetOperation{" +
-                "key='" + key + '\'' +
-                ", value=" + value.toString() +
-                '}';
+        return "SET " + key + " = " + value;
     }
 }

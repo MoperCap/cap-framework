@@ -22,10 +22,9 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 @Slf4j
-@RunnerMeta(type = RunnerType.KERNEL, order = 30, description = "Scans resource paths for application.yaml or application.properties file, flattens and registers properties")
+@RunnerMeta(type = RunnerType.KERNEL, order = 120, description = "Scans resource paths for application.yaml or application.properties file, flattens and registers properties")
 public class StaticResourcePropertyBootstrapRunner implements BootstrapRunner {
 
-    private final Pattern pattern = Pattern.compile("^application.*\\.(yaml|yml|properties)$");
     private final ObjectMapper YamlMapper = new ObjectMapper(new YAMLFactory());
 
     /**
@@ -50,7 +49,7 @@ public class StaticResourcePropertyBootstrapRunner implements BootstrapRunner {
                 // 资源文件名称
                 String fileName = resourcePath.substring(resourcePath.lastIndexOf('/') + 1);
                 // 过滤出符合条件的资源文件，记录日志
-                if (!pattern.matcher(fileName).matches()) continue;
+                if(!ResourceConstants.SUPPORTED_BASE_RESOURCE_FILE_NAMES.contains(fileName)) continue;
                 log.info("Found resource file: {}", resourcePath);
 
                 // 解析资源文件内容，支持YAML和Properties格式，并将嵌套结构扁平化为键值对
@@ -82,7 +81,6 @@ public class StaticResourcePropertyBootstrapRunner implements BootstrapRunner {
                 });
                 // 发布属性操作列表
                 publisher.publish(operations.toArray(new PropertyOperation[0]));
-                log.info("Registered {} properties from [{}]", flatProps.size(), resourcePath);
             }
         }
     }

@@ -2,6 +2,8 @@ package org.moper.cap.bean.definition;
 
 import org.moper.cap.bean.exception.BeanDefinitionStoreException;
 
+import java.util.Arrays;
+
 /**
  * Bean 的实例化策略，描述容器应当以何种方式创建 Bean 实例。
  *
@@ -105,5 +107,14 @@ public record InstantiationPolicy(
     /** 是否为实例工厂方法实例化策略 */
     public boolean isInstanceFactory() {
         return factoryMethodName != null && factoryBeanName != null;
+    }
+
+    @Override
+    public String toString() {
+        return "InstantiationPolicy{" +
+                "factoryBeanName='" + factoryBeanName + '\'' +
+                ", factoryMethodName='" + factoryMethodName + '\'' +
+                ", argTypes=" + Arrays.toString(argTypes) +
+                '}';
     }
 }

@@ -63,16 +63,6 @@ public class DefaultCapApplication implements CapApplication {
         this.runtimeContext = bootstrapContext.build();
     }
 
-    private static DefaultBootstrapContext getDefaultBootstrapContext(Class<?> primarySource, String[] args) {
-        BeanContainer beanContainer = new DefaultBeanContainer();
-        PropertyOfficer propertyOfficer = new DefaultPropertyOfficer(ResourceConstants.PROPERTY_OFFICER);
-        CommandArgumentParser commandArgumentParser = new DefaultCommandArgumentParser(args);
-        ConfigurationClassParser configurationClassParser = new DefaultConfigurationClassParser(primarySource);
-
-        DefaultBootstrapContext bootstrapContext = new DefaultBootstrapContext(beanContainer, propertyOfficer, commandArgumentParser, configurationClassParser);
-        return bootstrapContext;
-    }
-
     @Override
     public RuntimeContext run() throws Exception {
         if(!started.compareAndSet(false, true)) {
@@ -103,5 +93,15 @@ public class DefaultCapApplication implements CapApplication {
             instance.onApplicationStarted(runtimeContext);
         }
         return runtimeContext;
+    }
+
+    private static DefaultBootstrapContext getDefaultBootstrapContext(Class<?> primarySource, String[] args) {
+        BeanContainer beanContainer = new DefaultBeanContainer();
+        PropertyOfficer propertyOfficer = new DefaultPropertyOfficer(ResourceConstants.PROPERTY_OFFICER);
+        CommandArgumentParser commandArgumentParser = new DefaultCommandArgumentParser(args);
+        ConfigurationClassParser configurationClassParser = new DefaultConfigurationClassParser(primarySource);
+
+        DefaultBootstrapContext bootstrapContext = new DefaultBootstrapContext(beanContainer, propertyOfficer, commandArgumentParser, configurationClassParser);
+        return bootstrapContext;
     }
 }

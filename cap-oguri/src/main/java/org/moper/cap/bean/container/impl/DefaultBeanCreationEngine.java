@@ -151,10 +151,10 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
     }
 
     /**
-     * 根据 {@link BeanDefinition#instantiationPolicy()} 选择实例化策略并执行。
+     * 根据 {@link BeanDefinition#policy()} 选择实例化策略并执行。
      */
     private Object instantiateBean(String beanName, BeanDefinition beanDefinition) throws BeanException {
-        InstantiationPolicy policy = beanDefinition.instantiationPolicy();
+        InstantiationPolicy policy = beanDefinition.policy();
         try {
             if (policy.isConstructor()) {
                 return instantiateByConstructor(beanName, beanDefinition);
@@ -172,7 +172,7 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
 
     private Object instantiateByConstructor(String beanName, BeanDefinition beanDefinition) throws Exception {
         Class<?> type      = beanDefinition.type();
-        Class<?>[] argTypes = beanDefinition.instantiationPolicy().argTypes();
+        Class<?>[] argTypes = beanDefinition.policy().argTypes();
 
         if (argTypes.length == 0) {
             return type.getDeclaredConstructor().newInstance();
@@ -183,7 +183,7 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
     }
 
     private Object instantiateByStaticFactory(String beanName, BeanDefinition beanDefinition) throws Exception {
-        InstantiationPolicy policy = beanDefinition.instantiationPolicy();
+        InstantiationPolicy policy = beanDefinition.policy();
         Object[] args = resolveArguments(beanName, beanDefinition);
         Method method = beanDefinition.type()
                 .getDeclaredMethod(policy.factoryMethodName(), policy.argTypes());
@@ -191,7 +191,7 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
     }
 
     private Object instantiateByInstanceFactory(String beanName, BeanDefinition beanDefinition) throws Exception {
-        InstantiationPolicy policy  = beanDefinition.instantiationPolicy();
+        InstantiationPolicy policy  = beanDefinition.policy();
         Object factoryBean          = beanProvider.getBean(policy.factoryBeanName());
         Object[] args               = resolveArguments(beanName, beanDefinition);
         Method method = factoryBean.getClass()
@@ -281,7 +281,7 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
      * <p>{@link BeanException} 直接透传，不再二次包装，保证根因可见。
      */
     private Object[] resolveArguments(String beanName, BeanDefinition beanDefinition) throws BeanException {
-        Class<?>[] argTypes = beanDefinition.instantiationPolicy().argTypes();
+        Class<?>[] argTypes = beanDefinition.policy().argTypes();
         if (argTypes.length == 0) {
             return new Object[0];
         }

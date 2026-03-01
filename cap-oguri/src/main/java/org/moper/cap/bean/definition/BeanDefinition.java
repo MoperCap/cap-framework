@@ -26,7 +26,7 @@ package org.moper.cap.bean.definition;
  * @param name                Bean 的唯一标识名称，不能为空
  * @param type                Bean 的类型，不能为 null
  * @param scope               Bean 的作用域，不能为 null，默认 {@link BeanScope#SINGLETON}
- * @param instantiationPolicy Bean 的实例化策略，不能为 null，
+ * @param policy Bean 的实例化策略，不能为 null，
  *                            描述容器如何创建该 Bean 的实例，
  *                            默认为无参构造函数策略
  * @param dependsOn           强依赖的其他 Bean 名称，不能为 null，
@@ -43,7 +43,7 @@ public record BeanDefinition(
         String name,
         Class<?> type,
         BeanScope scope,
-        InstantiationPolicy instantiationPolicy,
+        InstantiationPolicy policy,
         String[] dependsOn,
         boolean lazy,
         boolean primary,
@@ -101,7 +101,7 @@ public record BeanDefinition(
      */
     public BeanDefinition withScope(BeanScope scope) {
         return new BeanDefinition(
-                name, type, scope, instantiationPolicy,
+                name, type, scope, policy,
                 dependsOn, lazy, primary, description);
     }
 
@@ -113,7 +113,7 @@ public record BeanDefinition(
      */
     public BeanDefinition dependsOn(String... beanNames) {
         return new BeanDefinition(
-                name, type, scope, instantiationPolicy,
+                name, type, scope, policy,
                 beanNames, lazy, primary, description);
     }
 
@@ -125,7 +125,7 @@ public record BeanDefinition(
      */
     public BeanDefinition withLazy(boolean lazy) {
         return new BeanDefinition(
-                name, type, scope, instantiationPolicy,
+                name, type, scope, policy,
                 dependsOn, lazy, primary, description);
     }
 
@@ -137,7 +137,7 @@ public record BeanDefinition(
      */
     public BeanDefinition withPrimary(boolean primary) {
         return new BeanDefinition(
-                name, type, scope, instantiationPolicy,
+                name, type, scope, policy,
                 dependsOn, lazy, primary, description);
     }
 
@@ -150,7 +150,7 @@ public record BeanDefinition(
      */
     public BeanDefinition withDescription(String description) {
         return new BeanDefinition(
-                name, type, scope, instantiationPolicy,
+                name, type, scope, policy,
                 dependsOn, lazy, primary, description);
     }
 
@@ -170,5 +170,18 @@ public record BeanDefinition(
      */
     public boolean isPrototype() {
         return scope == BeanScope.PROTOTYPE;
+    }
+
+    @Override
+    public String toString() {
+        return "BeanDefinition{" +
+                "name='" + name + '\'' +
+                ", type=" + type.getName() +
+                ", scope=" + scope +
+                ", policy=" + policy +
+                ", lazy=" + lazy +
+                ", primary=" + primary +
+                ", description='" + description + '\'' +
+                '}';
     }
 }

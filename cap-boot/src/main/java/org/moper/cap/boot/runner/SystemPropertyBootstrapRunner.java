@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Properties;
 
 @Slf4j
-@RunnerMeta(type = RunnerType.KERNEL, order = 10, description = "Register OS env variables and JVM system properties in Officer via dedicated publishers")
+@RunnerMeta(type = RunnerType.KERNEL, order = 100, description = "Register OS env variables and JVM system properties in Officer via dedicated publishers")
 public class SystemPropertyBootstrapRunner implements BootstrapRunner {
     /**
      * 系统属性注册器 </br>
@@ -41,7 +41,6 @@ public class SystemPropertyBootstrapRunner implements BootstrapRunner {
             envOperations.add(new PropertySetOperation(entry.getKey(), entry.getValue()));
         }
         publisher.publish(envOperations.toArray(new PropertyOperation[0]));
-        log.info("Registered {} OS environment variables to Officer.", envOperations.size());
 
         // 注册 JVM 系统属性
         Properties system = System.getProperties();
@@ -54,7 +53,6 @@ public class SystemPropertyBootstrapRunner implements BootstrapRunner {
             systemOperations.add(new PropertySetOperation(entry.getKey().toString(), entry.getValue().toString()));
         }
         publisher.publish(systemOperations.toArray(new PropertyOperation[0]));
-        log.info("Registered {} JVM system properties to Officer.", systemOperations.size());
 
     }
 }

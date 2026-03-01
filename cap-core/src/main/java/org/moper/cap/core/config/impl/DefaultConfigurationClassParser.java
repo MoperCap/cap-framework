@@ -43,8 +43,8 @@ public final class DefaultConfigurationClassParser implements ConfigurationClass
         this.componentScanPaths = Set.copyOf(ResourcePackageMerger.merge(cacheComponentScanPaths));
         this.resourceScanPaths = Set.copyOf(ResourcePathMerger.merge(cacheResourceScanPaths));
 
-        log.debug("ConfigurationClassParser Component Scan Paths: {}", componentScanPaths);
-        log.debug("ConfigurationClassParser Resource Scan Paths: {}", resourceScanPaths);
+        log.info("ConfigurationClassParser Component Scan Paths: {}", componentScanPaths);
+        log.info("ConfigurationClassParser Resource Scan Paths: {}", resourceScanPaths);
     }
 
     /**

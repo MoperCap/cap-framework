@@ -7,8 +7,10 @@ import org.moper.cap.property.exception.PropertyException;
 import org.moper.cap.property.officer.PropertyOfficer;
 import org.moper.cap.property.publisher.PropertyPublisher;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class DefaultPropertyPublisher implements PropertyPublisher {
@@ -49,9 +51,12 @@ public class DefaultPropertyPublisher implements PropertyPublisher {
             }
         }
 
-        PropertyManifest manifest = PropertyManifest.of(name(), List.of(operations));
-
-        log.info("PropertyPublisher {} Publishing Manifest {}",name(), manifest);
+        List<PropertyOperation> operationList = Arrays.asList(operations);
+        PropertyManifest manifest = PropertyManifest.of(name(), operationList);
+        log.info("PropertyPublisher {} Publishing Operations: \n{}",
+                name(),
+                operationList.stream().map(String::valueOf).collect(Collectors.joining("\n"))
+        );
         officer.receive(manifest);
     }
 
@@ -67,9 +72,12 @@ public class DefaultPropertyPublisher implements PropertyPublisher {
             }
         }
 
-        PropertyManifest manifest = PropertyManifest.of(name(), List.of(operations));
-
-        log.info("PropertyPublisher {} Publishing Manifest {}",name(), manifest);
+        List<PropertyOperation> operationList = Arrays.asList(operations);
+        PropertyManifest manifest = PropertyManifest.of(name(), operationList);
+        log.info("PropertyPublisher {} Publishing Async Operations: \n {}",
+                name(),
+                operationList.stream().map(String::valueOf).collect(Collectors.joining("\n"))
+        );
         officer.receiveAsync(manifest);
     }
 

@@ -38,7 +38,7 @@ public record RunnerDefinition<T extends Runner>(
         }
 
         if(name == null || name.isBlank()) {
-            name = clazz.getName();
+            name = clazz.getSimpleName();
         }
     }
 
@@ -52,7 +52,7 @@ public record RunnerDefinition<T extends Runner>(
     public String toString() {
         return "RunnerDefinition{" +
                 "priority=" + priority +
-                ", clazz=" + clazz +
+                ", clazz=" + clazz.getName() +
                 ", type=" + type +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +

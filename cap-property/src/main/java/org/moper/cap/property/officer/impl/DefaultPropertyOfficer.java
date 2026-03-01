@@ -73,10 +73,10 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
         checkManifest(manifest);
 
         String operator = manifest.operator();
-        log.info("PropertyOfficer Received property manifest, operator: {}, operations: {}", operator, manifest.operations().size());
+        log.info("PropertyOfficer Received property manifest, operator: {}, operations count: {}", operator, manifest.operations().size());
 
         processAllPropertyOperations(operator, manifest.operations());
-        log.info("Property manifest from [{}] processed, total subscriptions: {}", operator, subscriptions.size());
+        log.info("Property manifest from [{}] processed Success!", operator);
     }
 
     @Override
@@ -85,7 +85,7 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
         checkManifest(manifest);
 
         String operator = manifest.operator();
-        log.info("PropertyOfficer Received property manifest, operator: {}, operations: {}", operator, manifest.operations().size());
+        log.info("PropertyOfficer Received property async manifest, operator: {}, operations count: {}", operator, manifest.operations().size());
 
         executorService.submit(() -> {
             try {
@@ -353,7 +353,6 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
 
         PropertyDefinition newDef = oldDef == null ? PropertyDefinition.of(propertyKey, newValue, operator) : oldDef.withValue(newValue);
         core.put(propertyKey, newDef);
-        log.info("Property [{}] set by [{}], newValue: {}", propertyKey, operator, newValue);
         notifyAllSubscriberSetOperation(propertyKey, newValue);
     }
 
@@ -367,7 +366,6 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
             throw new PropertyConflictException("Property key " + propertyKey + " already exists and is owned by publisher " + oldDef.publisher());
         } else {
             core.remove(propertyKey);
-            log.info("Property [{}] removed by [{}]", propertyKey, operator);
             notifyAllSubscriberRemoveOperation(propertyKey);
         }
     }

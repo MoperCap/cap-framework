@@ -8,6 +8,7 @@ import io.github.classgraph.ScanResult;
 import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.boot.util.ResourceFileLoader;
 import org.moper.cap.core.annotation.RunnerMeta;
+import org.moper.cap.core.constants.PropertyArguments;
 import org.moper.cap.core.constants.ResourceConstants;
 import org.moper.cap.core.context.BootstrapContext;
 import org.moper.cap.core.exception.ResourceLoaderException;
@@ -22,7 +23,7 @@ import java.io.InputStream;
 import java.util.*;
 
 @Slf4j
-@RunnerMeta(type = RunnerType.KERNEL, order = 40, description = "Loads application-{profile}.yaml/.properties resources for active environment, flatten and inject via publisher")
+@RunnerMeta(type = RunnerType.KERNEL, order = 130, description = "Loads application-{profile}.yaml/.properties resources for active environment, flatten and inject via publisher")
 public class ActiveProfilePropertyBootstrapRunner implements BootstrapRunner {
 
     private final ObjectMapper YamlMapper = new ObjectMapper(new YAMLFactory());
@@ -38,9 +39,9 @@ public class ActiveProfilePropertyBootstrapRunner implements BootstrapRunner {
     public void initialize(BootstrapContext context) throws Exception {
         PropertyOfficer officer = context.getPropertyOfficer();
 
-        Object profileValue = officer.getRawPropertyValue(ResourceConstants.SUPPORTED_ACTIVE_PROFILE_PROPERTY_KEY);
+        Object profileValue = officer.getRawPropertyValue(PropertyArguments.SUPPORTED_ACTIVE_PROFILE_PROPERTY_KEY);
         if(profileValue == null || profileValue.toString().isBlank()){
-            log.info("No profile specified ({}); skip loading profile config.", ResourceConstants.SUPPORTED_ACTIVE_PROFILE_PROPERTY_KEY);
+            log.info("No profile specified ({}); skip loading profile config.", PropertyArguments.SUPPORTED_ACTIVE_PROFILE_PROPERTY_KEY);
             return;
         }
 
@@ -88,7 +89,7 @@ public class ActiveProfilePropertyBootstrapRunner implements BootstrapRunner {
             }
 
             // 获取系统内部属性管理平台实例，并根据资源文件路径构建唯一的属性发布者名称，获取对应的属性发布者实例
-            final String publisherName = ResourceConstants.getActiveProfileResourceName(profile);
+            final String publisherName = ResourceConstants.getActiveProfileResourcePublisherName(profile);
             PropertyPublisher publisher = officer.getPublisher(publisherName);
 
             // 将扁平化后的属性转换为属性操作列表，并通过属性发布者发布这些属性，记录日志
@@ -98,7 +99,6 @@ public class ActiveProfilePropertyBootstrapRunner implements BootstrapRunner {
             });
             // 发布属性操作列表
             publisher.publish(operations.toArray(new PropertyOperation[0]));
-            log.info("Registered {} properties from [{}]", flatProps.size(), resourcePath);
         }
 
     }

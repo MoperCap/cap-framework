@@ -45,11 +45,6 @@ class BeanDefinitionTest {
             assertFalse(BeanDefinition.of("bean", SimpleBean.class).primary());
         }
 
-        @Test
-        @DisplayName("默认 autowired 为 true")
-        void defaultAutowired_isTrue() {
-            assertTrue(BeanDefinition.of("bean", SimpleBean.class).autowired());
-        }
 
         @Test
         @DisplayName("默认 description 为空字符串")
@@ -64,10 +59,10 @@ class BeanDefinitionTest {
         }
 
         @Test
-        @DisplayName("默认 instantiationPolicy 为无参构造函数策略")
+        @DisplayName("默认 policy 为无参构造函数策略")
         void defaultInstantiationPolicy_isConstructor() {
             assertTrue(BeanDefinition.of("bean", SimpleBean.class)
-                    .instantiationPolicy().isConstructor());
+                    .policy().isConstructor());
         }
 
         @Test
@@ -121,17 +116,6 @@ class BeanDefinitionTest {
         }
 
         @Test
-        @DisplayName("withAutowired() 返回新实例，原实例的 autowired 不变")
-        void withAutowired_returnsNewInstance_originalUnchanged() {
-            BeanDefinition original = BeanDefinition.of("bean", SimpleBean.class);
-            BeanDefinition modified = original.withAutowired(false);
-
-            assertNotSame(original, modified);
-            assertTrue(original.autowired());
-            assertFalse(modified.autowired());
-        }
-
-        @Test
         @DisplayName("withScope() 返回新实例，原实例的 scope 不变")
         void withScope_returnsNewInstance_originalUnchanged() {
             BeanDefinition original = BeanDefinition.of("bean", SimpleBean.class);
@@ -161,8 +145,8 @@ class BeanDefinitionTest {
             BeanDefinition modified = original.withInstantiationPolicy(staticPolicy);
 
             assertNotSame(original, modified);
-            assertTrue(original.instantiationPolicy().isConstructor());
-            assertTrue(modified.instantiationPolicy().isStaticFactory());
+            assertTrue(original.policy().isConstructor());
+            assertTrue(modified.policy().isStaticFactory());
         }
 
         @Test
@@ -193,17 +177,15 @@ class BeanDefinitionTest {
                     .dependsOn("configBean")
                     .withLazy(true)
                     .withPrimary(true)
-                    .withAutowired(false)
                     .withDescription("测试用数据源");
 
             assertEquals("dataSource", def.name());
             assertEquals(SimpleBean.class, def.type());
             assertEquals(BeanScope.PROTOTYPE, def.scope());
-            assertTrue(def.instantiationPolicy().isStaticFactory());
+            assertTrue(def.policy().isStaticFactory());
             assertArrayEquals(new String[]{"configBean"}, def.dependsOn());
             assertTrue(def.lazy());
             assertTrue(def.primary());
-            assertFalse(def.autowired());
             assertEquals("测试用数据源", def.description());
         }
     }
