@@ -2,5 +2,5 @@ org.moper.cap.boot.runner.SystemPropertyBootstrapRunner
 org.moper.cap.boot.runner.CommandArgumentsBootstrapRunner
 org.moper.cap.boot.runner.StaticResourcePropertyBootstrapRunner
 org.moper.cap.boot.runner.ActiveProfilePropertyBootstrapRunner
-org.moper.cap.boot.runner.CapperScanBootstrapRunner
+org.moper.cap.boot.runner.BeanDefinitionRegisterBootstrapRunner
 org.moper.cap.boot.runner.PreInstantiateSingletonBootstrapRunner

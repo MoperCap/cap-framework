@@ -3,6 +3,7 @@ package org.moper.cap.boot.test;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.moper.cap.bean.annotation.Capper;
+import org.moper.cap.bean.annotation.Inject;
 import org.moper.cap.bean.definition.BeanScope;
 import org.moper.cap.boot.application.impl.DefaultCapApplication;
 import org.moper.cap.core.annotation.ComponentScan;
@@ -17,7 +18,7 @@ public class CapApplicationTest {
 
     @ComponentScan("org.moper.cap.boot.test")
     @ResourceScan("true")
-    public static class TrueConfigurationClass{
+    public class TrueConfigurationClass{
 
         @Capper(names = {"true1", "TrueConfigurationClass1"}, primary = false, lazy = true, scope = BeanScope.PROTOTYPE, description = "one true1 configuration class")
         public static FalseConfigurationClass falseConfigurationClass1(){
@@ -28,6 +29,8 @@ public class CapApplicationTest {
         public FalseConfigurationClass falseConfigurationClass2(){
             return new FalseConfigurationClass(2);
         }
+
+
     }
 
     @Capper(names = {"false", "FalseConfigurationClass"}, primary = true, lazy = false, scope = BeanScope.SINGLETON, description = "one false configuration class")
@@ -36,8 +39,13 @@ public class CapApplicationTest {
     public static class FalseConfigurationClass{
         private int index;
 
-        public FalseConfigurationClass(){
+        @Inject
+        private FalseConfigurationClass(){
             this.index = 1;
+        }
+
+        public FalseConfigurationClass(String index){
+            this.index = Integer.parseInt(index);
         }
 
         public FalseConfigurationClass(int index){

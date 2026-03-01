@@ -167,27 +167,25 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
     }
 
     private Object instantiate(String beanName, ConstructorInstantiation policy) throws BeanException {
-        Class<?> beanClass = policy.beanClass();
+        Constructor<?> constructor = policy.constructor();
+        constructor.setAccessible(true);
         Class<?>[] argTypes = policy.argTypes();
 
         Object[] args = new Object[argTypes.length];
         for(int i = 0; i < argTypes.length; i++){
             args[i] = beanProvider.getBean(argTypes[i]);
         }
-
-        try {
-            Constructor<?> constructor = beanClass.getDeclaredConstructor(argTypes);
+        try{
             return constructor.newInstance(args);
-        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new BeanCreationException(beanName, "Failed to instantiate bean using no-arg constructor", e);
+        }catch (InstantiationException | IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
+            throw new BeanCreationException(beanName, "Failed to instantiate bean using constructor", e);
         }
 
     }
 
     private Object instantiate(String beanName, FactoryInstantiation policy) throws BeanException {
-        Class<?>[] argTypes = policy.argTypes();
         Object factoryBean = beanProvider.getBean(policy.factoryBeanName());
-
+        Class<?>[] argTypes = policy.argTypes();
         Object[] args = new Object[argTypes.length];
         for(int i = 0; i < argTypes.length; i++){
             args[i] = beanProvider.getBean(argTypes[i]);
@@ -195,6 +193,7 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
 
         try {
             Method method = factoryBean.getClass().getDeclaredMethod(policy.factoryMethodName(), argTypes);
+            method.setAccessible(true);
             if(Modifier.isStatic(method.getModifiers())){
                 return method.invoke(null, args);
             }else return method.invoke(factoryBean, args);

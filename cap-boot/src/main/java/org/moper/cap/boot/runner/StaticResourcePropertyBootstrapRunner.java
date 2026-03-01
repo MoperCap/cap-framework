@@ -39,10 +39,10 @@ public class StaticResourcePropertyBootstrapRunner implements BootstrapRunner {
      */
     @Override
     public void initialize(BootstrapContext context) throws Exception {
-        // 获取资源扫描路径集合
-        Collection<String> resourceScanPaths = context.getConfigurationClassParser().getResourceScanPaths();
         // 扫描资源扫描路径下的所有资源文件，过滤出符合条件的文件，并记录日志
-        try (ScanResult scan = new ClassGraph().acceptPaths(resourceScanPaths.toArray(new String[0])).scan()) {
+        try (ScanResult scan = new ClassGraph()
+                .acceptPaths(context.getConfigurationClassParser().getResourceScanPaths())
+                .scan()) {
             for (Resource resource : scan.getAllResources()) {
                 // 资源文件路径
                 String resourcePath = resource.getPath();

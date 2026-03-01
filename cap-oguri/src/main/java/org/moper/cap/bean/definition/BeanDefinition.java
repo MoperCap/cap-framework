@@ -76,7 +76,7 @@ public record BeanDefinition(
     public static BeanDefinition of(String name, Class<?> type) {
         return new BeanDefinition(
                 name, type, BeanScope.SINGLETON,
-                ConstructorInstantiation.of(type),
+                ConstructorInstantiation.of(type.getConstructors()[0]),
                 new String[0],
                 false, false, "");
     }

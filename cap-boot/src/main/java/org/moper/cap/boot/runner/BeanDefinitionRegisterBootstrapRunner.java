@@ -1,29 +1,28 @@
 package org.moper.cap.boot.runner;
 
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ClassInfo;
-import io.github.classgraph.MethodInfo;
-import io.github.classgraph.ScanResult;
+import io.github.classgraph.*;
 import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.bean.annotation.Capper;
+import org.moper.cap.bean.annotation.Inject;
 import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.definition.instantiation.ConstructorInstantiation;
 import org.moper.cap.bean.definition.instantiation.FactoryInstantiation;
 import org.moper.cap.bean.definition.instantiation.InstantiationPolicy;
 import org.moper.cap.bean.exception.BeanDefinitionException;
+import org.moper.cap.boot.util.BeanNamesResolver;
 import org.moper.cap.core.annotation.RunnerMeta;
 import org.moper.cap.core.context.BootstrapContext;
 import org.moper.cap.core.runner.BootstrapRunner;
 import org.moper.cap.core.runner.RunnerType;
 
-import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.*;
 
 @Slf4j
 @RunnerMeta(type = RunnerType.KERNEL, order = 300, description = "Scan all @Capper Classes and Methods to register Bean Definitions")
-public class CapperScanBootstrapRunner implements BootstrapRunner {
+public class BeanDefinitionRegisterBootstrapRunner implements BootstrapRunner {
 
     /**
      * 缓存所有 Bean 定义，key 为 Bean 名称，value 为 Bean 定义信息
@@ -42,31 +41,34 @@ public class CapperScanBootstrapRunner implements BootstrapRunner {
      */
     @Override
     public void initialize(BootstrapContext context) throws Exception {
-        Collection<String> scanPackages = context.getConfigurationClassParser().getComponentScanPaths();
         // 扫描所有 @Capper 注解标记的类和方法，并注册对应的 Bean 定义
-        try(ScanResult scan = new ClassGraph().enableAllInfo().acceptPackages(scanPackages.toArray(new String[0])).scan()) {
+        try(ScanResult scan = new ClassGraph().enableAllInfo()
+                .acceptPackages(context.getConfigurationClassParser().getComponentScanPaths())
+                .scan()) {
 
             // 收集@Capper类并注册Bean定义
             for(ClassInfo classInfo : scan.getClassesWithAnnotation(Capper.class.getName())
                     .filter(classInfo -> !classInfo.isInterface() && !classInfo.isAbstract() && !classInfo.isAnnotation())) {
 
                 Class<?> clazz = classInfo.loadClass();
+
+                // Bean实例化策略
+                InstantiationPolicy policy = resolveConstructorPolicy(classInfo);
                 // Bean 名称（支持多个别名，第一个名称会被作为主要名称）
-                String[] beanNames = resolveBeanNames(clazz);
+                String[] beanNames = BeanNamesResolver.resolve(clazz);
                 String primaryBeanName = beanNames[0];
                 Capper capper = clazz.getAnnotation(Capper.class);
+
                 // 注册Bean定义
                 BeanDefinition def = BeanDefinition.of(primaryBeanName, clazz)
                         .withPrimary(capper.primary())
                         .withLazy(capper.lazy())
                         .withScope(capper.scope())
-                        .withDescription(capper.description());
+                        .withDescription(capper.description())
+                        .withInstantiationPolicy(policy);
                 beanDefinitionMap.put(primaryBeanName, def);
                 // 注册别名
-                if(beanNames.length > 1) {
-                    Set<String> aliasSet = new HashSet<>(Arrays.asList(beanNames).subList(1, beanNames.length));
-                    aliasMap.put(primaryBeanName, aliasSet);
-                }
+                registerAlias(beanNames);
             }
 
             // 收集@Capper方法并注册Bean定义
@@ -75,7 +77,7 @@ public class CapperScanBootstrapRunner implements BootstrapRunner {
                         .filter(methodInfo -> methodInfo.hasAnnotation(Capper.class.getName()))) {
 
                     Class<?> factoryClazz = classInfo.loadClass();
-                    String factoryClassBeanName = resolveBeanNames(factoryClazz)[0];
+                    String factoryClassBeanName = BeanNamesResolver.resolve(factoryClazz)[0];
 
                     Method factoryMethod = methodInfo.loadClassAndGetMethod();
                     String factoryMethodName = factoryMethod.getName();
@@ -97,7 +99,7 @@ public class CapperScanBootstrapRunner implements BootstrapRunner {
                     FactoryInstantiation policy = FactoryInstantiation.of(factoryClassBeanName, factoryMethodName, factoryMethodArgTypes);
 
                     // Bean 名称（支持多个别名，第一个名称会被作为主要名称）
-                    String[] beanNames = resolveBeanNames(factoryMethod);
+                    String[] beanNames = BeanNamesResolver.resolve(factoryMethod);
                     String primaryBeanName = beanNames[0];
                     Class<?> beanType = factoryMethod.getReturnType();
                     Capper capper = factoryMethod.getAnnotation(Capper.class);
@@ -111,10 +113,7 @@ public class CapperScanBootstrapRunner implements BootstrapRunner {
                             .withInstantiationPolicy(policy);
                     beanDefinitionMap.put(primaryBeanName, def);
                     // 注册别名
-                    if(beanNames.length > 1) {
-                        Set<String> aliasSet = new HashSet<>(Arrays.asList(beanNames).subList(1, beanNames.length));
-                        aliasMap.put(primaryBeanName, aliasSet);
-                    }
+                    registerAlias(beanNames);
 
                 }
             }
@@ -139,39 +138,38 @@ public class CapperScanBootstrapRunner implements BootstrapRunner {
 
     }
 
-    /**
-     * 解析Bean名称，优先使用 @Capper 注解中指定的名称，如果未指定则使用默认名称（类名或方法名首字母小写）
-     *
-     * @param element 类或方法元素
-     * @return Bean名称数组，第一个元素为主要名称，后续元素为别名
-     */
-    private String[] resolveBeanNames(AnnotatedElement element) {
-        String defaultName = null;
-        switch (element){
-            case Class<?> clazz -> defaultName = decapitalize(clazz.getSimpleName());
-            case Method method -> defaultName = decapitalize(method.getName());
-            default -> throw new IllegalStateException("Unexpected value: " + element);
+    private InstantiationPolicy resolveConstructorPolicy(ClassInfo info) {
+        MethodInfoList constructors = info.getDeclaredConstructorInfo();
+        MethodInfoList injectConstructors = constructors.filter(mi -> mi.hasAnnotation(Inject.class.getName()));
+        if(injectConstructors.size() > 1)
+            throw new BeanDefinitionException("Multiple constructors annotated with @Inject found in class: " + info.getName());
+        else if(injectConstructors.size() == 1){
+            Constructor<?> constructor = injectConstructors.getFirst().loadClassAndGetConstructor();
+            Class<?>[] argTypes = constructor.getParameterTypes();
+            return ConstructorInstantiation.of(constructor, argTypes);
+        }else if(constructors.size() > 1){
+            throw new BeanDefinitionException("Multiple constructors found in class without @Inject annotation: " + info.getName());
+        }else if(constructors.size() == 1){
+            Constructor<?> constructor = constructors.getFirst().loadClassAndGetConstructor();
+            Class<?>[] argTypes = constructor.getParameterTypes();
+            return ConstructorInstantiation.of(constructor, argTypes);
+        }else {
+            // 无构造函数，使用默认无参构造函数
+            return ConstructorInstantiation.of(info.loadClass().getConstructors()[0], new Class<?>[0]);
         }
-        Capper capper = element.getAnnotation(Capper.class);
-        if(capper == null) {
-            return new String[]{defaultName};
-        }
-        String[] beanNames = capper.names();
-        if(beanNames == null || beanNames.length == 0) {
-            return new String[]{defaultName};
-        }
-        return beanNames;
+
     }
 
     /**
-     * 将类名或方法名首字母小写作为默认 Bean 名称
+     * 注册 Bean 别名，支持一个 Bean 定义多个别名，第一个名称会被作为主要名称
      *
-     * @param name 类名或方法名
-     * @return 首字母小写的名称
+     * @param beanNames Bean 名称列表，第一个名称会被作为主要名称，后续名称会被作为别名
      */
-    private String decapitalize(String name) {
-        if (name == null || name.isEmpty()) return name;
-        if (Character.isLowerCase(name.charAt(0))) return name;
-        return Character.toLowerCase(name.charAt(0)) + name.substring(1);
+    private void registerAlias(String[] beanNames){
+        String primaryBeanName = beanNames[0];
+        if(beanNames.length > 1) {
+            Set<String> aliasSet = new HashSet<>(Arrays.asList(beanNames).subList(1, beanNames.length));
+            aliasMap.put(primaryBeanName, aliasSet);
+        }
     }
 }

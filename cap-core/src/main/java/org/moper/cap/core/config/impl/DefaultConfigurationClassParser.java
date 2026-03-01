@@ -15,12 +15,12 @@ public final class DefaultConfigurationClassParser implements ConfigurationClass
     /**
      * 配置类上指定的软件包扫描路径集合
      */
-    private final Set<String> componentScanPaths;
+    private final String[] componentScanPaths;
 
     /**
      * 配置类上指定的资源包扫描路径集合
      */
-    private final Set<String> resourceScanPaths;
+    private final String[] resourceScanPaths;
 
     public DefaultConfigurationClassParser(Class<?>... configurations) {
         if(configurations == null || configurations.length == 0){
@@ -40,22 +40,22 @@ public final class DefaultConfigurationClassParser implements ConfigurationClass
 
         if(cacheResourceScanPaths.isEmpty()) cacheResourceScanPaths.add("");
 
-        this.componentScanPaths = Set.copyOf(ResourcePackageMerger.merge(cacheComponentScanPaths));
-        this.resourceScanPaths = Set.copyOf(ResourcePathMerger.merge(cacheResourceScanPaths));
+        this.componentScanPaths = ResourcePackageMerger.merge(cacheComponentScanPaths).toArray(new String[0]);
+        this.resourceScanPaths = ResourcePathMerger.merge(cacheResourceScanPaths).toArray(new String[0]);
 
-        log.info("ConfigurationClassParser Component Scan Paths: {}", componentScanPaths);
-        log.info("ConfigurationClassParser Resource Scan Paths: {}", resourceScanPaths);
+        log.info("ConfigurationClassParser Component Scan Paths: \n{}", String.join("\n", componentScanPaths));
+        log.info("ConfigurationClassParser Resource Scan Paths: \n{}", String.join("\n", resourceScanPaths));
     }
 
     /**
      * 获取配置类上指定的软件包扫描路径集合 </br>
-     *
+     * <p>
      * 若部分配置类上没有指定软件包扫描路径，则默认使用该配置类所在的软件包路径作为扫描路径
      *
      * @return 若配置类上的软件包扫描路径不为空，则返回对应的路径集合; 否则返回配置类所在软件包路径
      */
     @Override
-    public Collection<String> getComponentScanPaths(){
+    public String[] getComponentScanPaths(){
         return componentScanPaths;
     }
 
@@ -65,7 +65,7 @@ public final class DefaultConfigurationClassParser implements ConfigurationClass
      * @return 若配置上的资源包扫描路径不为空，则返回对应的路径集合; 否则返回 { "" }
      */
     @Override
-    public Collection<String> getResourceScanPaths(){
+    public String[] getResourceScanPaths(){
         return resourceScanPaths;
     }
 

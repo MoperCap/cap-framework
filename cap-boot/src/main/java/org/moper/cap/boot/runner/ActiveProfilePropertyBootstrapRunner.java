@@ -48,10 +48,10 @@ public class ActiveProfilePropertyBootstrapRunner implements BootstrapRunner {
         String profile = profileValue.toString().trim();
         log.info("Active profile: {}", profile);
 
-        // 获取资源扫描路径集合
-        Collection<String> resourceScanPaths = context.getConfigurationClassParser().getResourceScanPaths();
         // 扫描资源扫描路径下的所有资源文件，过滤出符合条件的文件，并记录日志
-        try (ScanResult scan = new ClassGraph().acceptPaths(resourceScanPaths.toArray(new String[0])).scan()) {
+        try (ScanResult scan = new ClassGraph()
+                .acceptPaths(context.getConfigurationClassParser().getResourceScanPaths())
+                .scan()) {
 
             // 扫描所有符合条件的资源文件
             List<Resource> resources = new ArrayList<>();
