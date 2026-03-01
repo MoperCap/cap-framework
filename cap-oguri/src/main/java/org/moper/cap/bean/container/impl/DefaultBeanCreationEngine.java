@@ -5,9 +5,6 @@ import org.moper.cap.bean.container.BeanCreationEngine;
 import org.moper.cap.bean.container.BeanProvider;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.definition.BeanScope;
-import org.moper.cap.bean.definition.instantiation.ConstructorInstantiation;
-import org.moper.cap.bean.definition.instantiation.FactoryInstantiation;
-import org.moper.cap.bean.definition.instantiation.InstantiationPolicy;
 import org.moper.cap.bean.exception.BeanCreationException;
 import org.moper.cap.bean.exception.BeanDestructionException;
 import org.moper.cap.bean.exception.BeanException;
@@ -157,52 +154,84 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
     }
 
     /**
-     * 根据 {@link BeanDefinition#policy()} 选择实例化策略并执行。
+     * 根据 {@link BeanDefinition} 选择实例化策略并执行。
      */
     private Object instantiateBean(String beanName, BeanDefinition beanDefinition) throws BeanException {
-        InstantiationPolicy policy = beanDefinition.policy();
-        return switch (policy){
-            case ConstructorInstantiation constructorPolicy -> instantiate(beanName, constructorPolicy);
-            case FactoryInstantiation factoryPolicy -> instantiate(beanName, factoryPolicy);
-            default -> throw new BeanCreationException(beanName, "Unsupported instantiation policy: " + policy.getClass().getName());
-        };
+        if (beanDefinition.isFactoryMethod()) {
+            return instantiateByFactory(beanName, beanDefinition);
+        } else {
+            return instantiateByConstructor(beanName, beanDefinition);
+        }
     }
 
-    private Object instantiate(String beanName, ConstructorInstantiation policy) throws BeanException {
-        Constructor<?> constructor = policy.constructor();
-        constructor.setAccessible(true);
-        Class<?>[] argTypes = policy.argTypes();
-
-        Object[] args = new Object[argTypes.length];
-        for(int i = 0; i < argTypes.length; i++){
-            args[i] = beanProvider.getBean(argTypes[i]);
-        }
-        try{
+    private Object instantiateByConstructor(String beanName, BeanDefinition def) throws BeanException {
+        String[] argBeanNames = def.constructorArgBeanNames();
+        Object[] args = resolveArguments(argBeanNames);
+        try {
+            Constructor<?> constructor = findMatchingConstructor(def.type(), args);
+            constructor.setAccessible(true);
             return constructor.newInstance(args);
-        }catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new BeanCreationException(beanName, "Failed to instantiate bean using constructor", e);
         }
-
     }
 
-    private Object instantiate(String beanName, FactoryInstantiation policy) throws BeanException {
-        Object factoryBean = beanProvider.getBean(policy.factoryBeanName());
-        Class<?>[] argTypes = policy.argTypes();
-        Object[] args = new Object[argTypes.length];
-        for(int i = 0; i < argTypes.length; i++){
-            args[i] = beanProvider.getBean(argTypes[i]);
-        }
-
+    private Object instantiateByFactory(String beanName, BeanDefinition def) throws BeanException {
+        Object factoryBean = beanProvider.getBean(def.factoryBeanName());
+        String[] argBeanNames = def.factoryMethodArgBeanNames();
+        Object[] args = resolveArguments(argBeanNames);
         try {
-            Method method = factoryBean.getClass().getDeclaredMethod(policy.factoryMethodName(), argTypes);
+            Method method = findFactoryMethod(factoryBean.getClass(), def.factoryMethodName(), args);
             method.setAccessible(true);
-            if(Modifier.isStatic(method.getModifiers())){
+            if (Modifier.isStatic(method.getModifiers())) {
                 return method.invoke(null, args);
-            }else return method.invoke(factoryBean, args);
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            throw new BeanCreationException(beanName, "Failed to instantiate bean using no-arg constructor", e);
+            } else {
+                return method.invoke(factoryBean, args);
+            }
+        } catch (InvocationTargetException | IllegalAccessException e) {
+            throw new BeanCreationException(beanName, "Failed to instantiate bean using factory method", e);
         }
+    }
 
+    private Object[] resolveArguments(String[] argBeanNames) throws BeanException {
+        Object[] args = new Object[argBeanNames.length];
+        for (int i = 0; i < argBeanNames.length; i++) {
+            args[i] = beanProvider.getBean(argBeanNames[i]);
+        }
+        return args;
+    }
+
+    private Constructor<?> findMatchingConstructor(Class<?> type, Object[] args) throws BeanCreationException {
+        for (Constructor<?> c : type.getDeclaredConstructors()) {
+            Class<?>[] params = c.getParameterTypes();
+            if (params.length != args.length) continue;
+            boolean matches = true;
+            for (int i = 0; i < params.length; i++) {
+                if (args[i] != null && !params[i].isAssignableFrom(args[i].getClass())) {
+                    matches = false;
+                    break;
+                }
+            }
+            if (matches) return c;
+        }
+        throw new BeanCreationException(type.getName(), "No matching constructor found for " + args.length + " argument(s)");
+    }
+
+    private Method findFactoryMethod(Class<?> factoryClass, String methodName, Object[] args) throws BeanCreationException {
+        for (Method m : factoryClass.getDeclaredMethods()) {
+            if (!m.getName().equals(methodName)) continue;
+            Class<?>[] params = m.getParameterTypes();
+            if (params.length != args.length) continue;
+            boolean matches = true;
+            for (int i = 0; i < params.length; i++) {
+                if (args[i] != null && !params[i].isAssignableFrom(args[i].getClass())) {
+                    matches = false;
+                    break;
+                }
+            }
+            if (matches) return m;
+        }
+        throw new BeanCreationException(factoryClass.getName(), "No matching factory method '" + methodName + "' found for " + args.length + " argument(s)");
     }
 
     /**
