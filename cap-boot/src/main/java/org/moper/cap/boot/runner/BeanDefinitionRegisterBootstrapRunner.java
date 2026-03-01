@@ -7,7 +7,7 @@ import org.moper.cap.bean.annotation.Inject;
 import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.exception.BeanDefinitionException;
-import org.moper.cap.boot.util.BeanNamesResolver;
+import org.moper.cap.bean.util.BeanNamesResolver;
 import org.moper.cap.core.annotation.RunnerMeta;
 import org.moper.cap.core.context.BootstrapContext;
 import org.moper.cap.core.runner.BootstrapRunner;
@@ -113,7 +113,6 @@ public class BeanDefinitionRegisterBootstrapRunner implements BootstrapRunner {
                     beanDefinitionMap.put(primaryBeanName, def);
                     // 注册别名
                     registerAlias(beanNames);
-
                 }
             }
         }

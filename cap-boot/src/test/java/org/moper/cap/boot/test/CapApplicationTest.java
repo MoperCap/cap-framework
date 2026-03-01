@@ -15,10 +15,13 @@ import org.moper.cap.property.officer.PropertyOfficer;
 
 public class CapApplicationTest {
 
-
     @ComponentScan("org.moper.cap.boot.test")
     @ResourceScan("true")
-    public class TrueConfigurationClass{
+    public static class TrueConfigurationClass{
+
+        public TrueConfigurationClass() {
+            log.info("this is TrueConfigurationClass");
+        }
 
         @Capper(names = {"true1", "TrueConfigurationClass1"}, primary = false, lazy = true, scope = BeanScope.PROTOTYPE, description = "one true1 configuration class")
         public static FalseConfigurationClass falseConfigurationClass1(){

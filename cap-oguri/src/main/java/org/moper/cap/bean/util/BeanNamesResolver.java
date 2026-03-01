@@ -1,4 +1,4 @@
-package org.moper.cap.boot.util;
+package org.moper.cap.bean.util;
 
 import org.moper.cap.bean.annotation.Capper;
 import org.moper.cap.bean.annotation.Inject;
@@ -6,6 +6,9 @@ import org.moper.cap.bean.exception.BeanDefinitionException;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 /**
  * Bean 名称解析器，用于从类、方法或构造函数/方法参数的注解中提取 Bean 名称。
  */
@@ -31,10 +34,16 @@ public final class BeanNamesResolver {
             return new String[]{defaultName};
         }
         String[] beanNames = capper.names();
-        if (beanNames == null || beanNames.length == 0 || (beanNames.length == 1 && beanNames[0].isEmpty())) {
+        if (beanNames == null || beanNames.length == 0) {
             return new String[]{defaultName};
         }
-        return beanNames;
+
+        Set<String> resultSet = new LinkedHashSet<>();
+        for (String beanName : beanNames) {
+            if(beanName != null && !beanName.isBlank())
+                resultSet.add(beanName);
+        }
+        return resultSet.toArray(new String[0]);
     }
 
     /**
@@ -57,10 +66,16 @@ public final class BeanNamesResolver {
             return new String[]{defaultName};
         }
         String[] beanNames = capper.names();
-        if (beanNames == null || beanNames.length == 0 || (beanNames.length == 1 && beanNames[0].isEmpty())) {
+        if(beanNames == null || beanNames.length == 0) {
             return new String[]{defaultName};
         }
-        return beanNames;
+
+        Set<String> resultSet = new LinkedHashSet<>();
+        for (String beanName : beanNames) {
+            if (beanName != null && !beanName.isBlank())
+                resultSet.add(beanName);
+        }
+        return resultSet.toArray(new String[0]);
     }
 
     /**
@@ -82,12 +97,12 @@ public final class BeanNamesResolver {
         }
         // 优先级 1：@Inject 注解中显式指定的 beanName
         Inject inject = parameter.getAnnotation(Inject.class);
-        if (inject != null && !inject.beanName().isEmpty()) {
+        if (inject != null && !inject.beanName().isBlank()) {
             return inject.beanName();
         }
         // 优先级 2：参数类型的简单类名首字母小写
         String simpleName = parameter.getType().getSimpleName();
-        if (simpleName != null && !simpleName.isEmpty()) {
+        if (!simpleName.isBlank()) {
             return decapitalize(simpleName);
         }
         // 无法推导
