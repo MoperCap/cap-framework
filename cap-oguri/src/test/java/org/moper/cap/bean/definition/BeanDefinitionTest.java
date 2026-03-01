@@ -141,7 +141,7 @@ class BeanDefinitionTest {
         @DisplayName("withInstantiationPolicy() 返回新实例，原实例的 policy 不变")
         void withInstantiationPolicy_returnsNewInstance_originalUnchanged() {
             BeanDefinition original = BeanDefinition.of("bean", SimpleBean.class);
-            InstantiationPolicy staticPolicy = InstantiationPolicy.staticFactory("create");
+            InstantiationPolicy staticPolicy = InstantiationPolicy.staticFactory("bean", "create");
             BeanDefinition modified = original.withInstantiationPolicy(staticPolicy);
 
             assertNotSame(original, modified);
@@ -170,7 +170,7 @@ class BeanDefinitionTest {
         @Test
         @DisplayName("链式调用所有 with* 方法，每个字段都被正确设置")
         void chainedCalls_allFieldsSetCorrectly() {
-            InstantiationPolicy policy = InstantiationPolicy.staticFactory("create");
+            InstantiationPolicy policy = InstantiationPolicy.staticFactory("dataSource", "create");
             BeanDefinition def = BeanDefinition.of("dataSource", SimpleBean.class)
                     .withInstantiationPolicy(policy)
                     .withScope(BeanScope.PROTOTYPE)

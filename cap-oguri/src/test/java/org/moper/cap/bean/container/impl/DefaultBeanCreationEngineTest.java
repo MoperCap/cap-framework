@@ -139,7 +139,7 @@ class DefaultBeanCreationEngineTest {
             container.registerBeanDefinition(
                     BeanDefinition.of("staticBean", StaticFactoryBean.class)
                             .withInstantiationPolicy(
-                                    InstantiationPolicy.staticFactory("create")));
+                                    InstantiationPolicy.staticFactory("staticBean", "create")));
 
             StaticFactoryBean bean = container.getBean("staticBean", StaticFactoryBean.class);
             assertEquals("static-factory", bean.getSource());
@@ -153,7 +153,7 @@ class DefaultBeanCreationEngineTest {
                     BeanDefinition.of("staticBean", StaticFactoryBean.class)
                             .withInstantiationPolicy(
                                     InstantiationPolicy.staticFactory(
-                                            "createWithArg", ConfigBean.class)));
+                                            "staticBean", "createWithArg", ConfigBean.class)));
 
             StaticFactoryBean bean = container.getBean("staticBean", StaticFactoryBean.class);
             assertEquals("hello-from-container", bean.getSource());

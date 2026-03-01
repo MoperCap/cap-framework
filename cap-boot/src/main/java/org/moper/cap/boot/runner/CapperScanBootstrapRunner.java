@@ -79,7 +79,14 @@ public class CapperScanBootstrapRunner implements BootstrapRunner {
                     Class<?>[] argTypes = method.getParameterTypes();
                     // 若方法为 static 方法，则直接使用静态工厂方法实例化 Bean
                     if(methodInfo.isStatic()){
-                        policy = InstantiationPolicy.staticFactory(methodName, argTypes);
+                        Class<?> factoryClass = classInfo.loadClass();
+                        String factoryBeanName = resolveBeanNames(factoryClass)[0];
+                        // 若工厂类未被注册为 Bean，则先注册（可能未被 @Capper 标注）
+                        if(!beanDefinitionMap.containsKey(factoryBeanName)) {
+                            BeanDefinition factoryDef = BeanDefinition.of(factoryBeanName, factoryClass);
+                            beanDefinitionMap.put(factoryBeanName, factoryDef);
+                        }
+                        policy = InstantiationPolicy.staticFactory(factoryBeanName, methodName, argTypes);
                     }
                     // 若方法所在类不可实例化，则无法作为工厂类，抛出异常
                     else if(classInfo.isInterface() || classInfo.isAbstract()){
