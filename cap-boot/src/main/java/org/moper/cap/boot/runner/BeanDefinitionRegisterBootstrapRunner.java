@@ -15,6 +15,7 @@ import org.moper.cap.core.runner.RunnerType;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.*;
 
 @Slf4j
@@ -58,7 +59,7 @@ public class BeanDefinitionRegisterBootstrapRunner implements BootstrapRunner {
 
                 // 注册Bean定义
                 BeanDefinition def = BeanDefinition.of(primaryBeanName, clazz)
-                        .withConstructorParameters(constructorParameterBeanNames)
+                        .withParameterBeanNames(constructorParameterBeanNames)
                         .withPrimary(capper.primary())
                         .withLazy(capper.lazy())
                         .withScope(capper.scope())
@@ -103,7 +104,8 @@ public class BeanDefinitionRegisterBootstrapRunner implements BootstrapRunner {
 
                     // 注册Bean定义
                     BeanDefinition def = BeanDefinition.of(primaryBeanName, beanType)
-                            .withFactoryMethod(factoryClassBeanName, factoryMethodName, factoryMethodParameterBeanNames)
+                            .withFactoryMethod(factoryClassBeanName, factoryMethodName)
+                            .withParameterBeanNames(factoryMethodParameterBeanNames)
                             .withPrimary(capper.primary())
                             .withLazy(capper.lazy())
                             .withScope(capper.scope())
@@ -151,11 +153,21 @@ public class BeanDefinitionRegisterBootstrapRunner implements BootstrapRunner {
             // 无构造函数，使用默认无参构造函数
             return new String[0];
         }
-        return BeanNamesResolver.resolveParameter(constructor);
+        Parameter[] parameters = constructor.getParameters();
+        String[] beanNames = new String[parameters.length];
+        for (int i = 0; i < parameters.length; i++) {
+            beanNames[i] = BeanNamesResolver.resolveParameter(parameters[i]);
+        }
+        return beanNames;
     }
 
     private String[] resolveMethodParameterBeanNames(Method method) {
-        return BeanNamesResolver.resolveParameter(method);
+        Parameter[] parameters = method.getParameters();
+        String[] beanNames = new String[parameters.length];
+        for (int i = 0; i < parameters.length; i++) {
+            beanNames[i] = BeanNamesResolver.resolveParameter(parameters[i]);
+        }
+        return beanNames;
     }
 
     /**
