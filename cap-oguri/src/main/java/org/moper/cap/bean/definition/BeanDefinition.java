@@ -1,5 +1,8 @@
 package org.moper.cap.bean.definition;
 
+import org.moper.cap.bean.definition.instantiation.ConstructorInstantiation;
+import org.moper.cap.bean.definition.instantiation.InstantiationPolicy;
+
 /**
  * Bean 的完整元数据描述（不可变）。
  *
@@ -73,7 +76,7 @@ public record BeanDefinition(
     public static BeanDefinition of(String name, Class<?> type) {
         return new BeanDefinition(
                 name, type, BeanScope.SINGLETON,
-                InstantiationPolicy.constructor(),
+                ConstructorInstantiation.of(type),
                 new String[0],
                 false, false, "");
     }
@@ -83,9 +86,6 @@ public record BeanDefinition(
      *
      * @param policy 实例化策略，不能为 null
      * @return 新的 BeanDefinition 实例
-     * @see InstantiationPolicy#constructor(Class[])
-     * @see InstantiationPolicy#staticFactory(String, Class[])
-     * @see InstantiationPolicy#instanceFactory(String, String, Class[])
      */
     public BeanDefinition withInstantiationPolicy(InstantiationPolicy policy) {
         return new BeanDefinition(

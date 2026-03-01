@@ -8,7 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.bean.annotation.Capper;
 import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bean.definition.BeanDefinition;
-import org.moper.cap.bean.definition.InstantiationPolicy;
+import org.moper.cap.bean.definition.instantiation.ConstructorInstantiation;
+import org.moper.cap.bean.definition.instantiation.FactoryInstantiation;
+import org.moper.cap.bean.definition.instantiation.InstantiationPolicy;
 import org.moper.cap.bean.exception.BeanDefinitionException;
 import org.moper.cap.core.annotation.RunnerMeta;
 import org.moper.cap.core.context.BootstrapContext;
@@ -72,35 +74,34 @@ public class CapperScanBootstrapRunner implements BootstrapRunner {
                 for(MethodInfo methodInfo : classInfo.getDeclaredMethodInfo()
                         .filter(methodInfo -> methodInfo.hasAnnotation(Capper.class.getName()))) {
 
-                    Method method = methodInfo.loadClassAndGetMethod();
-                    // 根据方法即所在类的修饰符和注解情况确定 Bean 实例化方式
-                    InstantiationPolicy policy = null;
-                    String methodName = method.getName();
-                    Class<?>[] argTypes = method.getParameterTypes();
-                    // 若方法为 static 方法，则直接使用静态工厂方法实例化 Bean
-                    if(methodInfo.isStatic()){
-                        policy = InstantiationPolicy.staticFactory(methodName, argTypes);
-                    }
-                    // 若方法所在类不可实例化，则无法作为工厂类，抛出异常
-                    else if(classInfo.isInterface() || classInfo.isAbstract()){
+                    Class<?> factoryClazz = classInfo.loadClass();
+                    String factoryClassBeanName = resolveBeanNames(factoryClazz)[0];
+
+                    Method factoryMethod = methodInfo.loadClassAndGetMethod();
+                    String factoryMethodName = factoryMethod.getName();
+                    Class<?>[] factoryMethodArgTypes = factoryMethod.getParameterTypes();
+
+                    // 非静态工厂方法所在类必须是可实例化的，否则无法作为工厂类，抛出异常
+                    if(!methodInfo.isStatic() && (classInfo.isInterface() || classInfo.isAbstract())) {
                         throw new BeanDefinitionException("Non-static @Capper method requires its class be instantiable: " + classInfo.getName());
                     }
-                    // 否则使用实例化工厂方法实例化 Bean
-                    else {
-                        Class<?> factoryClass = classInfo.loadClass();
-                        String factoryBeanName = resolveBeanNames(factoryClass)[0];
-                        // 若工厂类未被 @Capper 注解标记，且未被注册为 Bean， 则先将工厂类注册为 Bean，再使用该工厂类的 Bean 实例作为工厂实例，调用工厂方法实例化 Bean
-                        if(!beanDefinitionMap.containsKey(factoryBeanName) && !classInfo.hasAnnotation(Capper.class)) {
-                            BeanDefinition factoryDef = BeanDefinition.of(factoryBeanName, factoryClass);
-                            beanDefinitionMap.put(factoryBeanName, factoryDef);
-                        }
-                        policy = InstantiationPolicy.instanceFactory(factoryBeanName, methodName, argTypes);
+
+                    // 无论工厂方法所在类是否被 @Capper 注解标记，只要该类未被注册为 Bean，就先将该类注册为 Bean
+                    // 由于已经检索了所有的 @Capper 注解标记的类并注册了 Bean 定义
+                    // 因此只有当工厂方法所在的类未被 @Capper 注解标记且未被注册为 Bean 时才会执行注册工厂类的 Bean 定义的逻辑
+                    if(!beanDefinitionMap.containsKey(factoryClassBeanName)) {
+                        BeanDefinition factoryDef = BeanDefinition.of(factoryClassBeanName, factoryClazz);
+                        beanDefinitionMap.put(factoryClassBeanName, factoryDef);
                     }
+
+                    FactoryInstantiation policy = FactoryInstantiation.of(factoryClassBeanName, factoryMethodName, factoryMethodArgTypes);
+
                     // Bean 名称（支持多个别名，第一个名称会被作为主要名称）
-                    String[] beanNames = resolveBeanNames(method);
+                    String[] beanNames = resolveBeanNames(factoryMethod);
                     String primaryBeanName = beanNames[0];
-                    Class<?> beanType = method.getReturnType();
-                    Capper capper = method.getAnnotation(Capper.class);
+                    Class<?> beanType = factoryMethod.getReturnType();
+                    Capper capper = factoryMethod.getAnnotation(Capper.class);
+
                     // 注册Bean定义
                     BeanDefinition def = BeanDefinition.of(primaryBeanName, beanType)
                             .withPrimary(capper.primary())
@@ -114,6 +115,7 @@ public class CapperScanBootstrapRunner implements BootstrapRunner {
                         Set<String> aliasSet = new HashSet<>(Arrays.asList(beanNames).subList(1, beanNames.length));
                         aliasMap.put(primaryBeanName, aliasSet);
                     }
+
                 }
             }
         }

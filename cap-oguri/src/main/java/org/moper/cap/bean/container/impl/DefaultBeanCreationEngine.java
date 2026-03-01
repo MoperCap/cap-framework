@@ -4,7 +4,9 @@ import org.moper.cap.bean.container.BeanCreationEngine;
 import org.moper.cap.bean.container.BeanProvider;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.definition.BeanScope;
-import org.moper.cap.bean.definition.InstantiationPolicy;
+import org.moper.cap.bean.definition.instantiation.ConstructorInstantiation;
+import org.moper.cap.bean.definition.instantiation.FactoryInstantiation;
+import org.moper.cap.bean.definition.instantiation.InstantiationPolicy;
 import org.moper.cap.bean.exception.BeanCreationException;
 import org.moper.cap.bean.exception.BeanDestructionException;
 import org.moper.cap.bean.exception.BeanException;
@@ -13,7 +15,9 @@ import org.moper.cap.bean.interceptor.BeanInterceptor;
 import org.moper.cap.bean.lifecycle.BeanLifecycle;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -155,48 +159,49 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
      */
     private Object instantiateBean(String beanName, BeanDefinition beanDefinition) throws BeanException {
         InstantiationPolicy policy = beanDefinition.policy();
+        return switch (policy){
+            case ConstructorInstantiation constructorPolicy -> instantiate(beanName, constructorPolicy);
+            case FactoryInstantiation factoryPolicy -> instantiate(beanName, factoryPolicy);
+            default -> throw new BeanCreationException(beanName, "Unsupported instantiation policy: " + policy.getClass().getName());
+        };
+    }
+
+    private Object instantiate(String beanName, ConstructorInstantiation policy) throws BeanException {
+        Class<?> beanClass = policy.beanClass();
+        Class<?>[] argTypes = policy.argTypes();
+
+        Object[] args = new Object[argTypes.length];
+        for(int i = 0; i < argTypes.length; i++){
+            args[i] = beanProvider.getBean(argTypes[i]);
+        }
+
         try {
-            if (policy.isConstructor()) {
-                return instantiateByConstructor(beanName, beanDefinition);
-            } else if (policy.isStaticFactory()) {
-                return instantiateByStaticFactory(beanName, beanDefinition);
-            } else {
-                return instantiateByInstanceFactory(beanName, beanDefinition);
-            }
-        } catch (BeanException e) {
-            throw e; // BeanException 直接透传，不二次包装
-        } catch (Exception e) {
-            throw new BeanCreationException(beanName, "Instantiation failed", e);
+            Constructor<?> constructor = beanClass.getDeclaredConstructor(argTypes);
+            return constructor.newInstance(args);
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new BeanCreationException(beanName, "Failed to instantiate bean using no-arg constructor", e);
         }
+
     }
 
-    private Object instantiateByConstructor(String beanName, BeanDefinition beanDefinition) throws Exception {
-        Class<?> type      = beanDefinition.type();
-        Class<?>[] argTypes = beanDefinition.policy().argTypes();
+    private Object instantiate(String beanName, FactoryInstantiation policy) throws BeanException {
+        Class<?>[] argTypes = policy.argTypes();
+        Object factoryBean = beanProvider.getBean(policy.factoryBeanName());
 
-        if (argTypes.length == 0) {
-            return type.getDeclaredConstructor().newInstance();
+        Object[] args = new Object[argTypes.length];
+        for(int i = 0; i < argTypes.length; i++){
+            args[i] = beanProvider.getBean(argTypes[i]);
         }
-        Object[] args = resolveArguments(beanName, beanDefinition);
-        Constructor<?> ctor = type.getDeclaredConstructor(argTypes);
-        return ctor.newInstance(args);
-    }
 
-    private Object instantiateByStaticFactory(String beanName, BeanDefinition beanDefinition) throws Exception {
-        InstantiationPolicy policy = beanDefinition.policy();
-        Object[] args = resolveArguments(beanName, beanDefinition);
-        Method method = beanDefinition.type()
-                .getDeclaredMethod(policy.factoryMethodName(), policy.argTypes());
-        return method.invoke(null, args);
-    }
+        try {
+            Method method = factoryBean.getClass().getDeclaredMethod(policy.factoryMethodName(), argTypes);
+            if(Modifier.isStatic(method.getModifiers())){
+                return method.invoke(null, args);
+            }else return method.invoke(factoryBean, args);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            throw new BeanCreationException(beanName, "Failed to instantiate bean using no-arg constructor", e);
+        }
 
-    private Object instantiateByInstanceFactory(String beanName, BeanDefinition beanDefinition) throws Exception {
-        InstantiationPolicy policy  = beanDefinition.policy();
-        Object factoryBean          = beanProvider.getBean(policy.factoryBeanName());
-        Object[] args               = resolveArguments(beanName, beanDefinition);
-        Method method = factoryBean.getClass()
-                .getDeclaredMethod(policy.factoryMethodName(), policy.argTypes());
-        return method.invoke(factoryBean, args);
     }
 
     /**
@@ -273,24 +278,6 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
                 && beanInstance instanceof BeanLifecycle) {
             disposableBeans.put(beanName, beanInstance);
         }
-    }
-
-    /**
-     * 根据 {@link InstantiationPolicy#argTypes()} 从容器解析参数值数组。
-     *
-     * <p>{@link BeanException} 直接透传，不再二次包装，保证根因可见。
-     */
-    private Object[] resolveArguments(String beanName, BeanDefinition beanDefinition) throws BeanException {
-        Class<?>[] argTypes = beanDefinition.policy().argTypes();
-        if (argTypes.length == 0) {
-            return new Object[0];
-        }
-        Object[] args = new Object[argTypes.length];
-        for (int i = 0; i < argTypes.length; i++) {
-            // BeanException（含 NoSuchBeanDefinitionException）直接透传，保留精确根因
-            args[i] = beanProvider.getBean(argTypes[i]);
-        }
-        return args;
     }
 
     /**

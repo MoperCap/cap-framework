@@ -74,8 +74,11 @@ public class CapApplicationTest {
             FalseConfigurationClass falseConfigurationBean = context.getBean("false", FalseConfigurationClass.class);
             falseConfigurationBean.print();
 
-            FalseConfigurationClass trueConfigurationBean = context.getBean("TrueConfigurationClass", FalseConfigurationClass.class);
-            trueConfigurationBean.print();
+            FalseConfigurationClass trueConfigurationBean1 = context.getBean("TrueConfigurationClass1", FalseConfigurationClass.class);
+            trueConfigurationBean1.print();
+
+            FalseConfigurationClass trueConfigurationBean2 = context.getBean("TrueConfigurationClass2", FalseConfigurationClass.class);
+            trueConfigurationBean2.print();
         }
     }
 }

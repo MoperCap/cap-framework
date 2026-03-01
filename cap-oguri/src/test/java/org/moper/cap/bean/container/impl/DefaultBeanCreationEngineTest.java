@@ -3,7 +3,9 @@ package org.moper.cap.bean.container.impl;
 import org.junit.jupiter.api.*;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.definition.BeanScope;
-import org.moper.cap.bean.definition.InstantiationPolicy;
+import org.moper.cap.bean.definition.instantiation.ConstructorInstantiation;
+import org.moper.cap.bean.definition.instantiation.FactoryInstantiation;
+import org.moper.cap.bean.definition.instantiation.InstantiationPolicy;
 import org.moper.cap.bean.exception.BeanCreationException;
 import org.moper.cap.bean.exception.BeanDestructionException;
 import org.moper.cap.bean.exception.BeanInitializationException;
@@ -126,7 +128,7 @@ class DefaultBeanCreationEngineTest {
             container.registerBeanDefinition(
                     BeanDefinition.of("dependent", DependentBean.class)
                             .withInstantiationPolicy(
-                                    InstantiationPolicy.constructor(SimpleBean.class)));
+                                    ConstructorInstantiation.of(DependentBean.class, SimpleBean.class)));
 
             DependentBean bean = container.getBean("dependent", DependentBean.class);
             assertNotNull(bean.getDependency());
@@ -139,7 +141,7 @@ class DefaultBeanCreationEngineTest {
             container.registerBeanDefinition(
                     BeanDefinition.of("staticBean", StaticFactoryBean.class)
                             .withInstantiationPolicy(
-                                    InstantiationPolicy.staticFactory("create")));
+                                    FactoryInstantiation.of("staticBean", "create")));
 
             StaticFactoryBean bean = container.getBean("staticBean", StaticFactoryBean.class);
             assertEquals("static-factory", bean.getSource());
@@ -152,8 +154,7 @@ class DefaultBeanCreationEngineTest {
             container.registerBeanDefinition(
                     BeanDefinition.of("staticBean", StaticFactoryBean.class)
                             .withInstantiationPolicy(
-                                    InstantiationPolicy.staticFactory(
-                                            "createWithArg", ConfigBean.class)));
+                                    FactoryInstantiation.of("staticBean", "createWithArg", ConfigBean.class)));
 
             StaticFactoryBean bean = container.getBean("staticBean", StaticFactoryBean.class);
             assertEquals("hello-from-container", bean.getSource());
@@ -167,8 +168,7 @@ class DefaultBeanCreationEngineTest {
             container.registerBeanDefinition(
                     BeanDefinition.of("product", SimpleBean.class)
                             .withInstantiationPolicy(
-                                    InstantiationPolicy.instanceFactory(
-                                            "factory", "createSimpleBean")));
+                                    FactoryInstantiation.of("factory", "createSimpleBean")));
 
             SimpleBean bean = container.getBean("product", SimpleBean.class);
             assertEquals("from-instance-factory", bean.getValue());
@@ -600,7 +600,7 @@ class DefaultBeanCreationEngineTest {
             container.registerBeanDefinition(
                     BeanDefinition.of("dependent", DependentBean.class)
                             .withInstantiationPolicy(
-                                    InstantiationPolicy.constructor(SimpleBean.class)));
+                                    ConstructorInstantiation.of(DependentBean.class, SimpleBean.class)));
 
             // 异常应该是 NoSuchBeanDefinitionException 而非被包装的 BeanCreationException
             Exception ex = assertThrows(Exception.class,

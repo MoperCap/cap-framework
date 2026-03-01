@@ -3,7 +3,8 @@ package org.moper.cap.bean.container.impl;
 import org.junit.jupiter.api.*;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.definition.BeanScope;
-import org.moper.cap.bean.definition.InstantiationPolicy;
+import org.moper.cap.bean.definition.instantiation.ConstructorInstantiation;
+import org.moper.cap.bean.definition.instantiation.InstantiationPolicy;
 import org.moper.cap.bean.exception.*;
 import org.moper.cap.bean.fixture.*;
 import org.moper.cap.bean.interceptor.BeanInterceptor;
@@ -330,11 +331,11 @@ class DefaultBeanContainerTest {
             container.registerBeanDefinition(
                     BeanDefinition.of("circularA", CircularBeanA.class)
                             .withInstantiationPolicy(
-                                    InstantiationPolicy.constructor(CircularBeanB.class)));
+                                    ConstructorInstantiation.of(CircularBeanA.class, CircularBeanB.class)));
             container.registerBeanDefinition(
                     BeanDefinition.of("circularB", CircularBeanB.class)
                             .withInstantiationPolicy(
-                                    InstantiationPolicy.constructor(CircularBeanA.class)));
+                                    ConstructorInstantiation.of(CircularBeanB.class, CircularBeanA.class)));
 
             BeanCreationException ex = assertThrows(BeanCreationException.class,
                     () -> container.getBean("circularA"));
