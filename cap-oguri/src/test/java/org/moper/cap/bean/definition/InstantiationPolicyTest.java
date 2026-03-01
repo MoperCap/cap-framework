@@ -21,9 +21,8 @@ class InstantiationPolicyTest {
         void create_success_argTypesIsEmpty() {
             InstantiationPolicy policy = InstantiationPolicy.constructor();
             assertNotNull(policy);
+            assertInstanceOf(InstantiationPolicy.ConstructorInstantiation.class, policy);
             assertArrayEquals(new Class<?>[0], policy.argTypes());
-            assertNull(policy.factoryBeanName());
-            assertNull(policy.factoryMethodName());
         }
 
         @Test
@@ -54,8 +53,7 @@ class InstantiationPolicyTest {
         void create_success_argTypesPreserved() {
             InstantiationPolicy policy = InstantiationPolicy.constructor(String.class, Integer.class);
             assertArrayEquals(new Class<?>[]{String.class, Integer.class}, policy.argTypes());
-            assertNull(policy.factoryBeanName());
-            assertNull(policy.factoryMethodName());
+            assertInstanceOf(InstantiationPolicy.ConstructorInstantiation.class, policy);
         }
 
         @Test
@@ -75,39 +73,56 @@ class InstantiationPolicyTest {
     class StaticFactory {
 
         @Test
-        @DisplayName("创建成功，factoryBeanName 为 null，factoryMethodName 被正确保存")
+        @DisplayName("创建成功，factoryBeanName 和 factoryMethodName 均被正确保存")
         void create_success_fieldsCorrect() {
-            InstantiationPolicy policy = InstantiationPolicy.staticFactory("create");
-            assertNull(policy.factoryBeanName());
-            assertEquals("create", policy.factoryMethodName());
+            InstantiationPolicy policy = InstantiationPolicy.staticFactory("myFactory", "create");
+            assertInstanceOf(InstantiationPolicy.StaticFactoryInstantiation.class, policy);
+            InstantiationPolicy.StaticFactoryInstantiation sfi =
+                    (InstantiationPolicy.StaticFactoryInstantiation) policy;
+            assertEquals("myFactory", sfi.factoryBeanName());
+            assertEquals("create", sfi.factoryMethodName());
             assertArrayEquals(new Class<?>[0], policy.argTypes());
         }
 
         @Test
         @DisplayName("创建成功，有参场景 argTypes 被正确保存")
         void create_withArgs_argTypesPreserved() {
-            InstantiationPolicy policy = InstantiationPolicy.staticFactory("createWith", String.class);
+            InstantiationPolicy policy = InstantiationPolicy.staticFactory("myFactory", "createWith", String.class);
             assertArrayEquals(new Class<?>[]{String.class}, policy.argTypes());
+        }
+
+        @Test
+        @DisplayName("factoryBeanName 为 null 时抛出 BeanDefinitionStoreException")
+        void create_nullFactoryBeanName_throwsBeanDefinitionStoreException() {
+            assertThrows(BeanDefinitionStoreException.class,
+                    () -> InstantiationPolicy.staticFactory(null, "create"));
+        }
+
+        @Test
+        @DisplayName("factoryBeanName 为空白字符串时抛出 BeanDefinitionStoreException")
+        void create_blankFactoryBeanName_throwsBeanDefinitionStoreException() {
+            assertThrows(BeanDefinitionStoreException.class,
+                    () -> InstantiationPolicy.staticFactory("   ", "create"));
         }
 
         @Test
         @DisplayName("methodName 为 null 时抛出 BeanDefinitionStoreException")
         void create_nullMethodName_throwsBeanDefinitionStoreException() {
             assertThrows(BeanDefinitionStoreException.class,
-                    () -> InstantiationPolicy.staticFactory(null));
+                    () -> InstantiationPolicy.staticFactory("myFactory", null));
         }
 
         @Test
         @DisplayName("methodName 为空白字符串时抛出 BeanDefinitionStoreException")
         void create_blankMethodName_throwsBeanDefinitionStoreException() {
             assertThrows(BeanDefinitionStoreException.class,
-                    () -> InstantiationPolicy.staticFactory("   "));
+                    () -> InstantiationPolicy.staticFactory("myFactory", "   "));
         }
 
         @Test
         @DisplayName("isStaticFactory() 返回 true，其余返回 false")
         void isStaticFactory_returnsTrue_othersReturnFalse() {
-            InstantiationPolicy policy = InstantiationPolicy.staticFactory("create");
+            InstantiationPolicy policy = InstantiationPolicy.staticFactory("myFactory", "create");
             assertFalse(policy.isConstructor());
             assertTrue(policy.isStaticFactory());
             assertFalse(policy.isInstanceFactory());
@@ -124,8 +139,11 @@ class InstantiationPolicyTest {
         @DisplayName("创建成功，factoryBeanName 和 factoryMethodName 均被正确保存")
         void create_success_fieldsCorrect() {
             InstantiationPolicy policy = InstantiationPolicy.instanceFactory("myFactory", "build");
-            assertEquals("myFactory", policy.factoryBeanName());
-            assertEquals("build", policy.factoryMethodName());
+            assertInstanceOf(InstantiationPolicy.InstanceFactoryInstantiation.class, policy);
+            InstantiationPolicy.InstanceFactoryInstantiation ifi =
+                    (InstantiationPolicy.InstanceFactoryInstantiation) policy;
+            assertEquals("myFactory", ifi.factoryBeanName());
+            assertEquals("build", ifi.factoryMethodName());
             assertArrayEquals(new Class<?>[0], policy.argTypes());
         }
 
@@ -177,7 +195,7 @@ class InstantiationPolicyTest {
         @DisplayName("同一时刻只有一种策略的 isXxx() 返回 true")
         void onlyOneStrategyActiveAtATime() {
             InstantiationPolicy constructor    = InstantiationPolicy.constructor();
-            InstantiationPolicy staticFactory  = InstantiationPolicy.staticFactory("m");
+            InstantiationPolicy staticFactory  = InstantiationPolicy.staticFactory("f", "m");
             InstantiationPolicy instanceFactory = InstantiationPolicy.instanceFactory("f", "m");
 
             // constructor

@@ -2,44 +2,78 @@ package org.moper.cap.bean.definition;
 
 import org.moper.cap.bean.exception.BeanDefinitionStoreException;
 
-import java.util.Arrays;
-
 /**
  * Bean 的实例化策略，描述容器应当以何种方式创建 Bean 实例。
  *
- * <p>三种策略互斥，通过字段组合区分：
- * <table border="1">
- *   <tr><th>策略</th><th>factoryBeanName</th><th>factoryMethodName</th></tr>
- *   <tr><td>构造函数</td><td>null</td><td>null</td></tr>
- *   <tr><td>静态工厂</td><td>null</td><td>非 null</td></tr>
- *   <tr><td>实例工厂</td><td>非 null</td><td>非 null</td></tr>
- * </table>
+ * <p>通过 sealed interface + record 机制将三种策略封装为独立类型：
+ * <ul>
+ *   <li>{@link ConstructorInstantiation} —— 基于构造函数初始化策略</li>
+ *   <li>{@link StaticFactoryInstantiation} —— 基于静态工厂函数初始化策略</li>
+ *   <li>{@link InstanceFactoryInstantiation} —— 基于实例化工厂函数初始化策略</li>
+ * </ul>
  *
  * <p>推荐通过静态工厂方法创建：
  * <ul>
  *   <li>{@link #constructor(Class[])} —— 构造函数策略</li>
- *   <li>{@link #staticFactory(String, Class[])} —— 静态工厂策略</li>
+ *   <li>{@link #staticFactory(String, String, Class[])} —— 静态工厂策略</li>
  *   <li>{@link #instanceFactory(String, String, Class[])} —— 实例工厂策略</li>
  * </ul>
- *
- * @param factoryBeanName   实例工厂的 Bean 名称；仅实例工厂策略时非 null，其余情况为 null
- * @param factoryMethodName 工厂方法名称；静态工厂和实例工厂策略时非 null，构造函数策略为 null
- * @param argTypes          构造函数或工厂方法的参数类型，按参数顺序排列，不能为 null，
- *                          无参时为空数组
  */
-public record InstantiationPolicy(
-        String   factoryBeanName,
-        String   factoryMethodName,
-        Class<?>[] argTypes
-) {
+public sealed interface InstantiationPolicy
+        permits InstantiationPolicy.ConstructorInstantiation,
+                InstantiationPolicy.StaticFactoryInstantiation,
+                InstantiationPolicy.InstanceFactoryInstantiation {
+
+    /**
+     * 构造函数或工厂方法的参数类型，按参数顺序排列，无参时为空数组。
+     */
+    Class<?>[] argTypes();
+
+    // ==================== 嵌套 record 实现 ====================
+
+    /**
+     * 基于构造函数的实例化策略。
+     *
+     * @param argTypes 构造函数参数类型，按顺序排列，无参时为空数组
+     */
+    record ConstructorInstantiation(Class<?>[] argTypes)
+            implements InstantiationPolicy {}
+
+    /**
+     * 基于静态工厂方法的实例化策略。
+     *
+     * @param factoryBeanName   静态工厂方法所在类对应的 Bean 名称，不能为空
+     * @param factoryMethodName 静态工厂方法名称，不能为空
+     * @param argTypes          方法参数类型，按顺序排列，无参时为空数组
+     */
+    record StaticFactoryInstantiation(
+            String factoryBeanName,
+            String factoryMethodName,
+            Class<?>[] argTypes)
+            implements InstantiationPolicy {}
+
+    /**
+     * 基于实例工厂方法的实例化策略。
+     *
+     * @param factoryBeanName   工厂 Bean 的注册名称，不能为空
+     * @param factoryMethodName 工厂方法名称，不能为空
+     * @param argTypes          方法参数类型，按顺序排列，无参时为空数组
+     */
+    record InstanceFactoryInstantiation(
+            String factoryBeanName,
+            String factoryMethodName,
+            Class<?>[] argTypes)
+            implements InstantiationPolicy {}
+
+    // ==================== 静态工厂方法 ====================
 
     /**
      * 构造函数实例化策略（无参构造）。
      *
      * @return 新的 InstantiationPolicy 实例
      */
-    public static InstantiationPolicy constructor() {
-        return new InstantiationPolicy(null, null, new Class<?>[0]);
+    static InstantiationPolicy constructor() {
+        return new ConstructorInstantiation(new Class<?>[0]);
     }
 
     /**
@@ -48,26 +82,32 @@ public record InstantiationPolicy(
      * @param argTypes 构造函数参数类型，按顺序排列，不能为 null
      * @return 新的 InstantiationPolicy 实例
      */
-    public static InstantiationPolicy constructor(Class<?>... argTypes) {
-        return new InstantiationPolicy(null, null, argTypes);
+    static InstantiationPolicy constructor(Class<?>... argTypes) {
+        return new ConstructorInstantiation(argTypes);
     }
 
     /**
      * 静态工厂方法实例化策略。
      *
-     * @param methodName 静态工厂方法名，不能为空，必须在 Bean 的 {@code type} 类上声明
-     * @param argTypes   方法参数类型，按顺序排列，不能为 null
+     * @param factoryBeanName 静态工厂方法所在类对应的 Bean 名称，不能为空
+     * @param methodName      静态工厂方法名，不能为空
+     * @param argTypes        方法参数类型，按顺序排列，不能为 null
      * @return 新的 InstantiationPolicy 实例
-     * @throws BeanDefinitionStoreException 如果 methodName 为空
+     * @throws BeanDefinitionStoreException 如果 factoryBeanName 或 methodName 为空
      */
-    public static InstantiationPolicy staticFactory(
+    static InstantiationPolicy staticFactory(
+            String factoryBeanName,
             String methodName,
             Class<?>... argTypes) {
+        if (factoryBeanName == null || factoryBeanName.isBlank()) {
+            throw new BeanDefinitionStoreException(
+                    "Static factory bean name must not be blank");
+        }
         if (methodName == null || methodName.isBlank()) {
             throw new BeanDefinitionStoreException(
                     "Static factory method name must not be blank");
         }
-        return new InstantiationPolicy(null, methodName, argTypes);
+        return new StaticFactoryInstantiation(factoryBeanName, methodName, argTypes);
     }
 
     /**
@@ -79,7 +119,7 @@ public record InstantiationPolicy(
      * @return 新的 InstantiationPolicy 实例
      * @throws BeanDefinitionStoreException 如果 factoryBeanName 或 methodName 为空
      */
-    public static InstantiationPolicy instanceFactory(
+    static InstantiationPolicy instanceFactory(
             String factoryBeanName,
             String methodName,
             Class<?>... argTypes) {
@@ -91,30 +131,23 @@ public record InstantiationPolicy(
             throw new BeanDefinitionStoreException(
                     "Instance factory method name must not be blank");
         }
-        return new InstantiationPolicy(factoryBeanName, methodName, argTypes);
+        return new InstanceFactoryInstantiation(factoryBeanName, methodName, argTypes);
     }
 
+    // ==================== 类型判断 ====================
+
     /** 是否为构造函数实例化策略 */
-    public boolean isConstructor() {
-        return factoryMethodName == null;
+    default boolean isConstructor() {
+        return this instanceof ConstructorInstantiation;
     }
 
     /** 是否为静态工厂方法实例化策略 */
-    public boolean isStaticFactory() {
-        return factoryMethodName != null && factoryBeanName == null;
+    default boolean isStaticFactory() {
+        return this instanceof StaticFactoryInstantiation;
     }
 
     /** 是否为实例工厂方法实例化策略 */
-    public boolean isInstanceFactory() {
-        return factoryMethodName != null && factoryBeanName != null;
-    }
-
-    @Override
-    public String toString() {
-        return "InstantiationPolicy{" +
-                "factoryBeanName='" + factoryBeanName + '\'' +
-                ", factoryMethodName='" + factoryMethodName + '\'' +
-                ", argTypes=" + Arrays.toString(argTypes) +
-                '}';
+    default boolean isInstanceFactory() {
+        return this instanceof InstanceFactoryInstantiation;
     }
 }
