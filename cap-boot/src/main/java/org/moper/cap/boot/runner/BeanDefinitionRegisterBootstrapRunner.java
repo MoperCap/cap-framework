@@ -47,7 +47,7 @@ public class BeanDefinitionRegisterBootstrapRunner implements BootstrapRunner {
                 .scan()) {
 
             // 收集@Capper类并注册Bean定义
-            for(ClassInfo classInfo : scan.getClassesWithAnnotation(Capper.class.getName())
+            for(ClassInfo classInfo : scan.getClassesWithAnnotation(Capper.class)
                     .filter(classInfo -> !classInfo.isInterface() && !classInfo.isAbstract() && !classInfo.isAnnotation())) {
 
                 Class<?> clazz = classInfo.loadClass();
@@ -74,7 +74,7 @@ public class BeanDefinitionRegisterBootstrapRunner implements BootstrapRunner {
             // 收集@Capper方法并注册Bean定义
             for(ClassInfo classInfo : scan.getAllClasses()){
                 for(MethodInfo methodInfo : classInfo.getDeclaredMethodInfo()
-                        .filter(methodInfo -> methodInfo.hasAnnotation(Capper.class.getName()))) {
+                        .filter(methodInfo -> methodInfo.hasAnnotation(Capper.class))) {
 
                     Class<?> factoryClazz = classInfo.loadClass();
                     String factoryClassBeanName = BeanNamesResolver.resolve(factoryClazz)[0];
@@ -140,7 +140,7 @@ public class BeanDefinitionRegisterBootstrapRunner implements BootstrapRunner {
 
     private InstantiationPolicy resolveConstructorPolicy(ClassInfo info) {
         MethodInfoList constructors = info.getDeclaredConstructorInfo();
-        MethodInfoList injectConstructors = constructors.filter(mi -> mi.hasAnnotation(Inject.class.getName()));
+        MethodInfoList injectConstructors = constructors.filter(mi -> mi.hasAnnotation(Inject.class));
         if(injectConstructors.size() > 1)
             throw new BeanDefinitionException("Multiple constructors annotated with @Inject found in class: " + info.getName());
         else if(injectConstructors.size() == 1){

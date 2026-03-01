@@ -1,5 +1,6 @@
 package org.moper.cap.bean.container.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.bean.container.BeanCreationEngine;
 import org.moper.cap.bean.container.BeanProvider;
 import org.moper.cap.bean.definition.BeanDefinition;
@@ -39,6 +40,7 @@ import java.util.List;
  * {@link org.moper.cap.bean.container.impl.DefaultBeanContainer} 中已通过 {@code synchronized} 保证互斥，
  * 因此此处无需额外同步。
  */
+@Slf4j
 public class DefaultBeanCreationEngine implements BeanCreationEngine {
 
     /**
@@ -177,7 +179,7 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
         }
         try{
             return constructor.newInstance(args);
-        }catch (InstantiationException | IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
+        }catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new BeanCreationException(beanName, "Failed to instantiate bean using constructor", e);
         }
 
