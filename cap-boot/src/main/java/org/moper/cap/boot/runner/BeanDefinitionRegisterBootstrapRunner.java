@@ -50,15 +50,15 @@ public class BeanDefinitionRegisterBootstrapRunner implements BootstrapRunner {
                 Class<?> clazz = classInfo.loadClass();
 
                 // Bean 构造函数参数 Bean 名称
-                String[] constructorArgBeanNames = resolveConstructorArgBeanNames(classInfo);
+                String[] constructorParameterBeanNames = resolveConstructorParameterBeanNames(classInfo);
                 // Bean 名称（支持多个别名，第一个名称会被作为主要名称）
-                String[] beanNames = BeanNamesResolver.resolve(clazz);
+                String[] beanNames = BeanNamesResolver.resolveClass(clazz);
                 String primaryBeanName = beanNames[0];
                 Capper capper = clazz.getAnnotation(Capper.class);
 
                 // 注册Bean定义
                 BeanDefinition def = BeanDefinition.of(primaryBeanName, clazz)
-                        .withConstructorArgs(constructorArgBeanNames)
+                        .withConstructorParameters(constructorParameterBeanNames)
                         .withPrimary(capper.primary())
                         .withLazy(capper.lazy())
                         .withScope(capper.scope())
@@ -74,7 +74,7 @@ public class BeanDefinitionRegisterBootstrapRunner implements BootstrapRunner {
                         .filter(methodInfo -> methodInfo.hasAnnotation(Capper.class))) {
 
                     Class<?> factoryClazz = classInfo.loadClass();
-                    String factoryClassBeanName = BeanNamesResolver.resolve(factoryClazz)[0];
+                    String factoryClassBeanName = BeanNamesResolver.resolveClass(factoryClazz)[0];
 
                     Method factoryMethod = methodInfo.loadClassAndGetMethod();
                     String factoryMethodName = factoryMethod.getName();
@@ -93,17 +93,17 @@ public class BeanDefinitionRegisterBootstrapRunner implements BootstrapRunner {
                     }
 
                     // 解析工厂方法参数 Bean 名称
-                    String[] factoryMethodArgBeanNames = resolveMethodArgBeanNames(factoryMethod);
+                    String[] factoryMethodParameterBeanNames = resolveMethodParameterBeanNames(factoryMethod);
 
                     // Bean 名称（支持多个别名，第一个名称会被作为主要名称）
-                    String[] beanNames = BeanNamesResolver.resolve(factoryMethod);
+                    String[] beanNames = BeanNamesResolver.resolveMethod(factoryMethod);
                     String primaryBeanName = beanNames[0];
                     Class<?> beanType = factoryMethod.getReturnType();
                     Capper capper = factoryMethod.getAnnotation(Capper.class);
 
                     // 注册Bean定义
                     BeanDefinition def = BeanDefinition.of(primaryBeanName, beanType)
-                            .withFactoryMethod(factoryClassBeanName, factoryMethodName, factoryMethodArgBeanNames)
+                            .withFactoryMethod(factoryClassBeanName, factoryMethodName, factoryMethodParameterBeanNames)
                             .withPrimary(capper.primary())
                             .withLazy(capper.lazy())
                             .withScope(capper.scope())
@@ -135,7 +135,7 @@ public class BeanDefinitionRegisterBootstrapRunner implements BootstrapRunner {
 
     }
 
-    private String[] resolveConstructorArgBeanNames(ClassInfo info) {
+    private String[] resolveConstructorParameterBeanNames(ClassInfo info) {
         MethodInfoList constructors = info.getDeclaredConstructorInfo();
         MethodInfoList injectConstructors = constructors.filter(mi -> mi.hasAnnotation(Inject.class));
         Constructor<?> constructor;
@@ -151,19 +151,11 @@ public class BeanDefinitionRegisterBootstrapRunner implements BootstrapRunner {
             // 无构造函数，使用默认无参构造函数
             return new String[0];
         }
-        return resolveMethodArgBeanNames(constructor.getParameterTypes());
+        return BeanNamesResolver.resolveParameter(constructor);
     }
 
-    private String[] resolveMethodArgBeanNames(Method method) {
-        return resolveMethodArgBeanNames(method.getParameterTypes());
-    }
-
-    private String[] resolveMethodArgBeanNames(Class<?>[] paramTypes) {
-        String[] argBeanNames = new String[paramTypes.length];
-        for (int i = 0; i < paramTypes.length; i++) {
-            argBeanNames[i] = BeanNamesResolver.resolve(paramTypes[i])[0];
-        }
-        return argBeanNames;
+    private String[] resolveMethodParameterBeanNames(Method method) {
+        return BeanNamesResolver.resolveParameter(method);
     }
 
     /**

@@ -1,5 +1,7 @@
 package org.moper.cap.bean.definition;
 
+import org.moper.cap.bean.exception.BeanDefinitionStoreException;
+
 /**
  * Bean 的完整元数据描述（不可变）。
  *
@@ -13,7 +15,7 @@ package org.moper.cap.bean.definition;
  *
  * // 构造函数注入
  * BeanDefinition def = BeanDefinition.of("orderService", OrderService.class)
- *     .withConstructorArgs("userService", "configBean");
+ *     .withConstructorParameters("userService", "configBean");
  *
  * // 工厂方法实例化
  * BeanDefinition def = BeanDefinition.of("dataSource", DataSource.class)
@@ -27,22 +29,24 @@ package org.moper.cap.bean.definition;
  * registry.registerBeanDefinition(updated);
  * }</pre>
  *
- * @param name                        Bean 的唯一标识名称，不能为空
- * @param type                        Bean 的类型，不能为 null
- * @param scope                       Bean 的作用域，不能为 null，默认 {@link BeanScope#SINGLETON}
- * @param dependsOn                   强依赖的其他 Bean 名称，不能为 null，
- *                                    容器保证这些 Bean 先于本 Bean 初始化，
- *                                    适用于非注入式的顺序依赖，默认为空数组
- * @param lazy                        是否延迟初始化，{@code true} 表示首次 {@code getBean}
- *                                    时才创建实例，仅对 {@link BeanScope#SINGLETON} 有效，
- *                                    默认 {@code false}
- * @param primary                     是否为同类型 Bean 的首选候选，按类型查找时若存在多个匹配，
- *                                    优先返回标记为 {@code primary} 的 Bean，默认 {@code false}
- * @param description                 可读描述信息，不能为 null，默认为空字符串
- * @param constructorArgBeanNames     构造函数参数的 Bean 名称列表，空数组表示无参构造，不能为 null
- * @param factoryMethodName           工厂方法名称，null 表示非工厂方法实例化
- * @param factoryBeanName             工厂 Bean 的名称，null 表示非工厂方法实例化
- * @param factoryMethodArgBeanNames   工厂方法参数的 Bean 名称列表，不能为 null
+ * @param name                           Bean 的唯一标识名称，不能为空
+ * @param type                           Bean 的类型，不能为 null
+ * @param scope                          Bean 的作用域，不能为 null，默认 {@link BeanScope#SINGLETON}
+ * @param dependsOn                      强依赖的其他 Bean 名称，不能为 null，
+ *                                       容器保证这些 Bean 先于本 Bean 初始化，
+ *                                       适用于非注入式的顺序依赖，默认为空数组
+ * @param lazy                           是否延迟初始化，{@code true} 表示首次 {@code getBean}
+ *                                       时才创建实例，仅对 {@link BeanScope#SINGLETON} 有效，
+ *                                       默认 {@code false}
+ * @param primary                        是否为同类型 Bean 的首选候选，按类型查找时若存在多个匹配，
+ *                                       优先返回标记为 {@code primary} 的 Bean，默认 {@code false}
+ * @param description                    可读描述信息，不能为 null，默认为空字符串
+ * @param constructorParameterBeanNames  构造函数参数的 Bean 名称列表，空数组表示无参构造，不能为 null
+ * @param factoryMethodName              工厂方法名称，null 表示非工厂方法实例化；
+ *                                       必须与 factoryBeanName 同时为 null 或同时非 null
+ * @param factoryBeanName                工厂 Bean 的名称，null 表示非工厂方法实例化；
+ *                                       必须与 factoryMethodName 同时为 null 或同时非 null
+ * @param factoryMethodParameterBeanNames 工厂方法参数的 Bean 名称列表，不能为 null
  */
 public record BeanDefinition(
         String name,
@@ -52,10 +56,10 @@ public record BeanDefinition(
         boolean lazy,
         boolean primary,
         String description,
-        String[] constructorArgBeanNames,
+        String[] constructorParameterBeanNames,
         String factoryMethodName,
         String factoryBeanName,
-        String[] factoryMethodArgBeanNames
+        String[] factoryMethodParameterBeanNames
 ) {
 
     public BeanDefinition {
@@ -65,11 +69,16 @@ public record BeanDefinition(
         if (type == null) {
             throw new IllegalArgumentException("Bean type must not be null");
         }
-        if (constructorArgBeanNames == null) {
-            throw new IllegalArgumentException("constructorArgBeanNames must not be null");
+        if (constructorParameterBeanNames == null) {
+            throw new IllegalArgumentException("constructorParameterBeanNames must not be null");
         }
-        if (factoryMethodArgBeanNames == null) {
-            throw new IllegalArgumentException("factoryMethodArgBeanNames must not be null");
+        if (factoryMethodParameterBeanNames == null) {
+            throw new IllegalArgumentException("factoryMethodParameterBeanNames must not be null");
+        }
+        if ((factoryBeanName == null) != (factoryMethodName == null)) {
+            throw new BeanDefinitionStoreException(
+                    "factoryBeanName and factoryMethodName must both be null or both non-null, " +
+                    "but got factoryBeanName='" + factoryBeanName + "' and factoryMethodName='" + factoryMethodName + "'");
         }
     }
 
@@ -95,11 +104,11 @@ public record BeanDefinition(
     /**
      * 返回一个使用指定构造函数参数 Bean 名称的新 BeanDefinition。
      *
-     * @param argBeanNames 构造函数参数的 Bean 名称，按顺序排列
+     * @param parameterBeanNames 构造函数参数的 Bean 名称，按顺序排列
      * @return 新的 BeanDefinition 实例
      */
-    public BeanDefinition withConstructorArgs(String... argBeanNames) {
-        String[] names = argBeanNames == null ? new String[0] : argBeanNames;
+    public BeanDefinition withConstructorParameters(String... parameterBeanNames) {
+        String[] names = parameterBeanNames == null ? new String[0] : parameterBeanNames;
         return new BeanDefinition(
                 name, type, scope, dependsOn, lazy, primary, description,
                 names, null, null, new String[0]);
@@ -108,13 +117,13 @@ public record BeanDefinition(
     /**
      * 返回一个使用指定工厂方法实例化的新 BeanDefinition。
      *
-     * @param factoryBeanName   工厂 Bean 的名称，不能为空
-     * @param factoryMethodName 工厂方法名称，不能为空
-     * @param argBeanNames      工厂方法参数的 Bean 名称，按顺序排列
+     * @param factoryBeanName    工厂 Bean 的名称，不能为空
+     * @param factoryMethodName  工厂方法名称，不能为空
+     * @param parameterBeanNames 工厂方法参数的 Bean 名称，按顺序排列
      * @return 新的 BeanDefinition 实例
      */
-    public BeanDefinition withFactoryMethod(String factoryBeanName, String factoryMethodName, String... argBeanNames) {
-        String[] names = argBeanNames == null ? new String[0] : argBeanNames;
+    public BeanDefinition withFactoryMethod(String factoryBeanName, String factoryMethodName, String... parameterBeanNames) {
+        String[] names = parameterBeanNames == null ? new String[0] : parameterBeanNames;
         return new BeanDefinition(
                 name, type, scope, dependsOn, lazy, primary, description,
                 new String[0], factoryMethodName, factoryBeanName, names);
@@ -129,7 +138,7 @@ public record BeanDefinition(
     public BeanDefinition withScope(BeanScope scope) {
         return new BeanDefinition(
                 name, type, scope, dependsOn, lazy, primary, description,
-                constructorArgBeanNames, factoryMethodName, factoryBeanName, factoryMethodArgBeanNames);
+                constructorParameterBeanNames, factoryMethodName, factoryBeanName, factoryMethodParameterBeanNames);
     }
 
     /**
@@ -141,7 +150,7 @@ public record BeanDefinition(
     public BeanDefinition dependsOn(String... beanNames) {
         return new BeanDefinition(
                 name, type, scope, beanNames, lazy, primary, description,
-                constructorArgBeanNames, factoryMethodName, factoryBeanName, factoryMethodArgBeanNames);
+                constructorParameterBeanNames, factoryMethodName, factoryBeanName, factoryMethodParameterBeanNames);
     }
 
     /**
@@ -153,7 +162,7 @@ public record BeanDefinition(
     public BeanDefinition withLazy(boolean lazy) {
         return new BeanDefinition(
                 name, type, scope, dependsOn, lazy, primary, description,
-                constructorArgBeanNames, factoryMethodName, factoryBeanName, factoryMethodArgBeanNames);
+                constructorParameterBeanNames, factoryMethodName, factoryBeanName, factoryMethodParameterBeanNames);
     }
 
     /**
@@ -165,7 +174,7 @@ public record BeanDefinition(
     public BeanDefinition withPrimary(boolean primary) {
         return new BeanDefinition(
                 name, type, scope, dependsOn, lazy, primary, description,
-                constructorArgBeanNames, factoryMethodName, factoryBeanName, factoryMethodArgBeanNames);
+                constructorParameterBeanNames, factoryMethodName, factoryBeanName, factoryMethodParameterBeanNames);
     }
 
     /**
@@ -177,7 +186,7 @@ public record BeanDefinition(
     public BeanDefinition withDescription(String description) {
         return new BeanDefinition(
                 name, type, scope, dependsOn, lazy, primary, description,
-                constructorArgBeanNames, factoryMethodName, factoryBeanName, factoryMethodArgBeanNames);
+                constructorParameterBeanNames, factoryMethodName, factoryBeanName, factoryMethodParameterBeanNames);
     }
 
     /**
