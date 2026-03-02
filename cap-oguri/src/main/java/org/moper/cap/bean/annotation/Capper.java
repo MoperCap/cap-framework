@@ -36,4 +36,14 @@ public @interface Capper {
      * 可读描述信息（仅供开发者参考，不影响容器行为）
      */
     String description() default "";
+
+    /**
+     * Bean 初始化方法名称（无参 void 方法，支持 private/protected/public）
+     */
+    String initMethod() default "";
+
+    /**
+     * Bean 销毁方法名称（无参 void 方法，支持 private/protected/public）
+     */
+    String destroyMethod() default "";
 }

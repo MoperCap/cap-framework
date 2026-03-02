@@ -4,6 +4,7 @@ import org.moper.cap.bean.annotation.Capper;
 import org.moper.cap.bean.annotation.Inject;
 import org.moper.cap.bean.exception.BeanDefinitionException;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.LinkedHashSet;
@@ -131,5 +132,36 @@ public final class BeanNamesResolver {
         if (name == null || name.isEmpty()) return name;
         if (Character.isLowerCase(name.charAt(0))) return name;
         return Character.toLowerCase(name.charAt(0)) + name.substring(1);
+    }
+
+    /**
+     * 解析 @Inject 标注的字段，获取 Bean 名称。
+     *
+     * <p>字段推导优先级（按顺序）：
+     * <ol>
+     *   <li>字段的 @Inject 注解中显式指定的 beanName（非空时）</li>
+     *   <li>字段类型的简单类名首字母小写（如 {@code MyService → myService}）</li>
+     * </ol>
+     *
+     * @param field 字段反射对象，不能为 null
+     * @return 单个 Bean 名称字符串
+     * @throws BeanDefinitionException 如果字段无法推导 Bean 名称
+     */
+    public static String resolveField(Field field) {
+        if (field == null) {
+            throw new IllegalArgumentException("Field must not be null");
+        }
+        Inject inject = field.getAnnotation(Inject.class);
+        if (inject != null && !inject.beanName().isBlank()) {
+            return inject.beanName();
+        }
+        String simpleName = field.getType().getSimpleName();
+        if (!simpleName.isBlank()) {
+            return decapitalize(simpleName);
+        }
+        throw new BeanDefinitionException(
+                "Cannot resolve bean name for field '" + field.getName() +
+                "' (type: " + field.getType().getName() + "): field type has no simple name. " +
+                "Use @Inject(beanName=\"...\") to specify explicitly.");
     }
 }
