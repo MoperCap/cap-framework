@@ -15,10 +15,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * {@link BeanCreationEngine} 的默认实现。
@@ -47,7 +44,8 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
     /**
      * 已注册的拦截器，按 {@link BeanInterceptor#getOrder()} 升序维护
      */
-    private final List<BeanInterceptor> interceptors = new ArrayList<>();
+    private final Queue<BeanInterceptor> interceptors = new PriorityQueue<>();
+    // private final List<BeanInterceptor> interceptors = new ArrayList<>();
 
     /**
      * 可销毁单例列表，按注册顺序存储，销毁时逆序执行。
@@ -145,12 +143,11 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
             throw new IllegalArgumentException("BeanInterceptor must not be null");
         }
         interceptors.add(interceptor);
-        interceptors.sort((a, b) -> Integer.compare(a.getOrder(), b.getOrder()));
     }
 
     @Override
     public List<BeanInterceptor> getBeanInterceptors() {
-        return Collections.unmodifiableList(interceptors);
+        return List.copyOf(interceptors);
     }
 
     @Override

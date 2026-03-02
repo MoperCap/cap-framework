@@ -34,7 +34,7 @@ import org.moper.cap.bean.exception.BeanException;
  * 9. Bean 就绪
  * </pre>
  */
-public interface BeanInterceptor {
+public interface BeanInterceptor extends Comparable<BeanInterceptor> {
 
     /**
      * 在 Bean 实例化之前调用。
@@ -118,5 +118,10 @@ public interface BeanInterceptor {
      */
     default int getOrder() {
         return 0;
+    }
+
+    @Override
+    default int compareTo(BeanInterceptor o){
+        return Integer.compare(getOrder(), o.getOrder());
     }
 }
