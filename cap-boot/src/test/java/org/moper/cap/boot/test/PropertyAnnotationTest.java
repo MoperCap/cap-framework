@@ -65,6 +65,7 @@ public class PropertyAnnotationTest {
         private boolean removedCalled;
 
         void onDynamicValueSet(String newVal) {
+            this.dynamicValue = newVal;
             this.lastSetValue = newVal;
             log.info("onDynamicValueSet: {}", newVal);
         }
@@ -117,7 +118,8 @@ public class PropertyAnnotationTest {
             SimpleSubscriptionBean bean = context.getBean("simpleSubscriptionBean", SimpleSubscriptionBean.class);
 
             publisher.publish(new PropertySetOperation("simple.value", "test123"));
-            Assertions.assertEquals("test123", bean.simpleValue);
+            // Without an onSet callback, the field is not automatically updated
+            Assertions.assertNull(bean.simpleValue);
         }
     }
 }

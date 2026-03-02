@@ -16,6 +16,17 @@ import java.util.function.Supplier;
 public interface PropertyOfficer extends PropertyView, PropertyLifecycle {
 
     /**
+     * 获取指定属性键对应的指定类型属性值，若属性不存在则将原始默认值转换为目标类型后返回
+     *
+     * @param key 属性键，不能为null或blank
+     * @param type 指定类型，不能为null
+     * @param rawDefaultValue 原始默认值，不能为null，将由内部 PropertyResolver 转换为目标类型
+     * @return 若存在对应的属性且类型转换成功则返回；否则将原始默认值转换后返回
+     * @param <T> 指定类型
+     */
+    <T> T getPropertyValueOrDefault(String key, Class<T> type, Object rawDefaultValue);
+
+    /**
      * 以同步的方式接收来自属性发布者发送的属性操作清单
      *
      * @param manifest 属性操作清单，不可为null

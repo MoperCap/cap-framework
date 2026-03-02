@@ -5,7 +5,6 @@ import org.moper.cap.bean.exception.BeanException;
 import org.moper.cap.bean.interceptor.BeanInterceptor;
 import org.moper.cap.property.annotation.Value;
 import org.moper.cap.property.officer.PropertyOfficer;
-import org.moper.cap.property.resolver.impl.DefaultPropertyResolver;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -26,7 +25,6 @@ public class PropertyValueBeanInterceptor implements BeanInterceptor {
     private static final Pattern VALUE_PATTERN = Pattern.compile("\\$\\{([^}:]+)(?::([^}]*))?\\}");
 
     private final PropertyOfficer propertyOfficer;
-    private final DefaultPropertyResolver resolver = new DefaultPropertyResolver();
 
     public PropertyValueBeanInterceptor(PropertyOfficer propertyOfficer) {
         this.propertyOfficer = propertyOfficer;
@@ -58,8 +56,7 @@ public class PropertyValueBeanInterceptor implements BeanInterceptor {
             field.setAccessible(true);
             Object value;
             if (defaultStr != null) {
-                Object defaultVal = resolver.resolve(defaultStr, field.getType());
-                value = propertyOfficer.getPropertyValueOrDefault(key, (Class) field.getType(), defaultVal);
+                value = propertyOfficer.getPropertyValueOrDefault(key, (Class) field.getType(), defaultStr);
             } else {
                 value = propertyOfficer.getPropertyValue(key, (Class) field.getType());
             }
