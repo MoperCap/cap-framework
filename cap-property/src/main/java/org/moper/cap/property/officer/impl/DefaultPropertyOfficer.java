@@ -248,6 +248,17 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
 
         subscriptions.put(name, subscription);
 
+        for (@SuppressWarnings("rawtypes") PropertySubscriber subscriber : subscription) {
+            for(Map.Entry<String, PropertyDefinition> entry : core.entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue().value();
+                if(!subscriber.selector().matches(key)) continue;
+                subscriber.onSet(resolver.resolve(value, subscriber.getSubscribeType()));
+                log.debug("Subscriber [{}] notified of property [{}] set", subscriber, key);
+
+            }
+        }
+
         return subscription;
     }
 

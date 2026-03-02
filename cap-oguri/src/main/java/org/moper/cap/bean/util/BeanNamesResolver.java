@@ -44,7 +44,8 @@ public final class BeanNamesResolver {
             if(beanName != null && !beanName.isBlank())
                 resultSet.add(beanName);
         }
-        return resultSet.toArray(new String[0]);
+        if(resultSet.isEmpty()) return new String[]{defaultName};
+        else return resultSet.toArray(new String[0]);
     }
 
     /**
@@ -76,7 +77,9 @@ public final class BeanNamesResolver {
             if (beanName != null && !beanName.isBlank())
                 resultSet.add(beanName);
         }
-        return resultSet.toArray(new String[0]);
+
+        if(resultSet.isEmpty()) return new String[]{defaultName};
+        else return resultSet.toArray(new String[0]);
     }
 
     /**
@@ -160,7 +163,7 @@ public final class BeanNamesResolver {
      * @return 首字母小写的名称
      */
     private static String decapitalize(String name) {
-        if (name == null || name.isEmpty()) return name;
+        if (name == null || name.isBlank()) return name;
         if (Character.isLowerCase(name.charAt(0))) return name;
         return Character.toLowerCase(name.charAt(0)) + name.substring(1);
     }

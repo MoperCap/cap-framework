@@ -1,5 +1,6 @@
 package org.moper.cap.example.model;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.bean.annotation.Capper;
 
@@ -8,8 +9,8 @@ import org.moper.cap.bean.annotation.Capper;
  *
  * <p>使用 {@code initMethod} 和 {@code destroyMethod} 声明初始化和销毁回调方法。
  */
+@Getter
 @Slf4j
-@Capper(initMethod = "connect", destroyMethod = "disconnect")
 public class DatabaseConnection {
 
     private final String url;
@@ -33,11 +34,4 @@ public class DatabaseConnection {
         log.info("Disconnected from database: {}", url);
     }
 
-    public boolean isConnected() {
-        return connected;
-    }
-
-    public String getUrl() {
-        return url;
-    }
 }

@@ -1,5 +1,6 @@
 package org.moper.cap.example.service;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.bean.annotation.Capper;
 import org.moper.cap.bean.annotation.Inject;
@@ -19,6 +20,7 @@ import org.moper.cap.example.model.DatabaseConnection;
 public class UserService {
 
     private final DatabaseConnection dbConnection;
+    @Getter
     private boolean initialized = false;
 
     @Inject
@@ -40,7 +42,4 @@ public class UserService {
         return "User#" + id + " (via " + dbConnection.getUrl() + ")";
     }
 
-    public boolean isInitialized() {
-        return initialized;
-    }
 }

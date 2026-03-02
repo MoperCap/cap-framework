@@ -7,7 +7,7 @@ import org.moper.cap.core.runner.BootstrapRunner;
 import org.moper.cap.core.runner.RunnerType;
 
 @Slf4j
-@RunnerMeta(type = RunnerType.KERNEL, order = 500, description = "Pre-instantiates all non-lazy singleton beans to optimize runtime latency")
+@RunnerMeta(type = RunnerType.KERNEL, order = 499, description = "Pre-instantiates all non-lazy singleton beans to optimize runtime latency")
 public class PreInstantiateSingletonBootstrapRunner implements BootstrapRunner {
 
     /**

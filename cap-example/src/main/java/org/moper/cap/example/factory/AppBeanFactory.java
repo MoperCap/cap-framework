@@ -26,7 +26,7 @@ public class AppBeanFactory {
      * {@code databaseConnection}，与 {@link DatabaseConnection} 类级别的 Bean 同名，
      * 因此该工厂方法的定义会覆盖类级别的 Bean 定义。
      */
-    @Capper
+    @Capper(initMethod = "connect", destroyMethod = "disconnect")
     public static DatabaseConnection databaseConnection() {
         log.info("Creating DatabaseConnection via static factory method");
         return new DatabaseConnection("jdbc:example://localhost:5432/example");

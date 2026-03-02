@@ -63,14 +63,6 @@ public class FactoryBeanRegisterBootstrapRunner implements BootstrapRunner {
 
                     String[] beanNames = BeanNamesResolver.resolve(factoryMethod);
                     String primaryBeanName = beanNames[0];
-                    // 注册别名
-                    if(beanNames.length > 1) {
-                        for(int i = 1; i < beanNames.length; i++) {
-                            String alias = beanNames[i];
-                            container.registerAlias(primaryBeanName, alias);
-                            log.info("Register alias: {} -> {}", alias, primaryBeanName);
-                        }
-                    }
 
                     Class<?> beanType = factoryMethod.getReturnType();
                     Capper capper = factoryMethod.getAnnotation(Capper.class);
@@ -91,6 +83,15 @@ public class FactoryBeanRegisterBootstrapRunner implements BootstrapRunner {
                     }
                     container.registerBeanDefinition(def);
                     log.info("Register bean: {}", def);
+
+                    // 注册别名
+                    if(beanNames.length > 1) {
+                        for(int i = 1; i < beanNames.length; i++) {
+                            String alias = beanNames[i];
+                            container.registerAlias(primaryBeanName, alias);
+                            log.info("Register alias: {} -> {}", alias, primaryBeanName);
+                        }
+                    }
                 }
             }
         }
