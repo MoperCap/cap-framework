@@ -47,10 +47,10 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- ========== Byte Buddy ========== -->
+        <!-- ========== Javassist ========== -->
         <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy</artifactId>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
         </dependency>
 
     </dependencies>
