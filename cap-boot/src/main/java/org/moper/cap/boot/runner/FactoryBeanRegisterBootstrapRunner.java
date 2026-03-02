@@ -7,7 +7,6 @@ import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.exception.BeanDefinitionException;
 import org.moper.cap.bean.util.BeanNamesResolver;
-import org.moper.cap.bean.util.BeanLifecycleResolver;
 import org.moper.cap.core.annotation.RunnerMeta;
 import org.moper.cap.core.context.BootstrapContext;
 import org.moper.cap.core.runner.BootstrapRunner;
@@ -76,10 +75,6 @@ public class FactoryBeanRegisterBootstrapRunner implements BootstrapRunner {
                     Class<?> beanType = factoryMethod.getReturnType();
                     Capper capper = factoryMethod.getAnnotation(Capper.class);
 
-                    // 验证生命周期方法
-                    BeanLifecycleResolver.validate(beanType, capper.initMethod());
-                    BeanLifecycleResolver.validate(beanType, capper.destroyMethod());
-
                     // 注册Bean定义
                     BeanDefinition def = BeanDefinition.of(primaryBeanName, beanType)
                             .withFactoryMethod(factoryClassBeanName, factoryMethodName)
@@ -87,9 +82,7 @@ public class FactoryBeanRegisterBootstrapRunner implements BootstrapRunner {
                             .withPrimary(capper.primary())
                             .withLazy(capper.lazy())
                             .withScope(capper.scope())
-                            .withDescription(capper.description())
-                            .withInitMethod(capper.initMethod().isBlank() ? null : capper.initMethod())
-                            .withDestroyMethod(capper.destroyMethod().isBlank() ? null : capper.destroyMethod());
+                            .withDescription(capper.description());
                     // 若已经存在Bean定义，则进行覆盖
                     // 目前已知的满足条件有：当@Capper方法的返回类型上存在@Capper注解，且两者均未显式定义Bean名称，则@Capper方法的Bean定义会覆盖@Capper类的Bean定义
                     if(container.containsBeanDefinition(primaryBeanName)) {

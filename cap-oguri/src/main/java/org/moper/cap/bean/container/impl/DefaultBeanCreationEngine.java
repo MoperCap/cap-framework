@@ -10,7 +10,6 @@ import org.moper.cap.bean.exception.BeanDestructionException;
 import org.moper.cap.bean.exception.BeanException;
 import org.moper.cap.bean.exception.BeanInitializationException;
 import org.moper.cap.bean.interceptor.BeanInterceptor;
-import org.moper.cap.bean.lifecycle.BeanLifecycle;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -28,7 +27,7 @@ import java.util.List;
  * <ul>
  *   <li>维护有序的 {@link BeanInterceptor} 列表，在创建流程各阶段依次调度</li>
  *   <li>编排 Bean 的完整创建流程（实例化 → 属性注入 → 初始化）</li>
- *   <li>触发 {@link BeanLifecycle} 生命周期回调</li>
+ *   <li>触发 {@link BeanDefinition#initMethod()} / {@link BeanDefinition#destroyMethod()} 生命周期回调</li>
  *   <li>管理可销毁单例的注册与逆序销毁</li>
  * </ul>
  *
@@ -80,7 +79,7 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
      *   <li>属性注入</li>
      *   <li>{@code afterPropertyInjection} 拦截器链</li>
      *   <li>{@code beforeInitialization} 拦截器链</li>
-     *   <li>{@link BeanLifecycle#afterPropertiesSet()} 回调</li>
+     *   <li>{@link BeanDefinition#initMethod()} 生命周期回调</li>
      *   <li>{@code afterInitialization} 拦截器链</li>
      *   <li>注册销毁回调</li>
      * </ol>
@@ -127,11 +126,7 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
             return; // 未注册为可销毁，空操作
         }
         BeanDefinition definition = disposableBeanDefinitions.remove(beanName);
-        if (definition != null) {
-            invokeDestroyCallback(beanName, bean, definition);
-        } else {
-            invokeDestroyCallback(beanName, bean);
-        }
+        invokeDestroyCallback(beanName, bean, definition);
     }
 
     @Override
@@ -258,7 +253,7 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
     /**
      * 执行初始化阶段：
      * {@code beforeInitialization} 拦截器链
-     * → {@link BeanLifecycle#afterPropertiesSet()}
+     * → {@link BeanDefinition#initMethod()}
      * → {@code afterInitialization} 拦截器链
      */
     private Object applyInitializationPhase(String beanName,
@@ -271,24 +266,13 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
     }
 
     /**
-     * 触发 {@link BeanLifecycle#afterPropertiesSet()} 以及 {@link BeanDefinition#initMethod()}。
+     * 触发 {@link BeanDefinition#initMethod()}。
      *
-     * <p>若 Bean 未实现 {@link BeanLifecycle} 且未指定 initMethod，此方法为空操作。
+     * <p>若未指定 initMethod，此方法为空操作。
      *
      * @throws BeanInitializationException 如果回调执行失败
      */
-    private void invokeInitCallback(String beanName, Object bean) throws BeanInitializationException {
-        if (bean instanceof BeanLifecycle lifecycle) {
-            try {
-                lifecycle.afterPropertiesSet();
-            } catch (Exception e) {
-                throw new BeanInitializationException(beanName, e);
-            }
-        }
-    }
-
     private void invokeInitCallback(String beanName, Object bean, BeanDefinition beanDefinition) throws BeanInitializationException {
-        invokeInitCallback(beanName, bean);
         String initMethod = beanDefinition.initMethod();
         if (initMethod != null && !initMethod.isBlank()) {
             try {
@@ -302,24 +286,13 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
     }
 
     /**
-     * 触发 {@link BeanLifecycle#destroy()} 以及 {@link BeanDefinition#destroyMethod()}。
+     * 触发 {@link BeanDefinition#destroyMethod()}。
      *
-     * <p>若 Bean 未实现 {@link BeanLifecycle} 且未指定 destroyMethod，此方法为空操作。
+     * <p>若未指定 destroyMethod，此方法为空操作。
      *
      * @throws BeanDestructionException 如果回调执行失败
      */
-    private void invokeDestroyCallback(String beanName, Object bean) throws BeanDestructionException {
-        if (bean instanceof BeanLifecycle lifecycle) {
-            try {
-                lifecycle.destroy();
-            } catch (Exception e) {
-                throw new BeanDestructionException(beanName, e);
-            }
-        }
-    }
-
     private void invokeDestroyCallback(String beanName, Object bean, BeanDefinition beanDefinition) throws BeanDestructionException {
-        invokeDestroyCallback(beanName, bean);
         String destroyMethod = beanDefinition.destroyMethod();
         if (destroyMethod != null && !destroyMethod.isBlank()) {
             try {
@@ -351,15 +324,15 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
      * 满足以下全部条件时将 Bean 注册到销毁列表：
      * <ul>
      *   <li>作用域为 {@link BeanScope#SINGLETON}</li>
-     *   <li>实现了 {@link BeanLifecycle} 或指定了 destroyMethod</li>
+     *   <li>指定了 destroyMethod</li>
      * </ul>
      */
     private void registerDisposableIfNeeded(String beanName,
                                             BeanDefinition beanDefinition,
                                             Object beanInstance) {
         if (beanDefinition.scope() == BeanScope.SINGLETON
-                && (beanInstance instanceof BeanLifecycle
-                        || (beanDefinition.destroyMethod() != null && !beanDefinition.destroyMethod().isBlank()))) {
+                && beanDefinition.destroyMethod() != null
+                && !beanDefinition.destroyMethod().isBlank()) {
             disposableBeans.put(beanName, beanInstance);
             disposableBeanDefinitions.put(beanName, beanDefinition);
         }

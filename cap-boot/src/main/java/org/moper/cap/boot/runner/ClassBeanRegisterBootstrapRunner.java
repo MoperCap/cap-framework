@@ -8,7 +8,6 @@ import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.exception.BeanDefinitionException;
 import org.moper.cap.bean.util.BeanNamesResolver;
-import org.moper.cap.bean.util.BeanLifecycleResolver;
 import org.moper.cap.core.annotation.RunnerMeta;
 import org.moper.cap.core.context.BootstrapContext;
 import org.moper.cap.core.runner.BootstrapRunner;
@@ -54,19 +53,13 @@ public class ClassBeanRegisterBootstrapRunner implements BootstrapRunner {
 
                 Capper capper = clazz.getAnnotation(Capper.class);
 
-                // 验证生命周期方法
-                BeanLifecycleResolver.validate(clazz, capper.initMethod());
-                BeanLifecycleResolver.validate(clazz, capper.destroyMethod());
-
                 // 注册Bean定义
                 BeanDefinition def = BeanDefinition.of(primaryBeanName, clazz)
                         .withParameterBeanNames(constructorParameterBeanNames)
                         .withPrimary(capper.primary())
                         .withLazy(capper.lazy())
                         .withScope(capper.scope())
-                        .withDescription(capper.description())
-                        .withInitMethod(capper.initMethod().isBlank() ? null : capper.initMethod())
-                        .withDestroyMethod(capper.destroyMethod().isBlank() ? null : capper.destroyMethod());
+                        .withDescription(capper.description());
                 container.registerBeanDefinition(def);
                 log.info("Register bean: {}", def);
             }
