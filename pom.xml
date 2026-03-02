@@ -99,6 +99,13 @@
                 <version>${logback.version}</version>
             </dependency>
 
+            <!-- ========== Byte Buddy ========== -->
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy</artifactId>
+                <version>1.14.9</version>
+            </dependency>
+
             <!-- ========== Lombok ========== -->
             <dependency>
                 <groupId>org.projectlombok</groupId>

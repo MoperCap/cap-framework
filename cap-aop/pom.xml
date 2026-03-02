@@ -12,7 +12,6 @@
     <artifactId>cap-aop</artifactId>
 
     <properties>
-        <cglib.version>3.3.0</cglib.version>
     </properties>
 
     <dependencies>
@@ -48,11 +47,10 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- ========== CGLib ========== -->
+        <!-- ========== Byte Buddy ========== -->
         <dependency>
-            <groupId>cglib</groupId>
-            <artifactId>cglib</artifactId>
-            <version>${cglib.version}</version>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
         </dependency>
 
     </dependencies>
