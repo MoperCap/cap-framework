@@ -16,6 +16,7 @@
         <module>cap-aop</module>
         <module>cap-data</module>
         <module>cap-web</module>
+        <module>cap-example</module>
     </modules>
 
     <properties>
