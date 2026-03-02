@@ -3,7 +3,7 @@ package org.moper.cap.bean.exception;
 import lombok.Getter;
 
 /**
- * Bean 的销毁回调（{@link org.moper.cap.bean.lifecycle.BeanLifecycle#destroy()}）
+ * Bean 的销毁回调（{@link org.moper.cap.bean.definition.BeanDefinition#destroyMethod()}）
  * 执行失败时抛出。
  *
  * <p>与 {@link BeanCreationException} 语义对称，专属于销毁阶段。

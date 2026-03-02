@@ -28,13 +28,12 @@ import java.util.List;
  *   ├─ 属性注入
  *   ├─ afterPropertyInjection 拦截器链
  *   ├─ beforeInitialization 拦截器链
- *   ├─ BeanLifecycle.afterPropertiesSet()
+ *   ├─ BeanDefinition#initMethod() 生命周期回调
  *   ├─ afterInitialization 拦截器链
- *   └─ 注册销毁回调（单例 + 实现了 BeanLifecycle）
+ *   └─ 注册销毁回调（单例 + 指定了 destroyMethod）
  * </pre>
  *
  * @see BeanInterceptor
- * @see org.moper.cap.bean.lifecycle.BeanLifecycle
  */
 public interface BeanCreationEngine {
 
@@ -50,12 +49,12 @@ public interface BeanCreationEngine {
 
     /**
      * 销毁指定的单例 Bean，触发其
-     * {@link org.moper.cap.bean.lifecycle.BeanLifecycle#destroy()} 回调。
+     * {@link org.moper.cap.bean.definition.BeanDefinition#destroyMethod()} 回调。
      *
      * <p>若 Bean 未注册为可销毁 Bean，则此方法为空操作。
      *
      * @param beanName Bean 名称，不能为空
-     * @throws BeanDestructionException 如果 {@code destroy()} 执行失败
+     * @throws BeanDestructionException 如果销毁方法执行失败
      */
     void destroyBean(String beanName) throws BeanDestructionException;
 

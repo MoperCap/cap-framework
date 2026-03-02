@@ -80,7 +80,7 @@ public interface BeanContainer extends BeanProvider, BeanInspector, BeanRegistry
      * 销毁容器中所有已缓存的单例 Bean。
      *
      * <p>按 Bean 注册顺序的逆序，依次调用每个单例 Bean 的
-     * {@link org.moper.cap.bean.lifecycle.BeanLifecycle#destroy()} 方法。
+     * {@link org.moper.cap.bean.definition.BeanDefinition#destroyMethod()} 方法。
      * 由 {@code ApplicationContext} 在关闭时调用。
      *
      * @throws BeanDestructionException 如果任意 Bean 销毁失败

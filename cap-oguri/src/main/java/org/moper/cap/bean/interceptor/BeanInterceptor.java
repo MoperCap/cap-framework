@@ -11,13 +11,6 @@ import org.moper.cap.bean.exception.BeanException;
  * <p>所有方法均有默认实现，只需重写关心的拦截点。
  * 多个拦截器按 {@link #getOrder()} 升序依次执行。
  *
- * <p><b>与 {@link org.moper.cap.bean.lifecycle.BeanLifecycle} 的职责区分：</b>
- * <ul>
- *   <li>{@code BeanInterceptor}：面向框架扩展者，处理横切关注点
- *       （AOP 代理创建、注解处理、依赖验证等）</li>
- *   <li>{@code BeanLifecycle}：面向普通用户，处理 Bean 自身的业务初始化与资源释放</li>
- * </ul>
- *
  * <p><b>完整的 Bean 创建流程：</b>
  * <pre>
  * 1. beforeInstantiation
@@ -34,7 +27,7 @@ import org.moper.cap.bean.exception.BeanException;
  *
  * 6. beforeInitialization
  *
- * 7. [容器调用 BeanLifecycle.afterPropertiesSet()]
+ * 7. [容器调用 BeanDefinition#initMethod()]
  *
  * 8. afterInitialization
  *
@@ -87,7 +80,7 @@ public interface BeanInterceptor {
     }
 
     /**
-     * 在 {@link org.moper.cap.bean.lifecycle.BeanLifecycle#afterPropertiesSet()} 之前调用。
+     * 在 {@link BeanDefinition#initMethod()} 之前调用。
      *
      * @param bean       Bean 实例，不能为 null
      * @param beanName   Bean 名称，不能为空
