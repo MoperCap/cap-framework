@@ -18,6 +18,12 @@
             <artifactId>cap-boot</artifactId>
         </dependency>
 
+        <!-- cap-aop 提供 AOP 动态代理能力 -->
+        <dependency>
+            <groupId>org.moper.cap</groupId>
+            <artifactId>cap-aop</artifactId>
+        </dependency>
+
         <!-- 日志 -->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -44,5 +50,20 @@
         </dependency>
 
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>
+                        --add-opens java.base/java.lang=ALL-UNNAMED
+                        --add-opens java.base/java.lang.reflect=ALL-UNNAMED
+                    </argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

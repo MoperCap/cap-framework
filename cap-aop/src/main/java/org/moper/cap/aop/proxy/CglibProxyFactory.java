@@ -21,7 +21,8 @@ public final class CglibProxyFactory implements ProxyFactory {
             boolean aroundInvoked = AdvisorInvoker.invokeAround(advisors, method, args);
             Object result = null;
             if (!aroundInvoked) {
-                result = proxy.invokeSuper(obj, args);
+                method.setAccessible(true);
+                result = method.invoke(target, args);
             }
             AdvisorInvoker.invokeAfter(advisors, method, args);
             return result;

@@ -220,18 +220,22 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
     }
 
     private Method findFactoryMethod(Class<?> factoryClass, String methodName, Object[] args) throws BeanCreationException {
-        for (Method m : factoryClass.getDeclaredMethods()) {
-            if (!m.getName().equals(methodName)) continue;
-            Class<?>[] params = m.getParameterTypes();
-            if (params.length != args.length) continue;
-            boolean matches = true;
-            for (int i = 0; i < params.length; i++) {
-                if (args[i] != null && !params[i].isAssignableFrom(args[i].getClass())) {
-                    matches = false;
-                    break;
+        Class<?> current = factoryClass;
+        while (current != null && current != Object.class) {
+            for (Method m : current.getDeclaredMethods()) {
+                if (!m.getName().equals(methodName)) continue;
+                Class<?>[] params = m.getParameterTypes();
+                if (params.length != args.length) continue;
+                boolean matches = true;
+                for (int i = 0; i < params.length; i++) {
+                    if (args[i] != null && !params[i].isAssignableFrom(args[i].getClass())) {
+                        matches = false;
+                        break;
+                    }
                 }
+                if (matches) return m;
             }
-            if (matches) return m;
+            current = current.getSuperclass();
         }
         throw new BeanCreationException(factoryClass.getName(), "No matching factory method '" + methodName + "' found for " + args.length + " argument(s)");
     }
