@@ -2,11 +2,10 @@ package org.moper.cap.aop.proxy;
 
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
-import org.moper.cap.aop.advisor.Advisor;
 
 import java.util.List;
 
-public class CglibProxyFactory implements ProxyFactory {
+public final class CglibProxyFactory implements ProxyFactory {
 
     @Override
     public boolean canProxy(Class<?> targetClass) {

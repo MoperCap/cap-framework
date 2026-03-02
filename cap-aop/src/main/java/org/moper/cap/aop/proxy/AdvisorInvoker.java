@@ -1,7 +1,5 @@
 package org.moper.cap.aop.proxy;
 
-import org.moper.cap.aop.advisor.Advisor;
-
 import java.lang.reflect.Method;
 import java.util.List;
 

@@ -1,10 +1,8 @@
 package org.moper.cap.aop.proxy;
 
-import org.moper.cap.aop.advisor.Advisor;
-
 import java.util.List;
 
-public interface ProxyFactory {
+public sealed interface ProxyFactory permits JdkProxyFactory, CglibProxyFactory{
     Object createProxy(Class<?> targetClass, Object target, List<Advisor> advisors);
     boolean canProxy(Class<?> targetClass);
 }

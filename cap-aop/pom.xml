@@ -11,6 +11,10 @@
 
     <artifactId>cap-aop</artifactId>
 
+    <properties>
+        <cglib.version>3.3.0</cglib.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.moper.cap</groupId>
@@ -44,10 +48,11 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- CGLib -->
+        <!-- ========== CGLib ========== -->
         <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib</artifactId>
+            <version>${cglib.version}</version>
         </dependency>
 
     </dependencies>

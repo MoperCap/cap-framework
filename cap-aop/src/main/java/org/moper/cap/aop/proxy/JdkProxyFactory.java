@@ -1,11 +1,9 @@
 package org.moper.cap.aop.proxy;
 
-import org.moper.cap.aop.advisor.Advisor;
-
 import java.lang.reflect.Proxy;
 import java.util.List;
 
-public class JdkProxyFactory implements ProxyFactory {
+public final class JdkProxyFactory implements ProxyFactory {
 
     @Override
     public boolean canProxy(Class<?> targetClass) {

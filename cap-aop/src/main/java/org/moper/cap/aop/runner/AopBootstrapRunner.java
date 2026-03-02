@@ -9,13 +9,13 @@ import org.moper.cap.core.runner.BootstrapRunner;
 import org.moper.cap.core.runner.RunnerType;
 import org.moper.cap.core.context.BootstrapContext;
 import org.moper.cap.bean.container.BeanContainer;
-import org.moper.cap.aop.advisor.Advisor;
-import org.moper.cap.aop.weaving.AopBeanInterceptor;
+import org.moper.cap.aop.proxy.Advisor;
+import org.moper.cap.aop.interceptor.AopBeanInterceptor;
 
 import java.lang.reflect.Method;
 import java.util.*;
 
-@RunnerMeta(type = RunnerType.FEATURE, order = 100, name = "CapAopBootstrapRunner", description = "Scans and installs AOP Advisors and Interceptors")
+@RunnerMeta(type = RunnerType.FEATURE, order = 400, name = "CapAopBootstrapRunner", description = "Scans and installs AOP Advisors and Interceptors")
 public class AopBootstrapRunner implements BootstrapRunner {
 
     @Override

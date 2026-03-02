@@ -9,7 +9,7 @@ import org.moper.cap.core.runner.RunnerType;
 /**
  * 注册 {@link PropertySubscriptionBeanInterceptor} 的引导器。
  */
-@RunnerMeta(type = RunnerType.KERNEL, order = 335, description = "Registers PropertySubscriptionBeanInterceptor for @Subscriber field subscription")
+@RunnerMeta(type = RunnerType.KERNEL, order = 370, description = "Registers PropertySubscriptionBeanInterceptor for @Subscriber field subscription")
 public class PropertySubscriptionBootstrapRunner implements BootstrapRunner {
 
     @Override

@@ -25,9 +25,6 @@ import java.util.*;
 @Slf4j
 @RunnerMeta(type = RunnerType.KERNEL, order = 310, description = "Scan @Capper annotated methods and register Bean Definitions (factory method instantiation)")
 public class FactoryBeanRegisterBootstrapRunner implements BootstrapRunner {
-
-    private final Map<String, BeanDefinition> beanDefinitionMap = new LinkedHashMap<>();
-
     @Override
     public void initialize(BootstrapContext context) throws Exception {
         BeanContainer container = context.getBeanContainer();
