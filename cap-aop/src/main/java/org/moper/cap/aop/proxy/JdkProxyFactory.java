@@ -3,6 +3,9 @@ package org.moper.cap.aop.proxy;
 import java.lang.reflect.Proxy;
 import java.util.List;
 
+/**
+ * 基于JDK实现的代理工厂
+ */
 public final class JdkProxyFactory implements ProxyFactory {
 
     @Override

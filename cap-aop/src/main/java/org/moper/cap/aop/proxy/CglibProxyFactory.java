@@ -7,6 +7,11 @@ import net.sf.cglib.proxy.MethodProxy;
 import java.lang.reflect.Method;
 import java.util.List;
 
+/**
+ * 基于Cglib实现的代理工厂
+ *
+ * @deprecated 由于 Cglib 对 Java17+ 的支持并不理想，因此此代理工厂并不能正常运行
+ */
 public final class CglibProxyFactory implements ProxyFactory {
 
     @Override
