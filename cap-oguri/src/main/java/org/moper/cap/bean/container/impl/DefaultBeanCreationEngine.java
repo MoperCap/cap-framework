@@ -57,6 +57,11 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
     private final LinkedHashMap<String, Object> disposableBeans = new LinkedHashMap<>();
 
     /**
+     * 可销毁单例对应的 BeanDefinition，与 disposableBeans 保持同步。
+     */
+    private final LinkedHashMap<String, BeanDefinition> disposableBeanDefinitions = new LinkedHashMap<>();
+
+    /**
      * 构造函数，注入 {@link BeanProvider} 以支持实例化阶段的依赖解析。
      * @param beanProvider BeanProvider 实例，不能为 null
      */
@@ -121,7 +126,12 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
         if (bean == null) {
             return; // 未注册为可销毁，空操作
         }
-        invokeDestroyCallback(beanName, bean);
+        BeanDefinition definition = disposableBeanDefinitions.remove(beanName);
+        if (definition != null) {
+            invokeDestroyCallback(beanName, bean, definition);
+        } else {
+            invokeDestroyCallback(beanName, bean);
+        }
     }
 
     @Override
@@ -255,15 +265,15 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
                                             BeanDefinition beanDefinition,
                                             Object beanInstance) throws BeanException {
         Object current = applyBeforeInitialization(beanInstance, beanName, beanDefinition);
-        invokeInitCallback(beanName, current);
+        invokeInitCallback(beanName, current, beanDefinition);
         current = applyAfterInitialization(current, beanName, beanDefinition);
         return current;
     }
 
     /**
-     * 触发 {@link BeanLifecycle#afterPropertiesSet()}。
+     * 触发 {@link BeanLifecycle#afterPropertiesSet()} 以及 {@link BeanDefinition#initMethod()}。
      *
-     * <p>若 Bean 未实现 {@link BeanLifecycle}，此方法为空操作。
+     * <p>若 Bean 未实现 {@link BeanLifecycle} 且未指定 initMethod，此方法为空操作。
      *
      * @throws BeanInitializationException 如果回调执行失败
      */
@@ -277,10 +287,24 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
         }
     }
 
+    private void invokeInitCallback(String beanName, Object bean, BeanDefinition beanDefinition) throws BeanInitializationException {
+        invokeInitCallback(beanName, bean);
+        String initMethod = beanDefinition.initMethod();
+        if (initMethod != null && !initMethod.isBlank()) {
+            try {
+                Method method = findLifecycleMethod(bean.getClass(), initMethod);
+                method.setAccessible(true);
+                method.invoke(bean);
+            } catch (Exception e) {
+                throw new BeanInitializationException(beanName, e);
+            }
+        }
+    }
+
     /**
-     * 触发 {@link BeanLifecycle#destroy()}。
+     * 触发 {@link BeanLifecycle#destroy()} 以及 {@link BeanDefinition#destroyMethod()}。
      *
-     * <p>若 Bean 未实现 {@link BeanLifecycle}，此方法为空操作。
+     * <p>若 Bean 未实现 {@link BeanLifecycle} 且未指定 destroyMethod，此方法为空操作。
      *
      * @throws BeanDestructionException 如果回调执行失败
      */
@@ -294,19 +318,50 @@ public class DefaultBeanCreationEngine implements BeanCreationEngine {
         }
     }
 
+    private void invokeDestroyCallback(String beanName, Object bean, BeanDefinition beanDefinition) throws BeanDestructionException {
+        invokeDestroyCallback(beanName, bean);
+        String destroyMethod = beanDefinition.destroyMethod();
+        if (destroyMethod != null && !destroyMethod.isBlank()) {
+            try {
+                Method method = findLifecycleMethod(bean.getClass(), destroyMethod);
+                method.setAccessible(true);
+                method.invoke(bean);
+            } catch (Exception e) {
+                throw new BeanDestructionException(beanName, e);
+            }
+        }
+    }
+
+    /**
+     * 在类的继承层级中查找指定名称的无参方法。
+     */
+    private Method findLifecycleMethod(Class<?> clazz, String methodName) throws NoSuchMethodException {
+        Class<?> current = clazz;
+        while (current != null && current != Object.class) {
+            try {
+                return current.getDeclaredMethod(methodName);
+            } catch (NoSuchMethodException ignored) {
+                current = current.getSuperclass();
+            }
+        }
+        throw new NoSuchMethodException("No no-arg method '" + methodName + "' found in " + clazz.getName());
+    }
+
     /**
      * 满足以下全部条件时将 Bean 注册到销毁列表：
      * <ul>
      *   <li>作用域为 {@link BeanScope#SINGLETON}</li>
-     *   <li>实现了 {@link BeanLifecycle}</li>
+     *   <li>实现了 {@link BeanLifecycle} 或指定了 destroyMethod</li>
      * </ul>
      */
     private void registerDisposableIfNeeded(String beanName,
                                             BeanDefinition beanDefinition,
                                             Object beanInstance) {
         if (beanDefinition.scope() == BeanScope.SINGLETON
-                && beanInstance instanceof BeanLifecycle) {
+                && (beanInstance instanceof BeanLifecycle
+                        || (beanDefinition.destroyMethod() != null && !beanDefinition.destroyMethod().isBlank()))) {
             disposableBeans.put(beanName, beanInstance);
+            disposableBeanDefinitions.put(beanName, beanDefinition);
         }
     }
 
