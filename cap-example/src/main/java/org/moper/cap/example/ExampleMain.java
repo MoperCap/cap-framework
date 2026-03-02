@@ -1,5 +1,6 @@
 package org.moper.cap.example;
 
+import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.boot.application.impl.DefaultCapApplication;
 import org.moper.cap.core.context.RuntimeContext;
 import org.moper.cap.example.model.AppConfig;
@@ -22,15 +23,12 @@ import org.slf4j.LoggerFactory;
  *   <li>容器关闭时 Bean 销毁方法的自动调用</li>
  * </ol>
  */
+@Slf4j
 public class ExampleMain {
-
-    private static final Logger log = LoggerFactory.getLogger(ExampleMain.class);
-
     public static void main(String[] args) throws Exception {
         log.info("=== cap-framework IOC 示例应用启动 ===");
 
         try (RuntimeContext context = new DefaultCapApplication(ExampleApplication.class, args).run()) {
-
             // 获取应用配置（由工厂方法创建）
             AppConfig appConfig = context.getBean("appConfig", AppConfig.class);
             log.info("应用配置: {}", appConfig);

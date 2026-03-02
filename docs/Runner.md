@@ -1,4 +1,4 @@
-# 框架内部BootstrapRunner相关执行器说明
+# 框架内部BootstrapRunner相关执行器
 
 
 

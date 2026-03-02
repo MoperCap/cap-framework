@@ -1,5 +1,6 @@
 package org.moper.cap.example.bean;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.bean.annotation.Capper;
 import org.moper.cap.bean.definition.BeanScope;
@@ -16,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class PrototypeService {
 
     private static final AtomicInteger instanceCount = new AtomicInteger(0);
+
     private final int instanceId;
 
     public PrototypeService() {

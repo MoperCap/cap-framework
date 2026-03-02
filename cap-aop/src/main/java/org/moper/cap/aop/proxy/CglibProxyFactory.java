@@ -2,7 +2,9 @@ package org.moper.cap.aop.proxy;
 
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
+import net.sf.cglib.proxy.MethodProxy;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 public final class CglibProxyFactory implements ProxyFactory {
@@ -21,8 +23,8 @@ public final class CglibProxyFactory implements ProxyFactory {
             boolean aroundInvoked = AdvisorInvoker.invokeAround(advisors, method, args);
             Object result = null;
             if (!aroundInvoked) {
-                method.setAccessible(true);
-                result = method.invoke(target, args);
+                // 使用 MethodProxy 而不是 Method.invoke
+                result = proxy.invokeSuper(obj, args);
             }
             AdvisorInvoker.invokeAfter(advisors, method, args);
             return result;
