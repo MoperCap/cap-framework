@@ -1,5 +1,9 @@
 package org.moper.cap.boot.application.impl;
 
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.Resource;
+import io.github.classgraph.ResourceList;
+import io.github.classgraph.ScanResult;
 import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bean.container.impl.DefaultBeanContainer;
@@ -9,6 +13,7 @@ import org.moper.cap.core.argument.CommandArgumentParser;
 import org.moper.cap.core.argument.impl.DefaultCommandArgumentParser;
 import org.moper.cap.core.config.ConfigurationClassParser;
 import org.moper.cap.core.config.impl.DefaultConfigurationClassParser;
+import org.moper.cap.core.constants.BannerConstants;
 import org.moper.cap.core.constants.ResourceConstants;
 import org.moper.cap.core.context.RuntimeContext;
 import org.moper.cap.core.context.impl.DefaultBootstrapContext;
@@ -17,9 +22,13 @@ import org.moper.cap.core.runner.BootstrapRunner;
 import org.moper.cap.core.runner.RunnerDefinition;
 import org.moper.cap.core.runner.RunnerType;
 import org.moper.cap.core.runner.RuntimeRunner;
+import org.moper.cap.core.util.BannerPrinter;
 import org.moper.cap.property.officer.PropertyOfficer;
 import org.moper.cap.property.officer.impl.DefaultPropertyOfficer;
 
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ServiceLoader;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -31,8 +40,15 @@ public class DefaultCapApplication implements CapApplication {
     private final AtomicBoolean started = new AtomicBoolean(false);
 
     public DefaultCapApplication(Class<?> primarySource, String... args) throws Exception {
+        // 输出系统banner
+        printSystemBanner();
 
-        DefaultBootstrapContext bootstrapContext = getDefaultBootstrapContext(primarySource, args);
+        BeanContainer beanContainer = new DefaultBeanContainer();
+        PropertyOfficer propertyOfficer = new DefaultPropertyOfficer(ResourceConstants.PROPERTY_OFFICER);
+        CommandArgumentParser commandArgumentParser = new DefaultCommandArgumentParser(args);
+        ConfigurationClassParser configurationClassParser = new DefaultConfigurationClassParser(primarySource);
+
+        DefaultBootstrapContext bootstrapContext = new DefaultBootstrapContext(beanContainer, propertyOfficer, commandArgumentParser, configurationClassParser);
 
         // 通过 SPI 发现所有 BootstrapRunner 收集到有序集合
         TreeSet<RunnerDefinition<BootstrapRunner>> runners = new TreeSet<>();
@@ -51,6 +67,9 @@ public class DefaultCapApplication implements CapApplication {
             runners.add(new RunnerDefinition<>(order, clazz, runner, type, name, description));
         }
 
+
+        // 输出 Bootstrap 阶段 banner
+        printBootstrapBanner();
         // 按顺序执行所有 Initializer
         for(RunnerDefinition<BootstrapRunner> runner : runners){
             log.info("Running BootstrapRunner [{}]", runner);
@@ -86,6 +105,8 @@ public class DefaultCapApplication implements CapApplication {
             runners.add(new RunnerDefinition<>(order, clazz, runner, type, name, description));
         }
 
+        // 输出 Runtime 阶段 banner
+        printRuntimeBanner();
         // 按顺序执行所有 Initializer
         for(RunnerDefinition<RuntimeRunner> runner : runners){
             log.info("Running BootstrapRunner {} ({})", runner.name(), runner.clazz().getName());
@@ -95,13 +116,17 @@ public class DefaultCapApplication implements CapApplication {
         return runtimeContext;
     }
 
-    private static DefaultBootstrapContext getDefaultBootstrapContext(Class<?> primarySource, String[] args) {
-        BeanContainer beanContainer = new DefaultBeanContainer();
-        PropertyOfficer propertyOfficer = new DefaultPropertyOfficer(ResourceConstants.PROPERTY_OFFICER);
-        CommandArgumentParser commandArgumentParser = new DefaultCommandArgumentParser(args);
-        ConfigurationClassParser configurationClassParser = new DefaultConfigurationClassParser(primarySource);
+    private void printSystemBanner(){
+        URL url = getClass().getClassLoader().getResource(BannerConstants.SUPPORTED_BANNER_FILE);
+        if(url == null) BannerPrinter.printBannerFromClasspath(BannerConstants.DEFAULT_BANNER_FILE);
+        else BannerPrinter.printBannerFromClasspath(BannerConstants.SUPPORTED_BANNER_FILE);
+    }
 
-        DefaultBootstrapContext bootstrapContext = new DefaultBootstrapContext(beanContainer, propertyOfficer, commandArgumentParser, configurationClassParser);
-        return bootstrapContext;
+    private void printBootstrapBanner(){
+        BannerPrinter.printBannerFromClasspath(BannerConstants.BOOTSTRAP_BANNER_FILE);
+    }
+
+    private void printRuntimeBanner(){
+        BannerPrinter.printBannerFromClasspath(BannerConstants.RUNTIME_BANNER_FILE);
     }
 }

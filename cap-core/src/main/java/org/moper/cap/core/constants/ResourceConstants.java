@@ -44,7 +44,6 @@ public final class ResourceConstants {
             SUPPORTED_RESOURCE_PREFIX + ".properties"
     );
 
-
     /**
      * 生成资源文件属性发布者名称
      *
