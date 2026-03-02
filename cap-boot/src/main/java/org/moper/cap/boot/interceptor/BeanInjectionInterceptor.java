@@ -64,6 +64,6 @@ public class BeanInjectionInterceptor implements BeanInterceptor {
 
     @Override
     public int getOrder() {
-        return Integer.MIN_VALUE + 100;
+        return 350;
     }
 }

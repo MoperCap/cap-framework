@@ -24,6 +24,6 @@ public class AopBeanInterceptor implements BeanInterceptor {
 
     @Override
     public int getOrder() {
-        return BeanInterceptor.super.getOrder();
+        return 400;
     }
 }

@@ -114,14 +114,7 @@ public interface BeanInterceptor {
     }
 
     /**
-     * 拦截器执行顺序，值越小优先级越高。
-     *
-     * <p><b>建议范围：</b>
-     * <ul>
-     *   <li>框架内置拦截器：{@code Integer.MIN_VALUE} ~ {@code -100}</li>
-     *   <li>框架扩展拦截器：{@code -100} ~ {@code 0}</li>
-     *   <li>用户自定义拦截器：{@code 0} ~ {@code Integer.MAX_VALUE}</li>
-     * </ul>
+     * 拦截器执行顺序，值越小优先级越高
      */
     default int getOrder() {
         return 0;

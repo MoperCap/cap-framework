@@ -205,6 +205,6 @@ public class PropertySubscriptionBeanInterceptor implements BeanInterceptor {
 
     @Override
     public int getOrder() {
-        return Integer.MIN_VALUE + 300;
+        return 370;
     }
 }

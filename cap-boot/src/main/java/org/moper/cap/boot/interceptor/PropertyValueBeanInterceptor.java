@@ -82,6 +82,6 @@ public class PropertyValueBeanInterceptor implements BeanInterceptor {
 
     @Override
     public int getOrder() {
-        return Integer.MIN_VALUE + 200;
+        return 360;
     }
 }
