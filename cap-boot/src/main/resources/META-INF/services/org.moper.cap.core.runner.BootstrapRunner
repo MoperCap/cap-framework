@@ -5,5 +5,7 @@ org.moper.cap.boot.runner.ActiveProfilePropertyBootstrapRunner
 org.moper.cap.boot.runner.ClassBeanRegisterBootstrapRunner
 org.moper.cap.boot.runner.FactoryBeanRegisterBootstrapRunner
 org.moper.cap.boot.runner.LifecycleMethodRegisterBootstrapRunner
+org.moper.cap.boot.runner.PropertyValueBootstrapRunner
+org.moper.cap.boot.runner.PropertySubscriptionBootstrapRunner
 org.moper.cap.boot.runner.BeanInjectionBootstrapRunner
 org.moper.cap.boot.runner.PreInstantiateSingletonBootstrapRunner
