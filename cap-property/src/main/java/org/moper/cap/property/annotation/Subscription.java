@@ -12,5 +12,5 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Subscription {
-    String name() default "";
+    String value() default "";
 }

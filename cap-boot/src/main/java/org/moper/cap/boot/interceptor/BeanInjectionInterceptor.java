@@ -41,7 +41,7 @@ public class BeanInjectionInterceptor implements BeanInterceptor {
             }
             try {
                 field.setAccessible(true);
-                String beanName = BeanNamesResolver.resolveField(field);
+                String beanName = BeanNamesResolver.resolve(field);
                 Object dependency = beanContainer.getBean(beanName, field.getType());
                 field.set(bean, dependency);
             } catch (Exception e) {

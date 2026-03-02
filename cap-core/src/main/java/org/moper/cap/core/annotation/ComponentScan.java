@@ -1,7 +1,5 @@
 package org.moper.cap.core.annotation;
 
-import org.moper.cap.bean.annotation.Component;
-
 import java.lang.annotation.*;
 
 /**
@@ -11,7 +9,6 @@ import java.lang.annotation.*;
 @Documented
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Component
 public @interface ComponentScan {
 
     /**

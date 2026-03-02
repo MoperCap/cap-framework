@@ -42,7 +42,7 @@ public class ClassBeanRegisterBootstrapRunner implements BootstrapRunner {
                 Class<?> clazz = classInfo.loadClass();
 
                 String[] constructorParameterBeanNames = resolveConstructorParameterBeanNames(classInfo);
-                String[] beanNames = BeanNamesResolver.resolveClass(clazz);
+                String[] beanNames = BeanNamesResolver.resolve(clazz);
                 String primaryBeanName = beanNames[0];
                 Capper capper = clazz.getAnnotation(Capper.class);
 
@@ -96,7 +96,7 @@ public class ClassBeanRegisterBootstrapRunner implements BootstrapRunner {
         Parameter[] parameters = constructor.getParameters();
         String[] beanNames = new String[parameters.length];
         for (int i = 0; i < parameters.length; i++) {
-            beanNames[i] = BeanNamesResolver.resolveParameter(parameters[i]);
+            beanNames[i] = BeanNamesResolver.resolve(parameters[i]);
         }
         return beanNames;
     }

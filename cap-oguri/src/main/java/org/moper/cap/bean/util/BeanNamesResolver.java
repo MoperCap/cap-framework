@@ -25,7 +25,7 @@ public final class BeanNamesResolver {
      * @param clazz 类的反射对象，不能为 null
      * @return Bean 名称数组（第一个为主名称，其余为别名），至少包含一个名称
      */
-    public static String[] resolveClass(Class<?> clazz) {
+    public static String[] resolve(Class<?> clazz) {
         if (clazz == null) {
             throw new IllegalArgumentException("Class must not be null");
         }
@@ -57,7 +57,7 @@ public final class BeanNamesResolver {
      * @param method 方法的反射对象，不能为 null
      * @return Bean 名称数组（第一个为主名称，其余为别名），至少包含一个名称
      */
-    public static String[] resolveMethod(Method method) {
+    public static String[] resolve(Method method) {
         if (method == null) {
             throw new IllegalArgumentException("Method must not be null");
         }
@@ -92,14 +92,14 @@ public final class BeanNamesResolver {
      * @return 单个 Bean 名称字符串
      * @throws BeanDefinitionException 如果参数无法推导 Bean 名称
      */
-    public static String resolveParameter(Parameter parameter) {
+    public static String resolve(Parameter parameter) {
         if (parameter == null) {
             throw new IllegalArgumentException("Parameter must not be null");
         }
         // 优先级 1：@Inject 注解中显式指定的 beanName
         Inject inject = parameter.getAnnotation(Inject.class);
-        if (inject != null && !inject.beanName().isBlank()) {
-            return inject.beanName();
+        if (inject != null && !inject.value().isBlank()) {
+            return inject.value();
         }
         // 优先级 2：参数类型的简单类名首字母小写
         String simpleName = parameter.getType().getSimpleName();
@@ -123,18 +123,6 @@ public final class BeanNamesResolver {
     }
 
     /**
-     * 将类名或方法名首字母小写作为默认 Bean 名称。
-     *
-     * @param name 类名或方法名
-     * @return 首字母小写的名称
-     */
-    private static String decapitalize(String name) {
-        if (name == null || name.isEmpty()) return name;
-        if (Character.isLowerCase(name.charAt(0))) return name;
-        return Character.toLowerCase(name.charAt(0)) + name.substring(1);
-    }
-
-    /**
      * 解析 @Inject 标注的字段，获取 Bean 名称。
      *
      * <p>字段推导优先级（按顺序）：
@@ -147,13 +135,13 @@ public final class BeanNamesResolver {
      * @return 单个 Bean 名称字符串
      * @throws BeanDefinitionException 如果字段无法推导 Bean 名称
      */
-    public static String resolveField(Field field) {
+    public static String resolve(Field field) {
         if (field == null) {
             throw new IllegalArgumentException("Field must not be null");
         }
         Inject inject = field.getAnnotation(Inject.class);
-        if (inject != null && !inject.beanName().isBlank()) {
-            return inject.beanName();
+        if (inject != null && !inject.value().isBlank()) {
+            return inject.value();
         }
         String simpleName = field.getType().getSimpleName();
         if (!simpleName.isBlank()) {
@@ -163,5 +151,17 @@ public final class BeanNamesResolver {
                 "Cannot resolve bean name for field '" + field.getName() +
                 "' (type: " + field.getType().getName() + "): field type has no simple name. " +
                 "Use @Inject(beanName=\"...\") to specify explicitly.");
+    }
+
+    /**
+     * 将类名或方法名首字母小写作为默认 Bean 名称。
+     *
+     * @param name 类名或方法名
+     * @return 首字母小写的名称
+     */
+    private static String decapitalize(String name) {
+        if (name == null || name.isEmpty()) return name;
+        if (Character.isLowerCase(name.charAt(0))) return name;
+        return Character.toLowerCase(name.charAt(0)) + name.substring(1);
     }
 }

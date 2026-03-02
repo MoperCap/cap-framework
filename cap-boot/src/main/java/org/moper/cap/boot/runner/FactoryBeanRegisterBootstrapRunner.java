@@ -41,7 +41,7 @@ public class FactoryBeanRegisterBootstrapRunner implements BootstrapRunner {
                         .filter(mi -> mi.hasAnnotation(Capper.class))) {
 
                     Class<?> factoryClazz = classInfo.loadClass();
-                    String factoryClassBeanName = BeanNamesResolver.resolveClass(factoryClazz)[0];
+                    String factoryClassBeanName = BeanNamesResolver.resolve(factoryClazz)[0];
 
                     Method factoryMethod = methodInfo.loadClassAndGetMethod();
                     String factoryMethodName = factoryMethod.getName();
@@ -60,7 +60,7 @@ public class FactoryBeanRegisterBootstrapRunner implements BootstrapRunner {
                     }
 
                     String[] factoryMethodParameterBeanNames = resolveMethodParameterBeanNames(factoryMethod);
-                    String[] beanNames = BeanNamesResolver.resolveMethod(factoryMethod);
+                    String[] beanNames = BeanNamesResolver.resolve(factoryMethod);
                     String primaryBeanName = beanNames[0];
                     Class<?> beanType = factoryMethod.getReturnType();
                     Capper capper = factoryMethod.getAnnotation(Capper.class);
@@ -109,7 +109,7 @@ public class FactoryBeanRegisterBootstrapRunner implements BootstrapRunner {
         Parameter[] parameters = method.getParameters();
         String[] beanNames = new String[parameters.length];
         for (int i = 0; i < parameters.length; i++) {
-            beanNames[i] = BeanNamesResolver.resolveParameter(parameters[i]);
+            beanNames[i] = BeanNamesResolver.resolve(parameters[i]);
         }
         return beanNames;
     }
