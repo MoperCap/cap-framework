@@ -8,7 +8,7 @@ import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.exception.BeanDefinitionException;
 import org.moper.cap.bean.util.BeanNamesResolver;
-import org.moper.cap.boot.resolver.LifecycleMethodResolver;
+import org.moper.cap.bean.util.BeanLifecycleResolver;
 import org.moper.cap.core.annotation.RunnerMeta;
 import org.moper.cap.core.context.BootstrapContext;
 import org.moper.cap.core.runner.BootstrapRunner;
@@ -16,7 +16,6 @@ import org.moper.cap.core.runner.RunnerType;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
-import java.util.*;
 
 /**
  * 扫描 @Capper 标注的类并注册 BeanDefinition（构造函数实例化）。
@@ -27,11 +26,11 @@ import java.util.*;
 @RunnerMeta(type = RunnerType.KERNEL, order = 300, description = "Scan @Capper annotated classes and register Bean Definitions (constructor instantiation)")
 public class ClassBeanRegisterBootstrapRunner implements BootstrapRunner {
 
-    private final Map<String, BeanDefinition> beanDefinitionMap = new LinkedHashMap<>();
-    private final Map<String, Set<String>> aliasMap = new LinkedHashMap<>();
-
     @Override
     public void initialize(BootstrapContext context) throws Exception {
+
+        BeanContainer container = context.getBeanContainer();
+
         try (ScanResult scan = new ClassGraph().enableAllInfo()
                 .acceptPackages(context.getConfigurationClassParser().getComponentScanPaths())
                 .scan()) {
@@ -44,12 +43,22 @@ public class ClassBeanRegisterBootstrapRunner implements BootstrapRunner {
                 String[] constructorParameterBeanNames = resolveConstructorParameterBeanNames(classInfo);
                 String[] beanNames = BeanNamesResolver.resolve(clazz);
                 String primaryBeanName = beanNames[0];
+                // 注册别名
+                if(beanNames.length > 1) {
+                    for(int i = 1; i < beanNames.length; i++) {
+                        String alias = beanNames[i];
+                        container.registerAlias(primaryBeanName, alias);
+                        log.info("Register alias: {} -> {}", alias, primaryBeanName);
+                    }
+                }
+
                 Capper capper = clazz.getAnnotation(Capper.class);
 
                 // 验证生命周期方法
-                LifecycleMethodResolver.validate(clazz, capper.initMethod());
-                LifecycleMethodResolver.validate(clazz, capper.destroyMethod());
+                BeanLifecycleResolver.validate(clazz, capper.initMethod());
+                BeanLifecycleResolver.validate(clazz, capper.destroyMethod());
 
+                // 注册Bean定义
                 BeanDefinition def = BeanDefinition.of(primaryBeanName, clazz)
                         .withParameterBeanNames(constructorParameterBeanNames)
                         .withPrimary(capper.primary())
@@ -58,22 +67,8 @@ public class ClassBeanRegisterBootstrapRunner implements BootstrapRunner {
                         .withDescription(capper.description())
                         .withInitMethod(capper.initMethod().isBlank() ? null : capper.initMethod())
                         .withDestroyMethod(capper.destroyMethod().isBlank() ? null : capper.destroyMethod());
-                beanDefinitionMap.put(primaryBeanName, def);
-                registerAlias(beanNames);
-            }
-        }
-
-        BeanContainer container = context.getBeanContainer();
-        for (Map.Entry<String, BeanDefinition> entry : beanDefinitionMap.entrySet()) {
-            String primaryName = entry.getKey();
-            BeanDefinition def = entry.getValue();
-            container.registerBeanDefinition(def);
-            log.info("Register bean: {}", def);
-            if (aliasMap.containsKey(primaryName)) {
-                for (String alias : aliasMap.get(primaryName)) {
-                    container.registerAlias(primaryName, alias);
-                    log.info("Register alias: {} -> {}", alias, primaryName);
-                }
+                container.registerBeanDefinition(def);
+                log.info("Register bean: {}", def);
             }
         }
     }
@@ -99,13 +94,5 @@ public class ClassBeanRegisterBootstrapRunner implements BootstrapRunner {
             beanNames[i] = BeanNamesResolver.resolve(parameters[i]);
         }
         return beanNames;
-    }
-
-    private void registerAlias(String[] beanNames) {
-        String primaryBeanName = beanNames[0];
-        if (beanNames.length > 1) {
-            Set<String> aliasSet = new HashSet<>(Arrays.asList(beanNames).subList(1, beanNames.length));
-            aliasMap.put(primaryBeanName, aliasSet);
-        }
     }
 }

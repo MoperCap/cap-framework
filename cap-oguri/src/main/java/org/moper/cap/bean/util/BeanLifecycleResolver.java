@@ -1,4 +1,4 @@
-package org.moper.cap.boot.resolver;
+package org.moper.cap.bean.util;
 
 import org.moper.cap.bean.exception.BeanDefinitionException;
 
@@ -12,9 +12,9 @@ import java.lang.reflect.Modifier;
  * 并确保其签名符合规范：无参、void 返回值。
  * 支持 private/protected/public 可见性。
  */
-public final class LifecycleMethodResolver {
+public final class BeanLifecycleResolver {
 
-    private LifecycleMethodResolver() {}
+    private BeanLifecycleResolver() {}
 
     /**
      * 在指定类（及其父类）中查找并验证生命周期方法。

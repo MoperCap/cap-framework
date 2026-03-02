@@ -7,7 +7,7 @@ import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.exception.BeanDefinitionException;
 import org.moper.cap.bean.util.BeanNamesResolver;
-import org.moper.cap.boot.resolver.LifecycleMethodResolver;
+import org.moper.cap.bean.util.BeanLifecycleResolver;
 import org.moper.cap.core.annotation.RunnerMeta;
 import org.moper.cap.core.context.BootstrapContext;
 import org.moper.cap.core.runner.BootstrapRunner;
@@ -28,10 +28,11 @@ import java.util.*;
 public class FactoryBeanRegisterBootstrapRunner implements BootstrapRunner {
 
     private final Map<String, BeanDefinition> beanDefinitionMap = new LinkedHashMap<>();
-    private final Map<String, Set<String>> aliasMap = new LinkedHashMap<>();
 
     @Override
     public void initialize(BootstrapContext context) throws Exception {
+        BeanContainer container = context.getBeanContainer();
+
         try (ScanResult scan = new ClassGraph().enableAllInfo()
                 .acceptPackages(context.getConfigurationClassParser().getComponentScanPaths())
                 .scan()) {
@@ -40,35 +41,46 @@ public class FactoryBeanRegisterBootstrapRunner implements BootstrapRunner {
                 for (MethodInfo methodInfo : classInfo.getDeclaredMethodInfo()
                         .filter(mi -> mi.hasAnnotation(Capper.class))) {
 
-                    Class<?> factoryClazz = classInfo.loadClass();
-                    String factoryClassBeanName = BeanNamesResolver.resolve(factoryClazz)[0];
-
-                    Method factoryMethod = methodInfo.loadClassAndGetMethod();
-                    String factoryMethodName = factoryMethod.getName();
-
                     // 非静态工厂方法所在类必须是可实例化的
                     if (!methodInfo.isStatic() && (classInfo.isInterface() || classInfo.isAbstract())) {
                         throw new BeanDefinitionException(
                                 "Non-static @Capper method requires its class be instantiable: " + classInfo.getName());
                     }
 
-                    // 工厂类未注册时自动注册（无论是否带 @Capper 注解）
-                    if (!beanDefinitionMap.containsKey(factoryClassBeanName)
-                            && !context.getBeanContainer().containsBeanDefinition(factoryClassBeanName)) {
+                    Class<?> factoryClazz = classInfo.loadClass();
+                    String factoryClassBeanName = BeanNamesResolver.resolve(factoryClazz)[0];
+
+                    // 工厂方法所在的类无论是否有 @Capper 注解，都需要被管理
+                    // 由于在 ClassBeanRegisterBootstrapRunner 中已经处理了所有的 @Capper 类
+                    // 因此此处的类只要不在 BeanContainer 的注册中，就一定是非 @Capper 类
+                    if(!container.containsBeanDefinition(factoryClassBeanName)) {
                         BeanDefinition factoryDef = BeanDefinition.of(factoryClassBeanName, factoryClazz);
-                        beanDefinitionMap.put(factoryClassBeanName, factoryDef);
+                        container.registerBeanDefinition(factoryDef);
                     }
 
+                    Method factoryMethod = methodInfo.loadClassAndGetMethod();
+                    String factoryMethodName = factoryMethod.getName();
                     String[] factoryMethodParameterBeanNames = resolveMethodParameterBeanNames(factoryMethod);
+
                     String[] beanNames = BeanNamesResolver.resolve(factoryMethod);
                     String primaryBeanName = beanNames[0];
+                    // 注册别名
+                    if(beanNames.length > 1) {
+                        for(int i = 1; i < beanNames.length; i++) {
+                            String alias = beanNames[i];
+                            container.registerAlias(primaryBeanName, alias);
+                            log.info("Register alias: {} -> {}", alias, primaryBeanName);
+                        }
+                    }
+
                     Class<?> beanType = factoryMethod.getReturnType();
                     Capper capper = factoryMethod.getAnnotation(Capper.class);
 
                     // 验证生命周期方法
-                    LifecycleMethodResolver.validate(beanType, capper.initMethod());
-                    LifecycleMethodResolver.validate(beanType, capper.destroyMethod());
+                    BeanLifecycleResolver.validate(beanType, capper.initMethod());
+                    BeanLifecycleResolver.validate(beanType, capper.destroyMethod());
 
+                    // 注册Bean定义
                     BeanDefinition def = BeanDefinition.of(primaryBeanName, beanType)
                             .withFactoryMethod(factoryClassBeanName, factoryMethodName)
                             .withParameterBeanNames(factoryMethodParameterBeanNames)
@@ -78,28 +90,14 @@ public class FactoryBeanRegisterBootstrapRunner implements BootstrapRunner {
                             .withDescription(capper.description())
                             .withInitMethod(capper.initMethod().isBlank() ? null : capper.initMethod())
                             .withDestroyMethod(capper.destroyMethod().isBlank() ? null : capper.destroyMethod());
-                    beanDefinitionMap.put(primaryBeanName, def);
-                    registerAlias(beanNames);
-                }
-            }
-        }
-
-        BeanContainer container = context.getBeanContainer();
-        for (Map.Entry<String, BeanDefinition> entry : beanDefinitionMap.entrySet()) {
-            String primaryName = entry.getKey();
-            BeanDefinition def = entry.getValue();
-
-            // 工厂 Bean 可以覆盖同名的普通 Bean
-            if (container.containsBeanDefinition(primaryName)) {
-                container.removeBeanDefinition(primaryName);
-                log.info("Override bean: {}", primaryName);
-            }
-            container.registerBeanDefinition(def);
-            log.info("Register bean: {}", def);
-            if (aliasMap.containsKey(primaryName)) {
-                for (String alias : aliasMap.get(primaryName)) {
-                    container.registerAlias(primaryName, alias);
-                    log.info("Register alias: {} -> {}", alias, primaryName);
+                    // 若已经存在Bean定义，则进行覆盖
+                    // 目前已知的满足条件有：当@Capper方法的返回类型上存在@Capper注解，且两者均未显式定义Bean名称，则@Capper方法的Bean定义会覆盖@Capper类的Bean定义
+                    if(container.containsBeanDefinition(primaryBeanName)) {
+                        container.removeBeanDefinition(primaryBeanName);
+                        log.info("Override bean: {}", primaryBeanName);
+                    }
+                    container.registerBeanDefinition(def);
+                    log.info("Register bean: {}", def);
                 }
             }
         }
@@ -112,13 +110,5 @@ public class FactoryBeanRegisterBootstrapRunner implements BootstrapRunner {
             beanNames[i] = BeanNamesResolver.resolve(parameters[i]);
         }
         return beanNames;
-    }
-
-    private void registerAlias(String[] beanNames) {
-        String primaryBeanName = beanNames[0];
-        if (beanNames.length > 1) {
-            Set<String> aliasSet = new HashSet<>(Arrays.asList(beanNames).subList(1, beanNames.length));
-            aliasMap.put(primaryBeanName, aliasSet);
-        }
     }
 }
