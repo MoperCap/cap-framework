@@ -47,6 +47,8 @@ import org.moper.cap.bean.exception.BeanDefinitionStoreException;
  *                           必须与 factoryBeanName 同时为 null 或同时非 null
  * @param factoryBeanName    工厂 Bean 的名称，null 表示非工厂方法实例化；
  *                           必须与 factoryMethodName 同时为 null 或同时非 null
+ * @param initMethod         初始化方法名称，null 或空表示无自定义初始化方法
+ * @param destroyMethod      销毁方法名称，null 或空表示无自定义销毁方法
  */
 public record BeanDefinition(
         String name,
@@ -58,7 +60,9 @@ public record BeanDefinition(
         String description,
         String[] parameterBeanNames,
         String factoryMethodName,
-        String factoryBeanName
+        String factoryBeanName,
+        String initMethod,
+        String destroyMethod
 ) {
 
     public BeanDefinition {
@@ -94,7 +98,7 @@ public record BeanDefinition(
                 name, type, BeanScope.SINGLETON,
                 new String[0],
                 false, false, "",
-                new String[0], null, null);
+                new String[0], null, null, null, null);
     }
 
     /**
@@ -109,7 +113,7 @@ public record BeanDefinition(
         String[] names = parameterBeanNames == null ? new String[0] : parameterBeanNames;
         return new BeanDefinition(
                 name, type, scope, dependsOn, lazy, primary, description,
-                names, factoryMethodName, factoryBeanName);
+                names, factoryMethodName, factoryBeanName, initMethod, destroyMethod);
     }
 
     /**
@@ -125,7 +129,7 @@ public record BeanDefinition(
     public BeanDefinition withFactoryMethod(String factoryBeanName, String factoryMethodName) {
         return new BeanDefinition(
                 name, type, scope, dependsOn, lazy, primary, description,
-                parameterBeanNames, factoryMethodName, factoryBeanName);
+                parameterBeanNames, factoryMethodName, factoryBeanName, initMethod, destroyMethod);
     }
 
     /**
@@ -137,7 +141,7 @@ public record BeanDefinition(
     public BeanDefinition withScope(BeanScope scope) {
         return new BeanDefinition(
                 name, type, scope, dependsOn, lazy, primary, description,
-                parameterBeanNames, factoryMethodName, factoryBeanName);
+                parameterBeanNames, factoryMethodName, factoryBeanName, initMethod, destroyMethod);
     }
 
     /**
@@ -149,7 +153,7 @@ public record BeanDefinition(
     public BeanDefinition dependsOn(String... beanNames) {
         return new BeanDefinition(
                 name, type, scope, beanNames, lazy, primary, description,
-                parameterBeanNames, factoryMethodName, factoryBeanName);
+                parameterBeanNames, factoryMethodName, factoryBeanName, initMethod, destroyMethod);
     }
 
     /**
@@ -161,7 +165,7 @@ public record BeanDefinition(
     public BeanDefinition withLazy(boolean lazy) {
         return new BeanDefinition(
                 name, type, scope, dependsOn, lazy, primary, description,
-                parameterBeanNames, factoryMethodName, factoryBeanName);
+                parameterBeanNames, factoryMethodName, factoryBeanName, initMethod, destroyMethod);
     }
 
     /**
@@ -173,7 +177,7 @@ public record BeanDefinition(
     public BeanDefinition withPrimary(boolean primary) {
         return new BeanDefinition(
                 name, type, scope, dependsOn, lazy, primary, description,
-                parameterBeanNames, factoryMethodName, factoryBeanName);
+                parameterBeanNames, factoryMethodName, factoryBeanName, initMethod, destroyMethod);
     }
 
     /**
@@ -185,7 +189,31 @@ public record BeanDefinition(
     public BeanDefinition withDescription(String description) {
         return new BeanDefinition(
                 name, type, scope, dependsOn, lazy, primary, description,
-                parameterBeanNames, factoryMethodName, factoryBeanName);
+                parameterBeanNames, factoryMethodName, factoryBeanName, initMethod, destroyMethod);
+    }
+
+    /**
+     * 返回一个 {@code initMethod} 字段被修改的新 BeanDefinition。
+     *
+     * @param initMethod 初始化方法名称，null 或空表示无自定义初始化方法
+     * @return 新的 BeanDefinition 实例
+     */
+    public BeanDefinition withInitMethod(String initMethod) {
+        return new BeanDefinition(
+                name, type, scope, dependsOn, lazy, primary, description,
+                parameterBeanNames, factoryMethodName, factoryBeanName, initMethod, destroyMethod);
+    }
+
+    /**
+     * 返回一个 {@code destroyMethod} 字段被修改的新 BeanDefinition。
+     *
+     * @param destroyMethod 销毁方法名称，null 或空表示无自定义销毁方法
+     * @return 新的 BeanDefinition 实例
+     */
+    public BeanDefinition withDestroyMethod(String destroyMethod) {
+        return new BeanDefinition(
+                name, type, scope, dependsOn, lazy, primary, description,
+                parameterBeanNames, factoryMethodName, factoryBeanName, initMethod, destroyMethod);
     }
 
     /**
