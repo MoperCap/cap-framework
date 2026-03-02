@@ -1,0 +1,5 @@
+app:
+  debug: true
+
+dev:
+  extra: "dev-specific-value"
