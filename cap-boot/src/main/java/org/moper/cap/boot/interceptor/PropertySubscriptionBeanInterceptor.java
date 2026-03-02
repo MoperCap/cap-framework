@@ -132,7 +132,6 @@ public class PropertySubscriptionBeanInterceptor implements BeanInterceptor {
             @Override
             public void onSet(T value) {
                 try {
-                    field.set(bean, value);
                     if (finalOnSet != null) finalOnSet.invoke(bean, value);
                 } catch (Exception e) {
                     throw new BeanException(

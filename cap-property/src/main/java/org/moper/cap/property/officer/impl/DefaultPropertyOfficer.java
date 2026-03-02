@@ -115,13 +115,13 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
     }
 
     @Override
-    public <T> T getPropertyValueOrDefault(String key, Class<T> type, T defaultValue) {
-        if (defaultValue == null) {
+    public <T> T getPropertyValueOrDefault(String key, Class<T> type, Object rawDefaultValue) {
+        if (rawDefaultValue == null) {
             throw new IllegalArgumentException("Default value cannot be null");
         }
 
         Object value = getRawPropertyValue(key);
-        if (value == null) return defaultValue;
+        if (value == null) return resolver.resolve(rawDefaultValue, type);
         else return resolver.resolve(value, type);
     }
 
