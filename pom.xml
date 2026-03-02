@@ -99,11 +99,11 @@
                 <version>${logback.version}</version>
             </dependency>
 
-            <!-- ========== Byte Buddy ========== -->
+            <!-- ========== Javassist ========== -->
             <dependency>
-                <groupId>net.bytebuddy</groupId>
-                <artifactId>byte-buddy</artifactId>
-                <version>1.14.9</version>
+                <groupId>org.javassist</groupId>
+                <artifactId>javassist</artifactId>
+                <version>3.29.2-GA</version>
             </dependency>
 
             <!-- ========== Lombok ========== -->
