@@ -1,0 +1,61 @@
+package org.moper.cap.web.resolver;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.moper.cap.web.annotation.CookieValue;
+import org.moper.cap.web.model.ParameterMetadata;
+import org.moper.cap.web.util.TypeConverter;
+
+import java.util.Map;
+
+/**
+ * Cookie 值解析器。
+ *
+ * <p>将 HTTP Cookie 的值绑定到标注了 {@link CookieValue} 的方法参数。
+ */
+public class CookieValueResolver implements ParameterResolver {
+
+    @Override
+    public boolean supports(ParameterMetadata metadata) {
+        return metadata.parameter().isAnnotationPresent(CookieValue.class);
+    }
+
+    @Override
+    public Object resolve(ParameterMetadata metadata,
+                          HttpServletRequest request,
+                          HttpServletResponse response,
+                          Map<String, String> pathVariables) {
+        CookieValue annotation = metadata.parameter().getAnnotation(CookieValue.class);
+        String name = resolveName(annotation, metadata);
+        String value = findCookieValue(request, name);
+        if (value == null) {
+            if (!annotation.defaultValue().isEmpty()) {
+                value = annotation.defaultValue();
+            } else if (annotation.required()) {
+                throw new IllegalStateException("Required cookie '" + name + "' not present");
+            } else {
+                return TypeConverter.convert(null, metadata.type());
+            }
+        }
+        return TypeConverter.convert(value, metadata.type());
+    }
+
+    private String findCookieValue(HttpServletRequest request, String name) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return null;
+        }
+        for (Cookie cookie : cookies) {
+            if (name.equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        return null;
+    }
+
+    private String resolveName(CookieValue annotation, ParameterMetadata metadata) {
+        String name = annotation.value().isBlank() ? annotation.name() : annotation.value();
+        return name.isBlank() ? metadata.name() : name;
+    }
+}
