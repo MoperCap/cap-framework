@@ -56,5 +56,19 @@ public enum HttpMethod {
     /**
      * HTTP CONNECT 方法，用于建立到服务器的隧道连接（通常用于 HTTPS 代理）
      */
-    CONNECT
+    CONNECT;
+
+    /**
+     * 将字符串转换为对应的 {@link HttpMethod} 枚举值（不区分大小写）。
+     *
+     * @param method HTTP 方法名称字符串，不能为 null
+     * @return 对应的 {@link HttpMethod} 枚举值
+     * @throws IllegalArgumentException 如果字符串不匹配任何已知的 HTTP 方法
+     */
+    public static HttpMethod fromString(String method) {
+        if (method == null) {
+            throw new IllegalArgumentException("method must not be null");
+        }
+        return valueOf(method.toUpperCase());
+    }
 }
