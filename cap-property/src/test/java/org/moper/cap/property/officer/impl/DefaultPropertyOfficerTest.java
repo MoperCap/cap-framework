@@ -11,6 +11,7 @@ import org.moper.cap.property.publisher.PropertyPublisher;
 import org.moper.cap.property.subscriber.PropertySubscriber;
 import org.moper.cap.property.subscriber.impl.DefaultAbstractPropertySubscriber;
 import org.moper.cap.property.subscriber.impl.DefaultPropertySubscription;
+import org.moper.cap.common.converter.impl.DefaultTypeResolver;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,7 +25,7 @@ class DefaultPropertyOfficerTest {
 
     @BeforeEach
     void setUp() {
-        officer = new DefaultPropertyOfficer("cap-test-officer");
+        officer = new DefaultPropertyOfficer("cap-test-officer", new DefaultTypeResolver());
     }
 
     @AfterEach

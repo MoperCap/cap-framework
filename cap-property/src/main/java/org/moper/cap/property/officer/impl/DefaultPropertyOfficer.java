@@ -13,7 +13,6 @@ import org.moper.cap.property.officer.PropertyOfficer;
 import org.moper.cap.property.publisher.PropertyPublisher;
 import org.moper.cap.property.publisher.impl.DefaultPropertyPublisher;
 import org.moper.cap.common.converter.TypeResolver;
-import org.moper.cap.common.converter.impl.DefaultTypeResolver;
 import org.moper.cap.property.subscriber.PropertySubscriber;
 import org.moper.cap.property.subscriber.PropertySubscription;
 
@@ -41,13 +40,13 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
 
     private final ExecutorService executorService;
 
-    private final TypeResolver resolver = new DefaultTypeResolver();
+    private final TypeResolver resolver;
 
-    public DefaultPropertyOfficer(String name) {
-        this(name, DEFAULT_THREAD_POOL_SIZE);
+    public DefaultPropertyOfficer(String name, TypeResolver resolver) {
+        this(name, DEFAULT_THREAD_POOL_SIZE, resolver);
     }
 
-    public DefaultPropertyOfficer(String name, int threadPoolSize) {
+    public DefaultPropertyOfficer(String name, int threadPoolSize, TypeResolver resolver) {
         if(name == null || name.isBlank()) {
             throw new IllegalArgumentException("PropertyOfficer name cannot be null or blank");
         }
@@ -55,8 +54,13 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
         if (threadPoolSize <= 0) {
             throw new IllegalArgumentException("Thread pool size must be greater than 0");
         }
+
+        if (resolver == null) {
+            throw new IllegalArgumentException("TypeResolver cannot be null");
+        }
         this.name = name;
         this.executorService = Executors.newFixedThreadPool(threadPoolSize);
+        this.resolver = resolver;
     }
 
     /**
@@ -115,13 +119,13 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
     }
 
     @Override
-    public <T> T getPropertyValueOrDefault(String key, Class<T> type, Object rawDefaultValue) {
+    public <T> T getPropertyValueOrDefault(String key, Class<T> type, T rawDefaultValue) {
         if (rawDefaultValue == null) {
             throw new IllegalArgumentException("Default value cannot be null");
         }
 
         Object value = getRawPropertyValue(key);
-        if (value == null) return resolver.resolve(rawDefaultValue, type);
+        if (value == null) return rawDefaultValue;
         else return resolver.resolve(value, type);
     }
 

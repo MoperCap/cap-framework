@@ -1,7 +1,7 @@
 package org.moper.cap.common.converter.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.moper.cap.property.exception.PropertyTypeMismatchException;
+import org.moper.cap.common.converter.TypeConversionException;
 import org.moper.cap.common.converter.TypeConverter;
 import org.moper.cap.common.converter.TypeResolver;
 
@@ -53,14 +53,14 @@ public class DefaultTypeResolver implements TypeResolver {
                 return (T) converter.convert(value);
             } catch (Exception e) {
                 log.warn("类型转换失败 [{} -> {}]，异常：{}", value.getClass().getName(), targetType.getName(), e.getMessage(), e);
-                throw new PropertyTypeMismatchException("类型转换失败: " + value.getClass().getName() + " -> " + targetType.getName(), e);
+                throw new TypeConversionException("类型转换失败: " + value.getClass().getName() + " -> " + targetType.getName(), e);
             }
         }
         if (targetType.isEnum()) {
             return parseEnum(value, targetType);
         }
         log.warn("找不到类型转换器 [{} -> {}]，值: {}", value.getClass().getName(), targetType.getName(), value);
-        throw new PropertyTypeMismatchException("未找到类型转换器: " + value.getClass().getName() + " -> " + targetType.getName());
+        throw new TypeConversionException("未找到类型转换器: " + value.getClass().getName() + " -> " + targetType.getName());
     }
 
     @Override

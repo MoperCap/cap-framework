@@ -3,6 +3,7 @@ package org.moper.cap.web.registry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.moper.cap.common.converter.TypeResolver;
 import org.moper.cap.web.model.ParameterMetadata;
 import org.moper.cap.web.resolver.*;
 
@@ -23,15 +24,16 @@ public class ParameterResolverRegistry {
      * 使用默认解析器集初始化注册表。
      *
      * @param objectMapper Jackson ObjectMapper，用于请求体反序列化
+     * @param typeResolver 类型解析器，用于参数类型转换
      */
-    public ParameterResolverRegistry(ObjectMapper objectMapper) {
+    public ParameterResolverRegistry(ObjectMapper objectMapper, TypeResolver typeResolver) {
         resolvers.add(new ServletRequestResolver());
         resolvers.add(new ServletResponseResolver());
-        resolvers.add(new PathVariableResolver());
-        resolvers.add(new RequestParamResolver());
+        resolvers.add(new PathVariableResolver(typeResolver));
+        resolvers.add(new RequestParamResolver(typeResolver));
         resolvers.add(new RequestBodyResolver(objectMapper));
-        resolvers.add(new RequestHeaderResolver());
-        resolvers.add(new CookieValueResolver());
+        resolvers.add(new RequestHeaderResolver(typeResolver));
+        resolvers.add(new CookieValueResolver(typeResolver));
     }
 
     /**

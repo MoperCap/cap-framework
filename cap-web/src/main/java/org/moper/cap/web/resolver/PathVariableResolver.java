@@ -2,9 +2,9 @@ package org.moper.cap.web.resolver;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.moper.cap.common.converter.TypeResolver;
 import org.moper.cap.web.annotation.PathVariable;
 import org.moper.cap.web.model.ParameterMetadata;
-import org.moper.cap.web.util.TypeConverter;
 
 import java.util.Map;
 
@@ -15,6 +15,12 @@ import java.util.Map;
  * 绑定到标注了 {@link PathVariable} 的方法参数。
  */
 public class PathVariableResolver implements ParameterResolver {
+
+    private final TypeResolver typeResolver;
+
+    public PathVariableResolver(TypeResolver typeResolver) {
+        this.typeResolver = typeResolver;
+    }
 
     @Override
     public boolean supports(ParameterMetadata metadata) {
@@ -35,7 +41,7 @@ public class PathVariableResolver implements ParameterResolver {
             }
             return null;
         }
-        return TypeConverter.convert(value, metadata.type());
+        return typeResolver.resolve(value, metadata.type());
     }
 
     private String resolveName(PathVariable annotation, ParameterMetadata metadata) {
