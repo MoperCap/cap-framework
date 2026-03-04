@@ -1,4 +1,4 @@
-package org.moper.cap.common.command;
+package org.moper.cap.core.command;
 
 import java.util.Map;
 

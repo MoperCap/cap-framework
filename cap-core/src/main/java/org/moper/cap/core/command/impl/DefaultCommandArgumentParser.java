@@ -1,6 +1,6 @@
-package org.moper.cap.common.command.impl;
+package org.moper.cap.core.command.impl;
 
-import org.moper.cap.common.command.CommandArgumentParser;
+import org.moper.cap.core.command.CommandArgumentParser;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

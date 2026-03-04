@@ -1,7 +1,7 @@
 package org.moper.cap.core.context.impl;
 
 import org.moper.cap.bean.container.BeanContainer;
-import org.moper.cap.common.command.CommandArgumentParser;
+import org.moper.cap.core.command.CommandArgumentParser;
 import org.moper.cap.core.config.ConfigurationClassParser;
 import org.moper.cap.core.context.RuntimeContext;
 import org.moper.cap.core.context.BootstrapContext;
