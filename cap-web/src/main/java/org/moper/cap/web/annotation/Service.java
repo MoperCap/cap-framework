@@ -1,15 +1,47 @@
 package org.moper.cap.web.annotation;
 
-import org.moper.cap.bean.annotation.Capper;
+import org.moper.cap.bean.annotation.Component;
+import org.moper.cap.core.annotation.AliasFor;
 
 import java.lang.annotation.*;
 
 /**
- * @Component 的语义化别名，标注服务层组件
+ * Marks a class as a service-layer component and registers it as a managed bean.
+ *
+ * <p>This annotation is a semantic alias of {@link Component}: it is itself
+ * meta-annotated with {@code @Component}, so any class annotated with {@code @Service}
+ * will be detected and registered by the component scan.  The {@link #value()} attribute
+ * is bridged to {@link Component#value()} via {@link AliasFor}, so an explicit bean name
+ * can be provided directly on this annotation.
+ *
+ * <p><b>Usage examples:</b>
+ * <pre>{@code
+ * // Default bean name derived from class name ("orderService")
+ * @Service
+ * public class OrderService { ... }
+ *
+ * // Explicit bean name
+ * @Service("orderSvc")
+ * public class OrderService { ... }
+ * }</pre>
+ *
+ * @see Component
+ * @see AliasFor
  */
 @Documented
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Capper
+@Component
 public @interface Service {
+
+    /**
+     * The bean name for this service, aliased to {@link Component#value()}.
+     *
+     * <p>Defaults to {@code ""}, which means the container will use the simple class
+     * name (first letter lower-cased) as the bean name.
+     *
+     * @return the explicit bean name, or {@code ""} for the default
+     */
+    @AliasFor(annotation = Component.class, attribute = "value")
+    String value() default "";
 }

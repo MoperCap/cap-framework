@@ -13,19 +13,28 @@ import org.moper.cap.core.annotation.RunnerMeta;
 import org.moper.cap.core.context.BootstrapContext;
 import org.moper.cap.core.runner.BootstrapRunner;
 import org.moper.cap.core.runner.RunnerType;
+import org.moper.cap.core.util.AnnotationMutualExclusivity;
+import org.moper.cap.core.util.AnnotationUtils;
 
 import java.beans.Introspector;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * 扫描 {@link Component}（含 {@link Configuration}）和 {@link Capper} 标注的类，
- * 并将其注册为 BeanDefinition（仅注册类型和基础属性，不处理构造函数参数）。
+ * Scans {@link Component}-annotated classes (including meta-annotation aliases such as
+ * {@code @Controller} and {@code @Service}) and {@link Capper}-annotated classes, then
+ * registers a {@link BeanDefinition} for each one (type and basic attributes only; constructor
+ * parameters are resolved later by {@link ComponentBeanInstantiationBootstrapRunner}).
  *
- * <p>执行顺序为 300，在 {@link ComponentBeanInstantiationBootstrapRunner}（305）之前执行。
- * 构造函数参数的解析由后续的 {@link ComponentBeanInstantiationBootstrapRunner} 负责。
+ * <p>Execution order is 300, before {@link ComponentBeanInstantiationBootstrapRunner} (305).
  *
- * <p>同时处理 {@link Capper} 注解（已废弃），以保持向后兼容。
+ * <p>Before registering a component class the runner validates it with
+ * {@link AnnotationMutualExclusivity} to ensure no class carries more than one
+ * {@code @Component} semantic annotation.  Bean names are resolved via
+ * {@link AnnotationUtils#resolveComponentBeanName(Class)} which follows any
+ * {@code @AliasFor} bridge back to {@code @Component.value()}.
+ *
+ * <p>Legacy {@link Capper} support is retained for backward compatibility.
  */
 @Slf4j
 @RunnerMeta(type = RunnerType.KERNEL, order = 300,
@@ -40,7 +49,7 @@ public class ComponentBeanRegisterBootstrapRunner implements BootstrapRunner {
                 .acceptPackages(context.getConfigurationClassParser().getComponentScanPaths())
                 .scan()) {
 
-            // Scan @Component classes (includes @Configuration via meta-annotation)
+            // Scan @Component classes (includes meta-annotation aliases via ClassGraph)
             for (ClassInfo classInfo : scan.getClassesWithAnnotation(Component.class)
                     .filter(ci -> !ci.isInterface() && !ci.isAbstract() && !ci.isAnnotation())) {
 
@@ -58,6 +67,9 @@ public class ComponentBeanRegisterBootstrapRunner implements BootstrapRunner {
 
     private void registerComponentClass(BeanContainer container, ClassInfo classInfo) {
         Class<?> clazz = classInfo.loadClass();
+
+        // Validate: only one @Component semantic annotation per class
+        AnnotationMutualExclusivity.validate(clazz);
 
         String[] beanNames = resolveComponentBeanNames(clazz);
         String primaryBeanName = beanNames[0];
@@ -117,26 +129,30 @@ public class ComponentBeanRegisterBootstrapRunner implements BootstrapRunner {
     }
 
     /**
-     * 解析 {@link Component} 或 {@link Configuration} 注解中的 Bean 名称。
+     * Resolves the bean name(s) for a {@link Component}-annotated class.
      *
-     * <p>解析规则：
+     * <p>Resolution order:
      * <ol>
-     *   <li>优先读取 {@link Configuration#value()} 或 {@link Component#value()} 中的显式名称</li>
-     *   <li>若未指定，使用类名首字母小写作为默认 Bean 名称</li>
+     *   <li>{@link Configuration#value()} (cap-oguri) if present and non-blank</li>
+     *   <li>{@link AnnotationUtils#resolveComponentBeanName(Class)} which follows any
+     *       {@code @AliasFor} bridge to {@code @Component.value()} – covers direct
+     *       {@code @Component} usage and meta-annotation aliases like {@code @Controller}</li>
+     *   <li>Simple class name, first letter lower-cased</li>
      * </ol>
      */
     private static String[] resolveComponentBeanNames(Class<?> clazz) {
         String defaultName = Introspector.decapitalize(clazz.getSimpleName());
 
-        // @Configuration takes precedence over @Component since it's a meta-annotation
+        // @Configuration (cap-oguri) takes precedence – its value() has no @AliasFor
         Configuration configuration = clazz.getAnnotation(Configuration.class);
         if (configuration != null && !configuration.value().isBlank()) {
             return new String[]{configuration.value()};
         }
 
-        Component component = clazz.getAnnotation(Component.class);
-        if (component != null && !component.value().isBlank()) {
-            return new String[]{component.value()};
+        // Resolve via @AliasFor chains (covers @Component.value and aliases like @Controller)
+        String aliasedName = AnnotationUtils.resolveComponentBeanName(clazz);
+        if (!aliasedName.isBlank()) {
+            return new String[]{aliasedName};
         }
 
         return new String[]{defaultName};
