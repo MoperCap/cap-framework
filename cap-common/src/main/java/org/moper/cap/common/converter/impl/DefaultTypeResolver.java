@@ -1,6 +1,7 @@
 package org.moper.cap.common.converter.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.moper.cap.common.annotation.Priority;
 import org.moper.cap.common.converter.TypeConversionException;
 import org.moper.cap.common.converter.TypeConverter;
 import org.moper.cap.common.converter.TypeResolver;
@@ -21,20 +22,29 @@ public class DefaultTypeResolver implements TypeResolver {
         for (TypeConverter<?, ?> c : loader) {
             ConverterKey key = new ConverterKey(c.getSourceType(), c.getTargetType());
             TypeConverter<?, ?> prev = map.get(key);
-            if(prev == null){
-                log.debug("注册类型转换器 [{} -> {}]: {} (priority={})", key.source, key.target, c.getClass().getName(), c.getOrder());
+            int cPriority = getPriority(c);
+            if (prev == null) {
+                log.debug("注册类型转换器 [{} -> {}]: {} (priority={})", key.source, key.target, c.getClass().getName(), cPriority);
                 map.put(key, c);
-            }else if(c.getOrder() < prev.getOrder()){
-                log.debug("覆盖类型转换器 [{} -> {}]: {} <== {} ({} < {})",
-                        key.source, key.target, prev.getClass().getName(), c.getClass().getName(), prev.getOrder(), c.getOrder());
-                map.put(key, c);
-            }else {
-                log.debug("忽略较低优先级的类型转换器 [{} -> {}]: {} (priority={}), 被 {} (priority={}) 覆盖",
-                        key.source, key.target, c.getClass().getName(), c.getOrder(), prev.getClass().getName(), prev.getOrder());
+            } else {
+                int prevPriority = getPriority(prev);
+                if (cPriority < prevPriority) {
+                    log.debug("覆盖类型转换器 [{} -> {}]: {} <== {} ({} < {})",
+                            key.source, key.target, prev.getClass().getName(), c.getClass().getName(), prevPriority, cPriority);
+                    map.put(key, c);
+                } else {
+                    log.debug("忽略较低优先级的类型转换器 [{} -> {}]: {} (priority={}), 被 {} (priority={}) 覆盖",
+                            key.source, key.target, c.getClass().getName(), cPriority, prev.getClass().getName(), prevPriority);
+                }
             }
         }
         this.converters = Collections.unmodifiableMap(map);
         log.info("DefaultPropertyResolver 共注册 {} 种类型转换器", converters.size());
+    }
+
+    private int getPriority(TypeConverter<?, ?> converter) {
+        Priority priority = converter.getClass().getAnnotation(Priority.class);
+        return priority != null ? priority.value() : 0;
     }
 
     @Override

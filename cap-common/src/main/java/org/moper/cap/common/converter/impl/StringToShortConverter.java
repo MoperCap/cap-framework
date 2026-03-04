@@ -1,5 +1,8 @@
 package org.moper.cap.common.converter.impl;
 
+import org.moper.cap.common.annotation.Priority;
+
+@Priority(100)
 public class StringToShortConverter extends DefaultAbstractTypeConverter<String, Short> {
     public StringToShortConverter() {
         super(String.class, Short.class);

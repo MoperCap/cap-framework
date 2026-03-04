@@ -1,5 +1,8 @@
 package org.moper.cap.common.converter.impl;
 
+import org.moper.cap.common.annotation.Priority;
+
+@Priority(100)
 public class StringToFloatConverter extends DefaultAbstractTypeConverter<String, Float> {
     public StringToFloatConverter() {
         super(String.class, Float.class);

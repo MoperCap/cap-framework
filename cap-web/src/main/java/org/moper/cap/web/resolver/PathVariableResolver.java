@@ -2,6 +2,7 @@ package org.moper.cap.web.resolver;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.moper.cap.common.annotation.Priority;
 import org.moper.cap.common.converter.TypeResolver;
 import org.moper.cap.web.annotation.PathVariable;
 import org.moper.cap.web.model.ParameterMetadata;
@@ -14,11 +15,19 @@ import java.util.Map;
  * <p>将 URL 路径中的变量（如 {@code /users/{id}} 中的 {@code id}）
  * 绑定到标注了 {@link PathVariable} 的方法参数。
  */
+@Priority(90)
 public class PathVariableResolver implements ParameterResolver {
 
-    private final TypeResolver typeResolver;
+    private TypeResolver typeResolver;
+
+    public PathVariableResolver() {
+    }
 
     public PathVariableResolver(TypeResolver typeResolver) {
+        this.typeResolver = typeResolver;
+    }
+
+    public void setTypeResolver(TypeResolver typeResolver) {
         this.typeResolver = typeResolver;
     }
 

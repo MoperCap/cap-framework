@@ -2,6 +2,7 @@ package org.moper.cap.web.resolver;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.moper.cap.common.annotation.Priority;
 import org.moper.cap.web.model.ParameterMetadata;
 
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.Map;
  *
  * <p>当方法参数类型为 {@link HttpServletResponse} 时，直接注入响应对象。
  */
+@Priority(95)
 public class ServletResponseResolver implements ParameterResolver {
 
     @Override
