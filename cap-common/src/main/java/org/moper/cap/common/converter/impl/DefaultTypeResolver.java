@@ -39,7 +39,7 @@ public class DefaultTypeResolver implements TypeResolver {
             }
         }
         this.converters = Collections.unmodifiableMap(map);
-        log.info("DefaultPropertyResolver 共注册 {} 种类型转换器", converters.size());
+        log.info("DefaultTypeResolver 共注册 {} 种类型转换器", converters.size());
     }
 
     private int getPriority(TypeConverter<?, ?> converter) {

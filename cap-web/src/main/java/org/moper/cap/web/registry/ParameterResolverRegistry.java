@@ -26,7 +26,7 @@ public class ParameterResolverRegistry {
 
     private final ObjectMapper objectMapper;
     private final TypeResolver typeResolver;
-    private List<ParameterResolver> resolvers;
+    private volatile List<ParameterResolver> resolvers;
 
     /**
      * 使用 ServiceLoader 加载并按优先级排序的方式初始化注册表。

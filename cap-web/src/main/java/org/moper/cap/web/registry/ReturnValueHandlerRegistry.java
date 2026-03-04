@@ -23,7 +23,7 @@ import java.util.ServiceLoader;
 public class ReturnValueHandlerRegistry {
 
     private final ObjectMapper objectMapper;
-    private List<ReturnValueHandler> handlers;
+    private volatile List<ReturnValueHandler> handlers;
 
     /**
      * 使用 ServiceLoader 加载并按优先级排序的方式初始化注册表。
