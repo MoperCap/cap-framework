@@ -1,6 +1,7 @@
 package org.moper.cap.core.context;
 
 import org.moper.cap.bean.container.BeanContainer;
+import org.moper.cap.common.converter.TypeResolver;
 import org.moper.cap.core.command.CommandArgumentParser;
 import org.moper.cap.core.config.ConfigurationClassParser;
 import org.moper.cap.property.officer.PropertyOfficer;
@@ -23,6 +24,18 @@ public interface BootstrapContext {
      * 获取属性管理平台
      */
     PropertyOfficer getPropertyOfficer();
+
+    /**
+     * 获取类型解析器
+     */
+    TypeResolver getTypeResolver();
+
+    /**
+     * 注册自定义类型解析器
+     *
+     * @param typeResolver 自定义类型解析器，不能为null
+     */
+    void registerTypeResolver(TypeResolver typeResolver);
 
     /**
      * 获取命令行参数解析器
