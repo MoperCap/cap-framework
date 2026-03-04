@@ -2,9 +2,12 @@ org.moper.cap.boot.runner.SystemPropertyBootstrapRunner
 org.moper.cap.boot.runner.CommandArgumentsBootstrapRunner
 org.moper.cap.boot.runner.StaticResourcePropertyBootstrapRunner
 org.moper.cap.boot.runner.ActiveProfilePropertyBootstrapRunner
-org.moper.cap.boot.runner.ClassBeanRegisterBootstrapRunner
-org.moper.cap.boot.runner.FactoryBeanRegisterBootstrapRunner
+org.moper.cap.boot.runner.ComponentBeanRegisterBootstrapRunner
+org.moper.cap.boot.runner.ComponentBeanInstantiationBootstrapRunner
+org.moper.cap.boot.runner.ConfigurationBeanRegisterBootstrapRunner
+org.moper.cap.boot.runner.BeanParameterResolverBootstrapRunner
 org.moper.cap.boot.runner.LifecycleMethodRegisterBootstrapRunner
+org.moper.cap.boot.runner.BeanLifecycleBootstrapRunner
 org.moper.cap.boot.runner.PropertyValueBootstrapRunner
 org.moper.cap.boot.runner.PropertySubscriptionBootstrapRunner
 org.moper.cap.boot.runner.BeanInjectionBootstrapRunner
