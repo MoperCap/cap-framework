@@ -2,9 +2,9 @@ package org.moper.cap.web.resolver;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.moper.cap.common.converter.TypeResolver;
 import org.moper.cap.web.annotation.request.RequestParam;
 import org.moper.cap.web.model.ParameterMetadata;
-import org.moper.cap.web.util.TypeConverter;
 
 import java.util.Map;
 
@@ -14,6 +14,12 @@ import java.util.Map;
  * <p>将 HTTP 查询字符串或表单数据中的参数绑定到标注了 {@link RequestParam} 的方法参数。
  */
 public class RequestParamResolver implements ParameterResolver {
+
+    private final TypeResolver typeResolver;
+
+    public RequestParamResolver(TypeResolver typeResolver) {
+        this.typeResolver = typeResolver;
+    }
 
     @Override
     public boolean supports(ParameterMetadata metadata) {
@@ -34,10 +40,10 @@ public class RequestParamResolver implements ParameterResolver {
             } else if (annotation.required()) {
                 throw new IllegalStateException("Required request parameter '" + name + "' not present");
             } else {
-                return TypeConverter.convert(null, metadata.type());
+                return null;
             }
         }
-        return TypeConverter.convert(value, metadata.type());
+        return typeResolver.resolve(value, metadata.type());
     }
 
     private String resolveName(RequestParam annotation, ParameterMetadata metadata) {

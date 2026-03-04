@@ -19,6 +19,8 @@ import org.moper.cap.core.runner.RunnerDefinition;
 import org.moper.cap.core.runner.RunnerType;
 import org.moper.cap.core.runner.RuntimeRunner;
 import org.moper.cap.common.banner.BannerPrinter;
+import org.moper.cap.common.converter.TypeResolver;
+import org.moper.cap.common.converter.impl.DefaultTypeResolver;
 import org.moper.cap.property.officer.PropertyOfficer;
 import org.moper.cap.property.officer.impl.DefaultPropertyOfficer;
 
@@ -38,11 +40,12 @@ public class DefaultCapApplication implements CapApplication {
         printSystemBanner();
 
         BeanContainer beanContainer = new DefaultBeanContainer();
-        PropertyOfficer propertyOfficer = new DefaultPropertyOfficer(ResourceConstants.PROPERTY_OFFICER);
+        TypeResolver typeResolver = new DefaultTypeResolver();
+        PropertyOfficer propertyOfficer = new DefaultPropertyOfficer(ResourceConstants.PROPERTY_OFFICER, typeResolver);
         CommandArgumentParser commandArgumentParser = new DefaultCommandArgumentParser(args);
         ConfigurationClassParser configurationClassParser = new DefaultConfigurationClassParser(primarySource);
 
-        DefaultBootstrapContext bootstrapContext = new DefaultBootstrapContext(beanContainer, propertyOfficer, commandArgumentParser, configurationClassParser);
+        DefaultBootstrapContext bootstrapContext = new DefaultBootstrapContext(beanContainer, propertyOfficer, commandArgumentParser, configurationClassParser, typeResolver);
 
         // 通过 SPI 发现所有 BootstrapRunner 收集到有序集合
         TreeSet<RunnerDefinition<BootstrapRunner>> runners = new TreeSet<>();

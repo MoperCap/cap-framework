@@ -46,7 +46,7 @@ public class WebMvcBootstrapRunner implements BootstrapRunner {
 
         // Parameter resolution
         ParameterResolverRegistry parameterResolverRegistry =
-                new ParameterResolverRegistry(objectMapper);
+                new ParameterResolverRegistry(objectMapper, context.getTypeResolver());
 
         // Return value handling
         ReturnValueHandlerRegistry returnValueHandlerRegistry =
