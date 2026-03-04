@@ -2,6 +2,7 @@ package org.moper.cap.web.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.moper.cap.common.annotation.Priority;
 import org.moper.cap.web.model.HandlerMapping;
 
 /**
@@ -9,6 +10,7 @@ import org.moper.cap.web.model.HandlerMapping;
  *
  * <p>当返回值为 null 且没有其他处理器匹配时，返回 204 No Content。
  */
+@Priority(10)
 public class NullReturnValueHandler implements ReturnValueHandler {
 
     @Override

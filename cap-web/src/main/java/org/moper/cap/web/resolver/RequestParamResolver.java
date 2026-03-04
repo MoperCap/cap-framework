@@ -2,6 +2,7 @@ package org.moper.cap.web.resolver;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.moper.cap.common.annotation.Priority;
 import org.moper.cap.common.converter.TypeResolver;
 import org.moper.cap.web.annotation.request.RequestParam;
 import org.moper.cap.web.model.ParameterMetadata;
@@ -13,11 +14,19 @@ import java.util.Map;
  *
  * <p>将 HTTP 查询字符串或表单数据中的参数绑定到标注了 {@link RequestParam} 的方法参数。
  */
+@Priority(80)
 public class RequestParamResolver implements ParameterResolver {
 
-    private final TypeResolver typeResolver;
+    private TypeResolver typeResolver;
+
+    public RequestParamResolver() {
+    }
 
     public RequestParamResolver(TypeResolver typeResolver) {
+        this.typeResolver = typeResolver;
+    }
+
+    public void setTypeResolver(TypeResolver typeResolver) {
         this.typeResolver = typeResolver;
     }
 

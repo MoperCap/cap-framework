@@ -2,6 +2,7 @@ package org.moper.cap.web.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.moper.cap.common.annotation.Priority;
 import org.moper.cap.web.annotation.ResponseBody;
 import org.moper.cap.web.annotation.controller.RestController;
 import org.moper.cap.web.model.HandlerMapping;
@@ -16,6 +17,7 @@ import java.nio.charset.StandardCharsets;
  * <p>当控制器方法带有 {@link ResponseBody} 或 {@link RestController} 注解，
  * 且返回 {@link String} 时，直接将字符串写入响应体。
  */
+@Priority(90)
 public class StringReturnValueHandler implements ReturnValueHandler {
 
     @Override

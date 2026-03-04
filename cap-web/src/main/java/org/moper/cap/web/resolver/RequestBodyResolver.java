@@ -3,6 +3,7 @@ package org.moper.cap.web.resolver;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.moper.cap.common.annotation.Priority;
 import org.moper.cap.web.annotation.request.RequestBody;
 import org.moper.cap.web.model.ParameterMetadata;
 
@@ -15,11 +16,19 @@ import java.util.stream.Collectors;
  *
  * <p>将 HTTP 请求体（JSON）反序列化并绑定到标注了 {@link RequestBody} 的方法参数。
  */
+@Priority(70)
 public class RequestBodyResolver implements ParameterResolver {
 
-    private final ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
+
+    public RequestBodyResolver() {
+    }
 
     public RequestBodyResolver(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
+    public void setObjectMapper(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 

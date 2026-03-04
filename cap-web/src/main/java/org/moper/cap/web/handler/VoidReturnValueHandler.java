@@ -2,6 +2,7 @@ package org.moper.cap.web.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.moper.cap.common.annotation.Priority;
 import org.moper.cap.web.model.HandlerMapping;
 
 /**
@@ -9,6 +10,7 @@ import org.moper.cap.web.model.HandlerMapping;
  *
  * <p>处理方法返回值为 {@code void} 或返回 {@code null} 的情形，不向响应体写入任何内容。
  */
+@Priority(80)
 public class VoidReturnValueHandler implements ReturnValueHandler {
 
     @Override

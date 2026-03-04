@@ -1,5 +1,8 @@
 package org.moper.cap.common.converter.impl;
 
+import org.moper.cap.common.annotation.Priority;
+
+@Priority(100)
 public class DoubleToStringConverter extends DefaultAbstractTypeConverter<Double, String> {
     public DoubleToStringConverter() {
         super(Double.class, String.class);

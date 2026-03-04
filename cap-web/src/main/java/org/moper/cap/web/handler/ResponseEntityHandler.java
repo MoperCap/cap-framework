@@ -3,6 +3,7 @@ package org.moper.cap.web.handler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.moper.cap.common.annotation.Priority;
 import org.moper.cap.web.model.HandlerMapping;
 import org.moper.cap.web.model.ResponseEntity;
 
@@ -15,11 +16,19 @@ import java.util.Map;
  * <p>处理控制器方法返回 {@link ResponseEntity} 的情形，
  * 自动设置状态码、响应头，并将响应体序列化为 JSON。
  */
+@Priority(100)
 public class ResponseEntityHandler implements ReturnValueHandler {
 
-    private final ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
+
+    public ResponseEntityHandler() {
+    }
 
     public ResponseEntityHandler(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
+    public void setObjectMapper(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
