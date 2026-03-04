@@ -1,24 +1,25 @@
-package org.moper.cap.web.annotation;
-
-import org.moper.cap.web.http.HttpMethod;
+package org.moper.cap.web.annotation.mapping;
 
 import java.lang.annotation.*;
 
 /**
- * 通用请求映射注解，将 HTTP 请求映射到控制器方法
+ * 将 HTTP PATCH 请求映射到控制器方法的快捷注解
+ *
+ * <p>等同于 {@code @RequestMapping(method = HttpMethod.PATCH)}。
  *
  * <p>使用示例：
  * <pre>
  * {@code
- * @RequestMapping(path = "/users", method = HttpMethod.GET, produces = "application/json")
- * public List<User> getUsers() { ... }
+ * @PatchMapping(path = "/users/{id}", consumes = "application/json")
+ * public User patchUser(@PathVariable Long id, @RequestBody Map<String, Object> updates) { ... }
  * }
  * </pre>
  */
 @Documented
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RequestMapping {
+@RequestMapping
+public @interface PatchMapping {
 
     /**
      * 请求路径（{@code path} 的别名）
@@ -29,11 +30,6 @@ public @interface RequestMapping {
      * 请求路径
      */
     String[] path() default {};
-
-    /**
-     * 限定的 HTTP 方法列表（为空时匹配所有方法）
-     */
-    HttpMethod[] method() default {};
 
     /**
      * 响应的媒体类型（如 {@code "application/json"}）

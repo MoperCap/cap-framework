@@ -3,7 +3,7 @@ package org.moper.cap.web.resolver;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.moper.cap.web.annotation.RequestBody;
+import org.moper.cap.web.annotation.request.RequestBody;
 import org.moper.cap.web.model.ParameterMetadata;
 
 import java.io.IOException;

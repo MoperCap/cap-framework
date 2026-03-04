@@ -1,4 +1,4 @@
-package org.moper.cap.web.annotation;
+package org.moper.cap.web.annotation.request;
 
 import java.lang.annotation.*;
 

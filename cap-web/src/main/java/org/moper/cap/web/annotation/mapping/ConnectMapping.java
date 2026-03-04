@@ -1,17 +1,17 @@
-package org.moper.cap.web.annotation;
+package org.moper.cap.web.annotation.mapping;
 
 import java.lang.annotation.*;
 
 /**
- * 将 HTTP PUT 请求映射到控制器方法的快捷注解
+ * 将 HTTP CONNECT 请求映射到控制器方法的快捷注解
  *
- * <p>等同于 {@code @RequestMapping(method = HttpMethod.PUT)}。
+ * <p>等同于 {@code @RequestMapping(method = HttpMethod.CONNECT)}。
  *
  * <p>使用示例：
  * <pre>
  * {@code
- * @PutMapping(path = "/users/{id}", consumes = "application/json")
- * public User updateUser(@PathVariable Long id, @RequestBody User user) { ... }
+ * @ConnectMapping(path = "/tunnel")
+ * public void connect() { ... }
  * }
  * </pre>
  */
@@ -19,7 +19,7 @@ import java.lang.annotation.*;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @RequestMapping
-public @interface PutMapping {
+public @interface ConnectMapping {
 
     /**
      * 请求路径（{@code path} 的别名）

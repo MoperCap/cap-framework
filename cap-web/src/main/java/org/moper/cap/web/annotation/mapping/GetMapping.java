@@ -1,17 +1,17 @@
-package org.moper.cap.web.annotation;
+package org.moper.cap.web.annotation.mapping;
 
 import java.lang.annotation.*;
 
 /**
- * 将 HTTP POST 请求映射到控制器方法的快捷注解
+ * 将 HTTP GET 请求映射到控制器方法的快捷注解
  *
- * <p>等同于 {@code @RequestMapping(method = HttpMethod.POST)}。
+ * <p>等同于 {@code @RequestMapping(method = HttpMethod.GET)}。
  *
  * <p>使用示例：
  * <pre>
  * {@code
- * @PostMapping(path = "/users", consumes = "application/json")
- * public User createUser(@RequestBody User user) { ... }
+ * @GetMapping(path = "/users/{id}", produces = "application/json")
+ * public User getUser(@PathVariable Long id) { ... }
  * }
  * </pre>
  */
@@ -19,7 +19,7 @@ import java.lang.annotation.*;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @RequestMapping
-public @interface PostMapping {
+public @interface GetMapping {
 
     /**
      * 请求路径（{@code path} 的别名）

@@ -1,17 +1,17 @@
-package org.moper.cap.web.annotation;
+package org.moper.cap.web.annotation.mapping;
 
 import java.lang.annotation.*;
 
 /**
- * 将 HTTP HEAD 请求映射到控制器方法的快捷注解
+ * 将 HTTP POST 请求映射到控制器方法的快捷注解
  *
- * <p>等同于 {@code @RequestMapping(method = HttpMethod.HEAD)}。
+ * <p>等同于 {@code @RequestMapping(method = HttpMethod.POST)}。
  *
  * <p>使用示例：
  * <pre>
  * {@code
- * @HeadMapping(path = "/users/{id}")
- * public void checkUser(@PathVariable Long id) { ... }
+ * @PostMapping(path = "/users", consumes = "application/json")
+ * public User createUser(@RequestBody User user) { ... }
  * }
  * </pre>
  */
@@ -19,7 +19,7 @@ import java.lang.annotation.*;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @RequestMapping
-public @interface HeadMapping {
+public @interface PostMapping {
 
     /**
      * 请求路径（{@code path} 的别名）

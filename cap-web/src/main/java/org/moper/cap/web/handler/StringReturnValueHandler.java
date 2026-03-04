@@ -3,7 +3,7 @@ package org.moper.cap.web.handler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.moper.cap.web.annotation.ResponseBody;
-import org.moper.cap.web.annotation.RestController;
+import org.moper.cap.web.annotation.controller.RestController;
 import org.moper.cap.web.model.HandlerMapping;
 
 import java.io.IOException;

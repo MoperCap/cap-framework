@@ -1,25 +1,24 @@
-package org.moper.cap.web.annotation;
+package org.moper.cap.web.annotation.mapping;
+
+import org.moper.cap.web.http.HttpMethod;
 
 import java.lang.annotation.*;
 
 /**
- * 将 HTTP GET 请求映射到控制器方法的快捷注解
- *
- * <p>等同于 {@code @RequestMapping(method = HttpMethod.GET)}。
+ * 通用请求映射注解，将 HTTP 请求映射到控制器方法
  *
  * <p>使用示例：
  * <pre>
  * {@code
- * @GetMapping(path = "/users/{id}", produces = "application/json")
- * public User getUser(@PathVariable Long id) { ... }
+ * @RequestMapping(path = "/users", method = HttpMethod.GET, produces = "application/json")
+ * public List<User> getUsers() { ... }
  * }
  * </pre>
  */
 @Documented
-@Target(ElementType.METHOD)
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@RequestMapping
-public @interface GetMapping {
+public @interface RequestMapping {
 
     /**
      * 请求路径（{@code path} 的别名）
@@ -30,6 +29,11 @@ public @interface GetMapping {
      * 请求路径
      */
     String[] path() default {};
+
+    /**
+     * 限定的 HTTP 方法列表（为空时匹配所有方法）
+     */
+    HttpMethod[] method() default {};
 
     /**
      * 响应的媒体类型（如 {@code "application/json"}）

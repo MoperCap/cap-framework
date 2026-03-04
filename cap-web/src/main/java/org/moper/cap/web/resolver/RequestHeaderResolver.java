@@ -2,7 +2,7 @@ package org.moper.cap.web.resolver;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.moper.cap.web.annotation.RequestHeader;
+import org.moper.cap.web.annotation.request.RequestHeader;
 import org.moper.cap.web.model.ParameterMetadata;
 import org.moper.cap.web.util.TypeConverter;
 

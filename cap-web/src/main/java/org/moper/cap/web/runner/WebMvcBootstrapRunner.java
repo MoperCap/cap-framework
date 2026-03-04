@@ -30,9 +30,7 @@ import org.moper.cap.web.servlet.DispatcherServlet;
  * {@link DispatcherServlet} 实例并挂载到 Servlet 容器中。
  */
 @Slf4j
-@RunnerMeta(type = RunnerType.FEATURE, order = 300,
-        name = "WebMvcBootstrapRunner",
-        description = "Initializes Web MVC registries and DispatcherServlet")
+@RunnerMeta(type = RunnerType.FEATURE, order = 300, description = "Initializes Web MVC registries and DispatcherServlet")
 public class WebMvcBootstrapRunner implements BootstrapRunner {
 
     @Override

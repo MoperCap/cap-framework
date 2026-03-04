@@ -1,17 +1,17 @@
-package org.moper.cap.web.annotation;
+package org.moper.cap.web.annotation.mapping;
 
 import java.lang.annotation.*;
 
 /**
- * 将 HTTP OPTIONS 请求映射到控制器方法的快捷注解
+ * 将 HTTP DELETE 请求映射到控制器方法的快捷注解
  *
- * <p>等同于 {@code @RequestMapping(method = HttpMethod.OPTIONS)}。
+ * <p>等同于 {@code @RequestMapping(method = HttpMethod.DELETE)}。
  *
  * <p>使用示例：
  * <pre>
  * {@code
- * @OptionsMapping(path = "/users")
- * public void usersOptions() { ... }
+ * @DeleteMapping(path = "/users/{id}")
+ * public void deleteUser(@PathVariable Long id) { ... }
  * }
  * </pre>
  */
@@ -19,7 +19,7 @@ import java.lang.annotation.*;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @RequestMapping
-public @interface OptionsMapping {
+public @interface DeleteMapping {
 
     /**
      * 请求路径（{@code path} 的别名）

@@ -1,17 +1,17 @@
-package org.moper.cap.web.annotation;
+package org.moper.cap.web.annotation.mapping;
 
 import java.lang.annotation.*;
 
 /**
- * 将 HTTP PATCH 请求映射到控制器方法的快捷注解
+ * 将 HTTP OPTIONS 请求映射到控制器方法的快捷注解
  *
- * <p>等同于 {@code @RequestMapping(method = HttpMethod.PATCH)}。
+ * <p>等同于 {@code @RequestMapping(method = HttpMethod.OPTIONS)}。
  *
  * <p>使用示例：
  * <pre>
  * {@code
- * @PatchMapping(path = "/users/{id}", consumes = "application/json")
- * public User patchUser(@PathVariable Long id, @RequestBody Map<String, Object> updates) { ... }
+ * @OptionsMapping(path = "/users")
+ * public void usersOptions() { ... }
  * }
  * </pre>
  */
@@ -19,7 +19,7 @@ import java.lang.annotation.*;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @RequestMapping
-public @interface PatchMapping {
+public @interface OptionsMapping {
 
     /**
      * 请求路径（{@code path} 的别名）
