@@ -3,8 +3,8 @@ package org.moper.cap.web.invoker;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.moper.cap.web.model.HandlerMapping;
-import org.moper.cap.web.model.ParameterMetadata;
-import org.moper.cap.web.registry.ParameterResolverRegistry;
+import org.moper.cap.web.parameter.ParameterMetadata;
+import org.moper.cap.web.parameter.ParameterResolverRegistry;
 
 import java.lang.reflect.Method;
 import java.util.List;

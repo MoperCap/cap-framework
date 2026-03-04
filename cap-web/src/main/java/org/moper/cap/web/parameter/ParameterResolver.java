@@ -1,8 +1,7 @@
-package org.moper.cap.web.resolver;
+package org.moper.cap.web.parameter;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.moper.cap.web.model.ParameterMetadata;
 
 import java.util.Map;
 

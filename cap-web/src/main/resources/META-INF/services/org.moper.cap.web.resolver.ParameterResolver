@@ -1,7 +1,0 @@
-org.moper.cap.web.resolver.ServletRequestResolver
-org.moper.cap.web.resolver.ServletResponseResolver
-org.moper.cap.web.resolver.PathVariableResolver
-org.moper.cap.web.resolver.RequestParamResolver
-org.moper.cap.web.resolver.RequestBodyResolver
-org.moper.cap.web.resolver.RequestHeaderResolver
-org.moper.cap.web.resolver.CookieValueResolver

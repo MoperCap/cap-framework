@@ -1,4 +1,4 @@
-package org.moper.cap.web.handler;
+package org.moper.cap.web.result;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

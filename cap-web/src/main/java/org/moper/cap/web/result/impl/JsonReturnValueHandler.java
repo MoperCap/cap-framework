@@ -1,28 +1,41 @@
-package org.moper.cap.web.handler;
+package org.moper.cap.web.result.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.moper.cap.common.annotation.Priority;
 import org.moper.cap.web.annotation.ResponseBody;
 import org.moper.cap.web.annotation.controller.RestController;
+import org.moper.cap.web.result.ReturnValueHandler;
 import org.moper.cap.web.model.HandlerMapping;
 
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 
 /**
- * String 返回值处理器。
+ * JSON 返回值处理器。
  *
- * <p>当控制器方法带有 {@link ResponseBody} 或 {@link RestController} 注解，
- * 且返回 {@link String} 时，直接将字符串写入响应体。
+ * <p>当控制器方法带有 {@link ResponseBody} 或 {@link RestController} 注解时，
+ * 使用 Jackson 将返回值序列化为 JSON 写入响应体。
  */
-@Priority(90)
-public class StringReturnValueHandler implements ReturnValueHandler {
+@Priority(70)
+public class JsonReturnValueHandler implements ReturnValueHandler {
+
+    private ObjectMapper objectMapper;
+
+    public JsonReturnValueHandler() {
+    }
+
+    public JsonReturnValueHandler(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
+    public void setObjectMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     @Override
     public boolean supports(Class<?> returnType, HandlerMapping mapping) {
-        if (returnType != String.class) {
+        if (returnType == null || returnType == void.class || returnType == Void.class) {
             return false;
         }
         return isResponseBody(mapping);
@@ -32,19 +45,13 @@ public class StringReturnValueHandler implements ReturnValueHandler {
     public void handle(Object returnValue,
                        HandlerMapping mapping,
                        HttpServletRequest request,
-                       HttpServletResponse response) throws IOException {
-        if (returnValue == null) {
-            response.setStatus(HttpServletResponse.SC_OK);
-            return;
-        }
-        String contentType = mapping.produces() != null && !mapping.produces().isBlank()
-                ? mapping.produces()
-                : "text/plain;charset=UTF-8";
-        response.setContentType(contentType);
+                       HttpServletResponse response) throws Exception {
+        response.setContentType("application/json;charset=UTF-8");
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setStatus(HttpServletResponse.SC_OK);
-        try (PrintWriter writer = response.getWriter()) {
-            writer.write((String) returnValue);
+        if (returnValue != null) {
+            String json = objectMapper.writeValueAsString(returnValue);
+            response.getWriter().write(json);
         }
     }
 

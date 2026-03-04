@@ -1,4 +1,4 @@
-package org.moper.cap.web.registry;
+package org.moper.cap.web.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,8 +9,7 @@ import org.moper.cap.web.annotation.controller.Controller;
 import org.moper.cap.web.annotation.ExceptionHandler;
 import org.moper.cap.web.annotation.controller.RestController;
 import org.moper.cap.web.model.ErrorResponse;
-import org.moper.cap.web.model.ExceptionHandlerInfo;
-import org.moper.cap.web.model.ResponseEntity;
+import org.moper.cap.web.result.ResponseEntity;
 
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;

@@ -1,4 +1,4 @@
-package org.moper.cap.web.model;
+package org.moper.cap.web.parameter;
 
 import java.lang.reflect.Parameter;
 

@@ -1,9 +1,10 @@
-package org.moper.cap.web.resolver;
+package org.moper.cap.web.parameter.impl;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.moper.cap.common.annotation.Priority;
-import org.moper.cap.web.model.ParameterMetadata;
+import org.moper.cap.web.parameter.ParameterMetadata;
+import org.moper.cap.web.parameter.ParameterResolver;
 
 import java.util.Map;
 

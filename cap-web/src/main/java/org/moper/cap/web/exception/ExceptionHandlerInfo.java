@@ -1,4 +1,4 @@
-package org.moper.cap.web.model;
+package org.moper.cap.web.exception;
 
 import java.lang.reflect.Method;
 
@@ -6,7 +6,7 @@ import java.lang.reflect.Method;
  * 异常处理器的元数据记录。
  *
  * <p>保存通过 {@link org.moper.cap.web.annotation.ExceptionHandler} 注解标注的方法信息，
- * 供 {@link org.moper.cap.web.registry.ExceptionResolverRegistry} 在运行时匹配和调用。
+ * 供 {@link ExceptionResolverRegistry} 在运行时匹配和调用。
  *
  * @param handler       持有该方法的控制器实例，不能为 null
  * @param method        异常处理方法，不能为 null

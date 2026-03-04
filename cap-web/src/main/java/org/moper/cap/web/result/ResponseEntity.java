@@ -1,4 +1,4 @@
-package org.moper.cap.web.model;
+package org.moper.cap.web.result;
 
 import java.util.Collections;
 import java.util.HashMap;

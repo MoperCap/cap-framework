@@ -41,12 +41,7 @@ public class DefaultTypeResolver implements TypeResolver {
         this.converters = Collections.unmodifiableMap(map);
         log.info("DefaultTypeResolver 共注册 {} 种类型转换器", converters.size());
     }
-
-    private int getPriority(TypeConverter<?, ?> converter) {
-        Priority priority = converter.getClass().getAnnotation(Priority.class);
-        return priority != null ? priority.value() : 0;
-    }
-
+    
     @Override
     @SuppressWarnings("unchecked")
     public <T> T resolve(Object value, Class<T> targetType) {
@@ -85,6 +80,11 @@ public class DefaultTypeResolver implements TypeResolver {
         }
         log.warn("枚举转换目前仅支持字符串类型，当前值类型: {}", value.getClass().getName());
         throw new IllegalArgumentException("枚举转换仅支持字符串类型");
+    }
+
+    private int getPriority(TypeConverter<?, ?> converter) {
+        Priority priority = converter.getClass().getAnnotation(Priority.class);
+        return priority != null ? priority.value() : 0;
     }
 
     private record ConverterKey(Class<?> source, Class<?> target) {}

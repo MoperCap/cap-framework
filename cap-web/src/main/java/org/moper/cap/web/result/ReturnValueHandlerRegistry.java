@@ -1,11 +1,12 @@
-package org.moper.cap.web.registry;
+package org.moper.cap.web.result;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.common.annotation.Priority;
-import org.moper.cap.web.handler.*;
+import org.moper.cap.web.result.impl.JsonReturnValueHandler;
+import org.moper.cap.web.result.impl.ResponseEntityHandler;
 import org.moper.cap.web.model.HandlerMapping;
 
 import java.util.ArrayList;

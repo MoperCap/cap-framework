@@ -8,9 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.web.http.HttpMethod;
 import org.moper.cap.web.invoker.HandlerInvoker;
 import org.moper.cap.web.model.HandlerMapping;
-import org.moper.cap.web.registry.ExceptionResolverRegistry;
+import org.moper.cap.web.exception.ExceptionResolverRegistry;
 import org.moper.cap.web.registry.HandlerMappingRegistry;
-import org.moper.cap.web.registry.ReturnValueHandlerRegistry;
+import org.moper.cap.web.result.ReturnValueHandlerRegistry;
 
 import java.io.IOException;
 import java.util.Map;

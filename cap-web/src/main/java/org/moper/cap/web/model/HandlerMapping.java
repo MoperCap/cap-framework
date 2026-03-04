@@ -1,6 +1,7 @@
 package org.moper.cap.web.model;
 
 import org.moper.cap.web.http.HttpMethod;
+import org.moper.cap.web.parameter.ParameterMetadata;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;

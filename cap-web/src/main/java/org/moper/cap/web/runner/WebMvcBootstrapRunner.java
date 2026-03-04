@@ -9,8 +9,11 @@ import org.moper.cap.core.annotation.RunnerMeta;
 import org.moper.cap.core.context.BootstrapContext;
 import org.moper.cap.core.runner.BootstrapRunner;
 import org.moper.cap.core.runner.RunnerType;
+import org.moper.cap.web.exception.ExceptionResolverRegistry;
+import org.moper.cap.web.result.ReturnValueHandlerRegistry;
+import org.moper.cap.web.registry.HandlerMappingRegistry;
 import org.moper.cap.web.invoker.HandlerInvoker;
-import org.moper.cap.web.registry.*;
+import org.moper.cap.web.parameter.ParameterResolverRegistry;
 import org.moper.cap.web.servlet.DispatcherServlet;
 
 /**
