@@ -6,7 +6,7 @@ import io.github.classgraph.ClassGraph;
 import io.github.classgraph.Resource;
 import io.github.classgraph.ScanResult;
 import lombok.extern.slf4j.Slf4j;
-import org.moper.cap.boot.util.ResourceFileLoader;
+import org.moper.cap.common.loader.ResourceFileLoader;
 import org.moper.cap.core.annotation.RunnerMeta;
 import org.moper.cap.core.constants.ResourceConstants;
 import org.moper.cap.core.context.BootstrapContext;
@@ -19,7 +19,6 @@ import org.moper.cap.property.publisher.PropertyPublisher;
 
 import java.io.InputStream;
 import java.util.*;
-import java.util.regex.Pattern;
 
 @Slf4j
 @RunnerMeta(type = RunnerType.KERNEL, order = 120, description = "Scans resource paths for application.yaml or application.properties file, flattens and registers properties")

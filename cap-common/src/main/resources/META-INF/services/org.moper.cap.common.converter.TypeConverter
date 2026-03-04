@@ -1,0 +1,15 @@
+
+org.moper.cap.common.converter.impl.StringToIntegerConverter
+org.moper.cap.common.converter.impl.StringToLongConverter
+org.moper.cap.common.converter.impl.StringToBooleanConverter
+org.moper.cap.common.converter.impl.StringToDoubleConverter
+org.moper.cap.common.converter.impl.StringToFloatConverter
+org.moper.cap.common.converter.impl.StringToShortConverter
+org.moper.cap.common.converter.impl.StringToByteConverter
+org.moper.cap.common.converter.impl.IntegerToStringConverter
+org.moper.cap.common.converter.impl.LongToStringConverter
+org.moper.cap.common.converter.impl.DoubleToStringConverter
+org.moper.cap.common.converter.impl.BooleanToStringConverter
+org.moper.cap.common.converter.impl.FloatToStringConverter
+org.moper.cap.common.converter.impl.ShortToStringConverter
+org.moper.cap.common.converter.impl.ByteToStringConverter

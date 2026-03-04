@@ -1,0 +1,18 @@
+package org.moper.cap.common.converter;
+
+/**
+ * 属性类型解析转换器
+ */
+public interface TypeResolver {
+
+    /**
+     * 类型安全地将对象value转换为目标类型targetType。
+     * 找不到合适转换器或转换失败时抛出异常。
+     */
+    <T> T resolve(Object value, Class<T> targetType);
+
+    /**
+     * 判定是否存在从sourceType到targetType的转换器。
+     */
+    boolean hasConverter(Class<?> sourceType, Class<?> targetType);
+}
