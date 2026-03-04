@@ -5,8 +5,12 @@ import org.moper.cap.bean.definition.BeanScope;
 import java.lang.annotation.*;
 
 /**
- * 标记一个类或方法为 Cap Bean 的定义
+ * 标记一个类或方法为 Cap Bean 的定义。
+ *
+ * @deprecated 请迁移至 {@link Component}（用于类）或 {@link Bean}（用于方法）。
+ *             该注解保留以兼容旧代码，将在未来版本中移除。
  */
+@Deprecated
 @Documented
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
