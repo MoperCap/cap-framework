@@ -37,12 +37,13 @@ import java.lang.annotation.*;
 public @interface Configuration {
 
     /**
-     * The bean name for this configuration class.
+     * The bean name for this configuration class, aliased to {@link Component#value()}.
      *
      * <p>Defaults to {@code ""}, which means the container will derive the bean name from
      * the simple class name (first letter lower-cased).
      *
      * @return the explicit bean name, or {@code ""} to use the default
      */
+    @AliasFor(annotation = Component.class, attribute = "value")
     String value() default "";
 }

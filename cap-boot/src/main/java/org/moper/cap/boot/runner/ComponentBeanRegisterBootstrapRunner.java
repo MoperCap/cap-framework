@@ -133,7 +133,9 @@ public class ComponentBeanRegisterBootstrapRunner implements BootstrapRunner {
      *
      * <p>Resolution order:
      * <ol>
-     *   <li>{@link Configuration#value()} (cap-oguri) if present and non-blank</li>
+     *   <li>{@link Configuration#value()} (from {@link org.moper.cap.bean.annotation}) if
+     *       present and non-blank – this annotation has no {@code @AliasFor} bridge and is
+     *       handled explicitly to maintain backward compatibility</li>
      *   <li>{@link AnnotationUtils#resolveComponentBeanName(Class)} which follows any
      *       {@code @AliasFor} bridge to {@code @Component.value()} – covers direct
      *       {@code @Component} usage and meta-annotation aliases like {@code @Controller}</li>
