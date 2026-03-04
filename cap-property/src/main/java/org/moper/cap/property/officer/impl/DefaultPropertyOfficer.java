@@ -12,8 +12,8 @@ import org.moper.cap.property.exception.PropertyValidationException;
 import org.moper.cap.property.officer.PropertyOfficer;
 import org.moper.cap.property.publisher.PropertyPublisher;
 import org.moper.cap.property.publisher.impl.DefaultPropertyPublisher;
-import org.moper.cap.property.resolver.PropertyResolver;
-import org.moper.cap.property.resolver.impl.DefaultPropertyResolver;
+import org.moper.cap.property.resolver.TypeResolver;
+import org.moper.cap.property.resolver.impl.DefaultTypeResolver;
 import org.moper.cap.property.subscriber.PropertySubscriber;
 import org.moper.cap.property.subscriber.PropertySubscription;
 
@@ -41,7 +41,7 @@ public final class DefaultPropertyOfficer implements PropertyOfficer {
 
     private final ExecutorService executorService;
 
-    private final PropertyResolver resolver = new DefaultPropertyResolver();
+    private final TypeResolver resolver = new DefaultTypeResolver();
 
     public DefaultPropertyOfficer(String name) {
         this(name, DEFAULT_THREAD_POOL_SIZE);

@@ -1,6 +1,6 @@
 package org.moper.cap.property.resolver.converters;
 
-public class StringToFloatConverter extends DefaultAbstractPropertyConverter<String, Float> {
+public class StringToFloatConverter extends DefaultAbstractTypeConverter<String, Float> {
     public StringToFloatConverter() {
         super(String.class, Float.class);
     }

@@ -3,7 +3,7 @@ package org.moper.cap.property.resolver;
 /**
  * 属性类型解析转换器
  */
-public interface PropertyResolver {
+public interface TypeResolver {
 
     /**
      * 类型安全地将对象value转换为目标类型targetType。

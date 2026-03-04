@@ -1,6 +1,6 @@
 package org.moper.cap.property.resolver.converters;
 
-public class IntegerToStringConverter extends DefaultAbstractPropertyConverter<Integer, String> {
+public class IntegerToStringConverter extends DefaultAbstractTypeConverter<Integer, String> {
     public IntegerToStringConverter() {
         super(Integer.class, String.class);
     }

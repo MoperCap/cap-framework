@@ -1,6 +1,6 @@
 package org.moper.cap.property.resolver.converters;
 
-public class StringToByteConverter extends DefaultAbstractPropertyConverter<String, Byte> {
+public class StringToByteConverter extends DefaultAbstractTypeConverter<String, Byte> {
     public StringToByteConverter() {
         super(String.class, Byte.class);
     }

@@ -1,6 +1,6 @@
 package org.moper.cap.property.resolver.converters;
 
-public class StringToLongConverter extends DefaultAbstractPropertyConverter<String, Long> {
+public class StringToLongConverter extends DefaultAbstractTypeConverter<String, Long> {
     public StringToLongConverter() {
         super(String.class, Long.class);
     }

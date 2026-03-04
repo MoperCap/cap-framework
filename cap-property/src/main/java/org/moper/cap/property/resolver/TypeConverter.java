@@ -7,7 +7,7 @@ package org.moper.cap.property.resolver;
  * @param <S> 源类型
  * @param <T> 目标类型
  */
-public interface PropertyConverter<S, T> extends Comparable<PropertyConverter<S, T>> {
+public interface TypeConverter<S, T> extends Comparable<TypeConverter<S, T>> {
 
     /**
      * 源类型
@@ -36,7 +36,7 @@ public interface PropertyConverter<S, T> extends Comparable<PropertyConverter<S,
     T convert(S value) throws Exception;
 
     @Override
-    default int compareTo(PropertyConverter<S, T> o){
+    default int compareTo(TypeConverter<S, T> o){
         return Integer.compare(getOrder(), o.getOrder());
     }
 }

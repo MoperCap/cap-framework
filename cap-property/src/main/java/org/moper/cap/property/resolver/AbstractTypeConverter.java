@@ -6,11 +6,11 @@ package org.moper.cap.property.resolver;
  * @param <S> 源类型
  * @param <T> 目标类型
  */
-public abstract class AbstractPropertyConverter<S, T> implements PropertyConverter<S, T> {
+public abstract class AbstractTypeConverter<S, T> implements TypeConverter<S, T> {
     private final Class<S> sourceType;
     private final Class<T> targetType;
 
-    public AbstractPropertyConverter(Class<S> sourceType, Class<T> targetType) {
+    public AbstractTypeConverter(Class<S> sourceType, Class<T> targetType) {
         this.sourceType = sourceType;
         this.targetType = targetType;
     }

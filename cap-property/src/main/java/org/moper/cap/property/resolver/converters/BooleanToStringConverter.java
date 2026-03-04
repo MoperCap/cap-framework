@@ -1,6 +1,6 @@
 package org.moper.cap.property.resolver.converters;
 
-public class BooleanToStringConverter extends DefaultAbstractPropertyConverter<Boolean, String> {
+public class BooleanToStringConverter extends DefaultAbstractTypeConverter<Boolean, String> {
 
     public BooleanToStringConverter() {
         super(Boolean.class, String.class);

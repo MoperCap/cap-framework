@@ -2,25 +2,25 @@ package org.moper.cap.property.resolver.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.property.exception.PropertyTypeMismatchException;
-import org.moper.cap.property.resolver.PropertyConverter;
-import org.moper.cap.property.resolver.PropertyResolver;
+import org.moper.cap.property.resolver.TypeConverter;
+import org.moper.cap.property.resolver.TypeResolver;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
-public class DefaultPropertyResolver implements PropertyResolver {
-    private final Map<ConverterKey, PropertyConverter<?, ?>> converters;
+public class DefaultTypeResolver implements TypeResolver {
+    private final Map<ConverterKey, TypeConverter<?, ?>> converters;
 
-    public DefaultPropertyResolver() {
-        Map<ConverterKey, PropertyConverter<?, ?>> map = new ConcurrentHashMap<>();
+    public DefaultTypeResolver() {
+        Map<ConverterKey, TypeConverter<?, ?>> map = new ConcurrentHashMap<>();
 
         // ServiceLoader发现所有cap-property默认+用户自定义
         @SuppressWarnings("rawtypes")
-        ServiceLoader<PropertyConverter> loader = ServiceLoader.load(PropertyConverter.class);
-        for (PropertyConverter<?, ?> c : loader) {
+        ServiceLoader<TypeConverter> loader = ServiceLoader.load(TypeConverter.class);
+        for (TypeConverter<?, ?> c : loader) {
             ConverterKey key = new ConverterKey(c.getSourceType(), c.getTargetType());
-            PropertyConverter<?, ?> prev = map.get(key);
+            TypeConverter<?, ?> prev = map.get(key);
             if(prev == null){
                 log.debug("注册类型转换器 [{} -> {}]: {} (priority={})", key.source, key.target, c.getClass().getName(), c.getOrder());
                 map.put(key, c);
@@ -47,7 +47,7 @@ public class DefaultPropertyResolver implements PropertyResolver {
         if (value == null) return null;
         if (targetType.isInstance(value)) return (T) value;
         @SuppressWarnings("rawtypes")
-        PropertyConverter converter = converters.get(new ConverterKey(value.getClass(), targetType));
+        TypeConverter converter = converters.get(new ConverterKey(value.getClass(), targetType));
         if (converter != null) {
             try {
                 return (T) converter.convert(value);
