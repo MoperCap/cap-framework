@@ -11,8 +11,8 @@ import org.moper.cap.web.annotation.mapping.PutMapping;
 import org.moper.cap.web.annotation.request.PathVariable;
 import org.moper.cap.web.annotation.request.RequestBody;
 import org.moper.cap.web.http.HttpMethod;
-import org.moper.cap.web.model.HandlerMapping;
-import org.moper.cap.web.registry.HandlerMappingRegistry;
+import org.moper.cap.web.mapping.HandlerMapping;
+import org.moper.cap.web.mapping.registry.HandlerMappingRegistry;
 
 import java.lang.annotation.Annotation;
 import java.util.*;

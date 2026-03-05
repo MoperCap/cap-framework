@@ -1,4 +1,4 @@
-package org.moper.cap.web.model;
+package org.moper.cap.web.mapping;
 
 import org.moper.cap.web.http.HttpMethod;
 import org.moper.cap.web.parameter.ParameterMetadata;

@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.common.annotation.Priority;
 import org.moper.cap.web.result.impl.JsonReturnValueHandler;
 import org.moper.cap.web.result.impl.ResponseEntityHandler;
-import org.moper.cap.web.model.HandlerMapping;
+import org.moper.cap.web.mapping.HandlerMapping;
 
 import java.util.ArrayList;
 import java.util.Comparator;
