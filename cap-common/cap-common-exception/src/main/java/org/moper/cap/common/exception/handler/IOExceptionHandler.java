@@ -1,7 +1,7 @@
 package org.moper.cap.common.exception.handler;
 
 import lombok.extern.slf4j.Slf4j;
-import org.moper.cap.common.exception.ExceptionHandler;
+import org.moper.cap.common.exception.AbstractExceptionHandler;
 import org.moper.cap.common.priority.Priority;
 
 import java.io.IOException;
@@ -9,13 +9,11 @@ import java.io.IOException;
 /**
  * IOException 处理器。
  */
-@Priority(40)
+@Priority(100)
 @Slf4j
-public class IOExceptionHandler implements ExceptionHandler<IOException> {
-
-    @Override
-    public Class<IOException> getExceptionType() {
-        return IOException.class;
+public class IOExceptionHandler extends AbstractExceptionHandler<IOException> {
+    public IOExceptionHandler() {
+        super(IOException.class);
     }
 
     @Override

@@ -1,19 +1,18 @@
 package org.moper.cap.common.exception.handler;
 
 import lombok.extern.slf4j.Slf4j;
-import org.moper.cap.common.exception.ExceptionHandler;
+import org.moper.cap.common.exception.AbstractExceptionHandler;
 import org.moper.cap.common.priority.Priority;
 
 /**
  * NumberFormatException 处理器。
  */
-@Priority(50)
+@Priority(100)
 @Slf4j
-public class NumberFormatExceptionHandler implements ExceptionHandler<NumberFormatException> {
+public class NumberFormatExceptionHandler extends AbstractExceptionHandler<NumberFormatException> {
 
-    @Override
-    public Class<NumberFormatException> getExceptionType() {
-        return NumberFormatException.class;
+    public NumberFormatExceptionHandler() {
+        super(NumberFormatException.class);
     }
 
     @Override

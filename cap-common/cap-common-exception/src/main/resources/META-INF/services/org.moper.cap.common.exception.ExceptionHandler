@@ -1,5 +1,4 @@
 org.moper.cap.common.exception.handler.ThrowableHandler
-org.moper.cap.common.exception.handler.ExceptionHandler_Impl
 org.moper.cap.common.exception.handler.RuntimeExceptionHandler
 org.moper.cap.common.exception.handler.IllegalArgumentExceptionHandler
 org.moper.cap.common.exception.handler.IllegalStateExceptionHandler

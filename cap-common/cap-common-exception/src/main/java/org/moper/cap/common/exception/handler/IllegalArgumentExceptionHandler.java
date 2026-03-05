@@ -1,19 +1,18 @@
 package org.moper.cap.common.exception.handler;
 
 import lombok.extern.slf4j.Slf4j;
-import org.moper.cap.common.exception.ExceptionHandler;
+import org.moper.cap.common.exception.AbstractExceptionHandler;
 import org.moper.cap.common.priority.Priority;
 
 /**
  * IllegalArgumentException 处理器。
  */
-@Priority(50)
+@Priority(100)
 @Slf4j
-public class IllegalArgumentExceptionHandler implements ExceptionHandler<IllegalArgumentException> {
+public class IllegalArgumentExceptionHandler extends AbstractExceptionHandler<IllegalArgumentException> {
 
-    @Override
-    public Class<IllegalArgumentException> getExceptionType() {
-        return IllegalArgumentException.class;
+    public IllegalArgumentExceptionHandler() {
+        super(IllegalArgumentException.class);
     }
 
     @Override

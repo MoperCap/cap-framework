@@ -1,19 +1,18 @@
 package org.moper.cap.common.exception.handler;
 
 import lombok.extern.slf4j.Slf4j;
-import org.moper.cap.common.exception.ExceptionHandler;
+import org.moper.cap.common.exception.AbstractExceptionHandler;
 import org.moper.cap.common.priority.Priority;
 
 /**
  * NullPointerException 处理器。
  */
-@Priority(60)
+@Priority(100)
 @Slf4j
-public class NullPointerExceptionHandler implements ExceptionHandler<NullPointerException> {
+public class NullPointerExceptionHandler extends AbstractExceptionHandler<NullPointerException> {
 
-    @Override
-    public Class<NullPointerException> getExceptionType() {
-        return NullPointerException.class;
+    public NullPointerExceptionHandler() {
+        super(NullPointerException.class);
     }
 
     @Override

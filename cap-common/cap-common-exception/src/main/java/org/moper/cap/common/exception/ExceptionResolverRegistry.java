@@ -1,6 +1,7 @@
 package org.moper.cap.common.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.moper.cap.common.exception.handler.IllegalArgumentExceptionHandler;
 import org.moper.cap.common.priority.PriorityUtils;
 
 import java.util.Collections;
@@ -46,28 +47,7 @@ public class ExceptionResolverRegistry {
         log.info("ExceptionResolverRegistry 共注册 {} 种异常处理器", handlers.size());
     }
 
-    /**
-     * 递归查找异常类型对应的处理器，沿继承链向上查找直到 Throwable。
-     *
-     * @param clazz 异常类型
-     * @return 找到的处理器，或 null
-     */
-    private ExceptionHandler<?> findHandlerByClass(Class<?> clazz) {
-        if (clazz == null) {
-            return null;
-        }
-        log.debug("递归查找处理器 [{}]", clazz.getSimpleName());
-        ExceptionHandler<?> handler = handlers.get(clazz);
-        if (handler != null) {
-            log.debug("找到处理器 [{}]", handler.getClass().getSimpleName());
-            return handler;
-        }
-        if (clazz == Throwable.class) {
-            return null;
-        }
-        log.debug("未找到精确处理器，查找父类 [{}]", clazz.getSuperclass() != null ? clazz.getSuperclass().getSimpleName() : "null");
-        return findHandlerByClass(clazz.getSuperclass());
-    }
+
 
     /**
      * 处理异常。若找到对应类型（或父类型）的处理器则委托给它，否则重新抛出。
@@ -92,16 +72,6 @@ public class ExceptionResolverRegistry {
     }
 
     /**
-     * 获取对应异常类型的处理器（递归查找父类）。
-     *
-     * @param exceptionType 异常类型
-     * @return 找到的处理器，或 null
-     */
-    public ExceptionHandler<?> getHandler(Class<? extends Throwable> exceptionType) {
-        return findHandlerByClass(exceptionType);
-    }
-
-    /**
      * 判断是否存在对应异常类型（或其父类型）的处理器。
      *
      * @param exceptionType 异常类型
@@ -112,13 +82,37 @@ public class ExceptionResolverRegistry {
     }
 
     /**
-     * 判断候选处理器是否优先于已注册处理器（较小的 priority 值代表更高优先级）。
+     * 获取对应异常类型的处理器（递归查找父类）。
      *
-     * @param candidate 候选处理器
-     * @param existing  已注册处理器
-     * @return 若候选处理器优先级更高则返回 true
+     * @param exceptionType 异常类型
+     * @return 找到的处理器，或 null
      */
-    protected static boolean hasHigherPriority(ExceptionHandler<?> candidate, ExceptionHandler<?> existing) {
-        return PriorityUtils.getPriority(candidate.getClass()) < PriorityUtils.getPriority(existing.getClass());
+    public ExceptionHandler<?> getHandler(Class<? extends Throwable> exceptionType) {
+        return findHandlerByClass(exceptionType);
+    }
+
+    /**
+     * 递归查找异常类型对应的处理器，沿继承链向上查找直到 Throwable。
+     *
+     * @param clazz 异常类型
+     * @return 找到的处理器，或 null
+     */
+    private ExceptionHandler<?> findHandlerByClass(Class<?> clazz) {
+        if (clazz == null) {
+            throw new IllegalArgumentException("clazz is null");
+        }
+
+        if (clazz == Throwable.class) {
+            return null;
+        }
+
+        log.debug("递归查找处理器 [{}]", clazz.getSimpleName());
+        ExceptionHandler<?> handler = handlers.get(clazz);
+        if (handler != null) {
+            log.debug("找到处理器 [{}]", handler.getClass().getSimpleName());
+            return handler;
+        }
+        log.debug("未找到精确处理器，查找父类 [{}]", clazz.getSuperclass() != null ? clazz.getSuperclass().getSimpleName() : "null");
+        return findHandlerByClass(clazz.getSuperclass());
     }
 }

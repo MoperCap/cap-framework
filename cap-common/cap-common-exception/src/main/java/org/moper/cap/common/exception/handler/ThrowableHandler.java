@@ -1,19 +1,18 @@
 package org.moper.cap.common.exception.handler;
 
 import lombok.extern.slf4j.Slf4j;
-import org.moper.cap.common.exception.ExceptionHandler;
+import org.moper.cap.common.exception.AbstractExceptionHandler;
 import org.moper.cap.common.priority.Priority;
 
 /**
  * 兜底异常处理器，处理所有未被精确匹配的异常。
  */
-@Priority(0)
+@Priority(100)
 @Slf4j
-public class ThrowableHandler implements ExceptionHandler<Throwable> {
+public class ThrowableHandler extends AbstractExceptionHandler<Throwable> {
 
-    @Override
-    public Class<Throwable> getExceptionType() {
-        return Throwable.class;
+    public ThrowableHandler() {
+        super(Throwable.class);
     }
 
     @Override

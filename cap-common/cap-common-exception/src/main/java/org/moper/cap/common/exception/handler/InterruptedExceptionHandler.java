@@ -1,19 +1,18 @@
 package org.moper.cap.common.exception.handler;
 
 import lombok.extern.slf4j.Slf4j;
-import org.moper.cap.common.exception.ExceptionHandler;
+import org.moper.cap.common.exception.AbstractExceptionHandler;
 import org.moper.cap.common.priority.Priority;
 
 /**
  * InterruptedException 处理器。
  */
-@Priority(40)
+@Priority(100)
 @Slf4j
-public class InterruptedExceptionHandler implements ExceptionHandler<InterruptedException> {
+public class InterruptedExceptionHandler extends AbstractExceptionHandler<InterruptedException> {
 
-    @Override
-    public Class<InterruptedException> getExceptionType() {
-        return InterruptedException.class;
+    public InterruptedExceptionHandler() {
+        super(InterruptedException.class);
     }
 
     @Override

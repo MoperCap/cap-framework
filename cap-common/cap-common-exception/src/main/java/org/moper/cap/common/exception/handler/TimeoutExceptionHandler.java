@@ -1,7 +1,7 @@
 package org.moper.cap.common.exception.handler;
 
 import lombok.extern.slf4j.Slf4j;
-import org.moper.cap.common.exception.ExceptionHandler;
+import org.moper.cap.common.exception.AbstractExceptionHandler;
 import org.moper.cap.common.priority.Priority;
 
 import java.util.concurrent.TimeoutException;
@@ -9,13 +9,12 @@ import java.util.concurrent.TimeoutException;
 /**
  * TimeoutException 处理器。
  */
-@Priority(40)
+@Priority(100)
 @Slf4j
-public class TimeoutExceptionHandler implements ExceptionHandler<TimeoutException> {
+public class TimeoutExceptionHandler extends AbstractExceptionHandler<TimeoutException> {
 
-    @Override
-    public Class<TimeoutException> getExceptionType() {
-        return TimeoutException.class;
+    public TimeoutExceptionHandler() {
+        super(TimeoutException.class);
     }
 
     @Override

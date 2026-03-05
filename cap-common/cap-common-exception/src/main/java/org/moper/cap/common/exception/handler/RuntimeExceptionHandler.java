@@ -1,19 +1,18 @@
 package org.moper.cap.common.exception.handler;
 
 import lombok.extern.slf4j.Slf4j;
-import org.moper.cap.common.exception.ExceptionHandler;
+import org.moper.cap.common.exception.AbstractExceptionHandler;
 import org.moper.cap.common.priority.Priority;
 
 /**
  * RuntimeException 处理器。
  */
-@Priority(10)
+@Priority(100)
 @Slf4j
-public class RuntimeExceptionHandler implements ExceptionHandler<RuntimeException> {
+public class RuntimeExceptionHandler extends AbstractExceptionHandler<RuntimeException> {
 
-    @Override
-    public Class<RuntimeException> getExceptionType() {
-        return RuntimeException.class;
+    public RuntimeExceptionHandler() {
+        super(RuntimeException.class);
     }
 
     @Override

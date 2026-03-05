@@ -1,7 +1,7 @@
 package org.moper.cap.common.exception.handler;
 
 import lombok.extern.slf4j.Slf4j;
-import org.moper.cap.common.exception.ExceptionHandler;
+import org.moper.cap.common.exception.AbstractExceptionHandler;
 import org.moper.cap.common.priority.Priority;
 
 import java.io.FileNotFoundException;
@@ -9,13 +9,12 @@ import java.io.FileNotFoundException;
 /**
  * FileNotFoundException 处理器。
  */
-@Priority(70)
+@Priority(100)
 @Slf4j
-public class FileNotFoundExceptionHandler implements ExceptionHandler<FileNotFoundException> {
+public class FileNotFoundExceptionHandler extends AbstractExceptionHandler<FileNotFoundException> {
 
-    @Override
-    public Class<FileNotFoundException> getExceptionType() {
-        return FileNotFoundException.class;
+    public FileNotFoundExceptionHandler() {
+        super(FileNotFoundException.class);
     }
 
     @Override
