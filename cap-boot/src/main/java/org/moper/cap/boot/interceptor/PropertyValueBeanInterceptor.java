@@ -3,7 +3,7 @@ package org.moper.cap.boot.interceptor;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.exception.BeanException;
 import org.moper.cap.bean.interceptor.BeanInterceptor;
-import org.moper.cap.common.converter.TypeResolver;
+import org.moper.cap.common.converter.TypeResolverFactory;
 import org.moper.cap.property.annotation.Value;
 import org.moper.cap.property.officer.PropertyOfficer;
 
@@ -27,11 +27,8 @@ public class PropertyValueBeanInterceptor implements BeanInterceptor {
 
     private final PropertyOfficer propertyOfficer;
 
-    private final TypeResolver typeResolver;
-
-    public PropertyValueBeanInterceptor(PropertyOfficer propertyOfficer, TypeResolver typeResolver) {
+    public PropertyValueBeanInterceptor(PropertyOfficer propertyOfficer) {
         this.propertyOfficer = propertyOfficer;
-        this.typeResolver = typeResolver;
     }
 
     @Override
@@ -60,7 +57,7 @@ public class PropertyValueBeanInterceptor implements BeanInterceptor {
             field.setAccessible(true);
             Object value;
             if (defaultStr != null) {
-                Object defaultValue = typeResolver.resolve(defaultStr, (Class) field.getType());
+                Object defaultValue = TypeResolverFactory.getTypeResolver().resolve(defaultStr, (Class) field.getType());
                 value = propertyOfficer.getPropertyValueOrDefault(key, (Class) field.getType(), defaultValue);
             } else {
                 value = propertyOfficer.getPropertyValue(key, (Class) field.getType());

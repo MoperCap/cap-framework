@@ -15,6 +15,6 @@ public class PropertyValueBootstrapRunner implements BootstrapRunner {
     @Override
     public void initialize(BootstrapContext context) throws Exception {
         context.getBeanContainer().addBeanInterceptor(
-                new PropertyValueBeanInterceptor(context.getPropertyOfficer(), context.getTypeResolver()));
+                new PropertyValueBeanInterceptor(context.getPropertyOfficer()));
     }
 }

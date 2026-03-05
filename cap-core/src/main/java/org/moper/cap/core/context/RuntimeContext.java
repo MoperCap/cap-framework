@@ -2,7 +2,6 @@ package org.moper.cap.core.context;
 
 import org.moper.cap.bean.container.BeanInspector;
 import org.moper.cap.bean.container.BeanProvider;
-import org.moper.cap.common.converter.TypeResolver;
 import org.moper.cap.property.officer.PropertyOfficer;
 
 /**
@@ -21,9 +20,4 @@ public interface RuntimeContext extends BeanProvider, BeanInspector, AutoCloseab
      * 获取属性管理平台
      */
     PropertyOfficer getPropertyOfficer();
-
-    /**
-     * 获取类型解析器
-     */
-    TypeResolver getTypeResolver();
 }

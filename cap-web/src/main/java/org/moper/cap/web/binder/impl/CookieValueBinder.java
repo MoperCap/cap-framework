@@ -4,8 +4,7 @@ import org.moper.cap.web.binder.ParameterBinder;
 import org.moper.cap.web.binder.ParameterMetadata;
 import org.moper.cap.web.annotation.request.CookieValue;
 import org.moper.cap.common.priority.Priority;
-import org.moper.cap.common.converter.TypeResolver;
-import org.moper.cap.common.converter.impl.DefaultTypeResolver;
+import org.moper.cap.common.converter.TypeResolverFactory;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,12 +13,6 @@ import java.util.Map;
 
 @Priority(100)
 public class CookieValueBinder implements ParameterBinder {
-
-    private final TypeResolver typeResolver;
-
-    public CookieValueBinder() {
-        this.typeResolver = new DefaultTypeResolver();
-    }
 
     @Override
     public boolean supports(ParameterMetadata metadata) {
@@ -58,6 +51,6 @@ public class CookieValueBinder implements ParameterBinder {
             }
         }
 
-        return typeResolver.resolve(value, metadata.type());
+        return TypeResolverFactory.getTypeResolver().resolve(value, metadata.type());
     }
 }

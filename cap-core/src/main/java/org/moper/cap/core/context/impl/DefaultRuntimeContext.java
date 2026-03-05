@@ -3,7 +3,6 @@ package org.moper.cap.core.context.impl;
 import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.exception.*;
-import org.moper.cap.common.converter.TypeResolver;
 import org.moper.cap.core.context.RuntimeContext;
 import org.moper.cap.core.context.BootstrapContext;
 import org.moper.cap.property.officer.PropertyOfficer;
@@ -24,14 +23,12 @@ public class DefaultRuntimeContext implements RuntimeContext {
 
     private final BeanContainer beanContainer;
     private final PropertyOfficer propertyOfficer;
-    private final TypeResolver typeResolver;
 
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
     public DefaultRuntimeContext(BootstrapContext bootstrapContext) {
         this.beanContainer = bootstrapContext.getBeanContainer();
         this.propertyOfficer = bootstrapContext.getPropertyOfficer();
-        this.typeResolver = bootstrapContext.getTypeResolver();
     }
 
     @Override
@@ -58,14 +55,6 @@ public class DefaultRuntimeContext implements RuntimeContext {
     @Override
     public PropertyOfficer getPropertyOfficer() {
         return propertyOfficer;
-    }
-
-    /**
-     * 获取类型解析器
-     */
-    @Override
-    public TypeResolver getTypeResolver() {
-        return typeResolver;
     }
 
     // ===== BeanProvider delegation =====
