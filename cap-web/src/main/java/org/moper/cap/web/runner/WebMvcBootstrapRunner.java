@@ -6,7 +6,9 @@ import org.moper.cap.core.annotation.RunnerMeta;
 import org.moper.cap.core.context.BootstrapContext;
 import org.moper.cap.core.runner.BootstrapRunner;
 import org.moper.cap.core.runner.RunnerType;
+import org.moper.cap.web.binder.ParameterBinderRegistry;
 import org.moper.cap.web.binder.ParameterMetadata;
+import org.moper.cap.web.binder.impl.DefaultParameterBinderRegistry;
 import org.moper.cap.web.router.RouteDefinition;
 import org.moper.cap.web.router.RouteRegistry;
 import org.moper.cap.web.util.ControllerUtils;
@@ -34,10 +36,12 @@ public class WebMvcBootstrapRunner implements BootstrapRunner {
 
         BeanContainer beanContainer = context.getBeanContainer();
         RouteRegistry routeRegistry = new RouteRegistry();
+        ParameterBinderRegistry parameterBinderRegistry = new DefaultParameterBinderRegistry();
 
         scanAndRegisterRoutes(beanContainer, routeRegistry);
 
         beanContainer.registerSingleton("routeRegistry", routeRegistry);
+        beanContainer.registerSingleton("parameterBinderRegistry", parameterBinderRegistry);
 
         log.info("Web MVC 模块初始化完成，共注册 {} 个路由", routeRegistry.getAllRoutes().size());
     }

@@ -1,0 +1,7 @@
+org.moper.cap.web.binder.impl.ServletRequestBinder
+org.moper.cap.web.binder.impl.ServletResponseBinder
+org.moper.cap.web.binder.impl.PathVariableBinder
+org.moper.cap.web.binder.impl.RequestParamBinder
+org.moper.cap.web.binder.impl.RequestBodyBinder
+org.moper.cap.web.binder.impl.RequestHeaderBinder
+org.moper.cap.web.binder.impl.CookieValueBinder
