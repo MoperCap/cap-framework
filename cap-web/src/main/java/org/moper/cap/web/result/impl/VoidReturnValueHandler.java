@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.moper.cap.common.priority.Priority;
 import org.moper.cap.web.result.ReturnValueHandler;
-import org.moper.cap.web.model.HandlerMapping;
+import org.moper.cap.web.mapping.HandlerMapping;
 
 /**
  * void 返回值处理器。

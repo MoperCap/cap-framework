@@ -1,4 +1,4 @@
-package org.moper.cap.web.registry;
+package org.moper.cap.web.mapping.registry;
 
 import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.bean.container.BeanContainer;
@@ -10,7 +10,7 @@ import org.moper.cap.web.annotation.request.PathVariable;
 import org.moper.cap.web.annotation.request.RequestHeader;
 import org.moper.cap.web.annotation.request.RequestParam;
 import org.moper.cap.web.http.HttpMethod;
-import org.moper.cap.web.model.HandlerMapping;
+import org.moper.cap.web.mapping.HandlerMapping;
 import org.moper.cap.web.parameter.ParameterMetadata;
 
 import java.lang.reflect.Method;

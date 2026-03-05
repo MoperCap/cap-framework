@@ -7,7 +7,7 @@ import org.moper.cap.common.priority.Priority;
 import org.moper.cap.web.annotation.response.ResponseBody;
 import org.moper.cap.web.annotation.controller.RestController;
 import org.moper.cap.web.result.ReturnValueHandler;
-import org.moper.cap.web.model.HandlerMapping;
+import org.moper.cap.web.mapping.HandlerMapping;
 
 import java.nio.charset.StandardCharsets;
 

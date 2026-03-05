@@ -12,8 +12,8 @@ import org.moper.cap.web.exception.MethodNotAllowedException;
 import org.moper.cap.web.exception.ResourceNotFoundException;
 import org.moper.cap.web.http.HttpMethod;
 import org.moper.cap.web.invoker.HandlerInvoker;
-import org.moper.cap.web.model.HandlerMapping;
-import org.moper.cap.web.registry.HandlerMappingRegistry;
+import org.moper.cap.web.mapping.HandlerMapping;
+import org.moper.cap.web.mapping.registry.HandlerMappingRegistry;
 import org.moper.cap.web.result.ReturnValueHandlerRegistry;
 
 import java.io.IOException;
