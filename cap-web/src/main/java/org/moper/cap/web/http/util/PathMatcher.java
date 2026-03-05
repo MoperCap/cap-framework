@@ -1,4 +1,4 @@
-package org.moper.cap.web.util;
+package org.moper.cap.web.http.util;
 
 import java.util.regex.Pattern;
 

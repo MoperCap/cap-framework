@@ -4,120 +4,16 @@ import org.junit.jupiter.api.Test;
 import org.moper.cap.web.model.ErrorResponse;
 import org.moper.cap.web.exception.ExceptionHandlerInfo;
 import org.moper.cap.web.result.ResponseEntity;
-import org.moper.cap.web.util.TypeConverter;
 
 import java.lang.reflect.Method;
-import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Unit tests for data models, TypeConverter, and ResponseEntity factory methods.
+ * Unit tests for data models and ResponseEntity factory methods.
  */
 class WebMvcModelsTest {
-
-    // ──────────────── TypeConverter ────────────────
-
-    @Test
-    void typeConverter_convertString() {
-        assertEquals("hello", TypeConverter.convert("hello", String.class));
-    }
-
-    @Test
-    void typeConverter_convertInt() {
-        assertEquals(42, TypeConverter.convert("42", int.class));
-        assertEquals(42, TypeConverter.convert("42", Integer.class));
-    }
-
-    @Test
-    void typeConverter_convertLong() {
-        assertEquals(100L, TypeConverter.convert("100", long.class));
-        assertEquals(100L, TypeConverter.convert("100", Long.class));
-    }
-
-    @Test
-    void typeConverter_convertDouble() {
-        assertEquals(3.14, TypeConverter.convert("3.14", double.class), 0.001);
-        assertEquals(3.14, TypeConverter.convert("3.14", Double.class), 0.001);
-    }
-
-    @Test
-    void typeConverter_convertFloat() {
-        assertEquals(1.5f, TypeConverter.convert("1.5", float.class), 0.001f);
-        assertEquals(1.5f, TypeConverter.convert("1.5", Float.class), 0.001f);
-    }
-
-    @Test
-    void typeConverter_convertLocalDateTime() {
-        String dateStr = "2024-01-15 10:30:00";
-        java.time.LocalDateTime result = TypeConverter.convert(dateStr, java.time.LocalDateTime.class);
-        assertNotNull(result);
-        assertEquals(2024, result.getYear());
-        assertEquals(1, result.getMonthValue());
-        assertEquals(15, result.getDayOfMonth());
-        assertEquals(10, result.getHour());
-        assertEquals(30, result.getMinute());
-    }
-
-    @Test
-    void typeConverter_invalidLocalDateTime_throwsException() {
-        assertThrows(Exception.class,
-                () -> TypeConverter.convert("not-a-date", java.time.LocalDateTime.class));
-    }
-
-    @Test
-    void typeConverter_convertBoolean() {
-        assertTrue(TypeConverter.convert("true", boolean.class));
-        assertFalse(TypeConverter.convert("false", Boolean.class));
-    }
-
-    @Test
-    void typeConverter_convertUUID() {
-        UUID uuid = UUID.randomUUID();
-        assertEquals(uuid, TypeConverter.convert(uuid.toString(), UUID.class));
-    }
-
-    @Test
-    void typeConverter_nullReturnsDefaultForPrimitive() {
-        assertEquals(0, TypeConverter.convert(null, int.class));
-        assertEquals(0L, TypeConverter.convert(null, long.class));
-        assertEquals(0.0, TypeConverter.convert(null, double.class), 0.001);
-        assertFalse(TypeConverter.convert(null, boolean.class));
-    }
-
-    @Test
-    void typeConverter_nullReturnsNullForObject() {
-        assertNull(TypeConverter.convert(null, String.class));
-    }
-
-    @Test
-    void typeConverter_throwsOnUnsupportedType() {
-        assertThrows(IllegalArgumentException.class,
-                () -> TypeConverter.convert("x", Object.class));
-    }
-
-    @Test
-    void typeConverter_throwsOnNullType() {
-        assertThrows(IllegalArgumentException.class,
-                () -> TypeConverter.convert("x", null));
-    }
-
-    @Test
-    void typeConverter_supports_returnsTrue() {
-        assertTrue(TypeConverter.supports(String.class));
-        assertTrue(TypeConverter.supports(int.class));
-        assertTrue(TypeConverter.supports(Integer.class));
-        assertTrue(TypeConverter.supports(boolean.class));
-        assertTrue(TypeConverter.supports(UUID.class));
-        assertTrue(TypeConverter.supports(LocalDateTime.class));
-    }
-
-    @Test
-    void typeConverter_supports_returnsFalse() {
-        assertFalse(TypeConverter.supports(Object.class));
-    }
 
     // ──────────────── ResponseEntity ────────────────
 
