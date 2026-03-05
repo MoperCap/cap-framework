@@ -1,5 +1,7 @@
 package org.moper.cap.web.annotation.mapping;
 
+import org.moper.cap.web.http.HttpMethod;
+
 import java.lang.annotation.*;
 
 /**
@@ -18,7 +20,7 @@ import java.lang.annotation.*;
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@RequestMapping
+@RequestMapping(method = HttpMethod.TRACE)
 public @interface TraceMapping {
 
     /**

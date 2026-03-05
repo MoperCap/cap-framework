@@ -3,7 +3,7 @@ package org.moper.cap.web;
 import org.junit.jupiter.api.Test;
 import org.moper.cap.web.model.ErrorResponse;
 import org.moper.cap.web.exception.ExceptionHandlerInfo;
-import org.moper.cap.web.result.ResponseEntity;
+import org.moper.cap.web.handler.result.ResponseEntity;
 
 import java.lang.reflect.Method;
 import java.util.Map;

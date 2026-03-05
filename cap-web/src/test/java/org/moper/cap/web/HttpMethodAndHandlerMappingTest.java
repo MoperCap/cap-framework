@@ -2,8 +2,8 @@ package org.moper.cap.web;
 
 import org.junit.jupiter.api.Test;
 import org.moper.cap.web.http.HttpMethod;
-import org.moper.cap.web.mapping.HandlerMapping;
-import org.moper.cap.web.parameter.ParameterMetadata;
+import org.moper.cap.web.handler.HandlerMapping;
+import org.moper.cap.web.handler.parameter.ParameterMetadata;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;

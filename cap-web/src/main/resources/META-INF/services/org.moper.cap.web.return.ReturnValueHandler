@@ -1,5 +1,5 @@
-org.moper.cap.web.result.impl.ResponseEntityHandler
-org.moper.cap.web.result.impl.StringReturnValueHandler
-org.moper.cap.web.result.impl.VoidReturnValueHandler
-org.moper.cap.web.result.impl.JsonReturnValueHandler
-org.moper.cap.web.result.impl.NullReturnValueHandler
+org.moper.cap.web.handler.result.impl.ResponseEntityHandler
+org.moper.cap.web.handler.result.impl.StringReturnValueHandler
+org.moper.cap.web.handler.result.impl.VoidReturnValueHandler
+org.moper.cap.web.handler.result.impl.JsonReturnValueHandler
+org.moper.cap.web.handler.result.impl.NullReturnValueHandler
