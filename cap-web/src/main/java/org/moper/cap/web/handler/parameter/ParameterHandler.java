@@ -11,7 +11,7 @@ import java.util.Map;
  * <p>每个实现负责将 HTTP 请求中的特定数据（查询参数、路径变量、请求体等）
  * 解析并转换为方法参数值。
  */
-public interface ParameterResolver {
+public interface ParameterHandler {
 
     /**
      * 判断此解析器是否支持给定的参数。

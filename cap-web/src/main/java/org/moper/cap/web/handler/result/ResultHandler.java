@@ -10,7 +10,7 @@ import org.moper.cap.web.handler.HandlerMapping;
  * <p>每个实现负责处理控制器方法返回的特定类型的值，
  * 将结果写入 HTTP 响应或执行视图跳转。
  */
-public interface ReturnValueHandler {
+public interface ResultHandler {
 
     /**
      * 判断此处理器是否支持给定的返回值类型。

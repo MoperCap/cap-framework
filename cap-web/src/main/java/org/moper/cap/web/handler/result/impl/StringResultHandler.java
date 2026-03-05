@@ -5,7 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.moper.cap.common.priority.Priority;
 import org.moper.cap.web.annotation.response.ResponseBody;
 import org.moper.cap.web.annotation.controller.RestController;
-import org.moper.cap.web.handler.result.ReturnValueHandler;
+import org.moper.cap.web.handler.result.ResultHandler;
 import org.moper.cap.web.handler.HandlerMapping;
 
 import java.io.IOException;
@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets;
  * 且返回 {@link String} 时，直接将字符串写入响应体。
  */
 @Priority(90)
-public class StringReturnValueHandler implements ReturnValueHandler {
+public class StringResultHandler implements ResultHandler {
 
     @Override
     public boolean supports(Class<?> returnType, HandlerMapping mapping) {

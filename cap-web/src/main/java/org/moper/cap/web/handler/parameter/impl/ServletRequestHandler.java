@@ -4,21 +4,21 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.moper.cap.common.priority.Priority;
 import org.moper.cap.web.handler.parameter.ParameterMetadata;
-import org.moper.cap.web.handler.parameter.ParameterResolver;
+import org.moper.cap.web.handler.parameter.ParameterHandler;
 
 import java.util.Map;
 
 /**
- * {@link HttpServletResponse} 参数解析器。
+ * {@link HttpServletRequest} 参数解析器。
  *
- * <p>当方法参数类型为 {@link HttpServletResponse} 时，直接注入响应对象。
+ * <p>当方法参数类型为 {@link HttpServletRequest} 时，直接注入请求对象。
  */
-@Priority(95)
-public class ServletResponseResolver implements ParameterResolver {
+@Priority(100)
+public class ServletRequestHandler implements ParameterHandler {
 
     @Override
     public boolean supports(ParameterMetadata metadata) {
-        return HttpServletResponse.class.isAssignableFrom(metadata.type());
+        return HttpServletRequest.class.isAssignableFrom(metadata.type());
     }
 
     @Override
@@ -26,6 +26,6 @@ public class ServletResponseResolver implements ParameterResolver {
                           HttpServletRequest request,
                           HttpServletResponse response,
                           Map<String, String> pathVariables) {
-        return response;
+        return request;
     }
 }

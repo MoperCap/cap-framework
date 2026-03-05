@@ -3,7 +3,7 @@ package org.moper.cap.web.handler.result.impl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.moper.cap.common.priority.Priority;
-import org.moper.cap.web.handler.result.ReturnValueHandler;
+import org.moper.cap.web.handler.result.ResultHandler;
 import org.moper.cap.web.handler.HandlerMapping;
 
 /**
@@ -12,7 +12,7 @@ import org.moper.cap.web.handler.HandlerMapping;
  * <p>处理方法返回值为 {@code void} 或返回 {@code null} 的情形，不向响应体写入任何内容。
  */
 @Priority(80)
-public class VoidReturnValueHandler implements ReturnValueHandler {
+public class VoidResultHandler implements ResultHandler {
 
     @Override
     public boolean supports(Class<?> returnType, HandlerMapping mapping) {

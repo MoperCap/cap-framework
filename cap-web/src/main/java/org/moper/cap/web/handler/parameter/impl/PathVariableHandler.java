@@ -6,7 +6,7 @@ import org.moper.cap.common.converter.TypeResolver;
 import org.moper.cap.common.priority.Priority;
 import org.moper.cap.web.annotation.request.PathVariable;
 import org.moper.cap.web.handler.parameter.ParameterMetadata;
-import org.moper.cap.web.handler.parameter.ParameterResolver;
+import org.moper.cap.web.handler.parameter.ParameterHandler;
 
 import java.util.Map;
 
@@ -17,14 +17,14 @@ import java.util.Map;
  * 绑定到标注了 {@link PathVariable} 的方法参数。
  */
 @Priority(90)
-public class PathVariableResolver implements ParameterResolver {
+public class PathVariableHandler implements ParameterHandler {
 
     private TypeResolver typeResolver;
 
-    public PathVariableResolver() {
+    public PathVariableHandler() {
     }
 
-    public PathVariableResolver(TypeResolver typeResolver) {
+    public PathVariableHandler(TypeResolver typeResolver) {
         this.typeResolver = typeResolver;
     }
 

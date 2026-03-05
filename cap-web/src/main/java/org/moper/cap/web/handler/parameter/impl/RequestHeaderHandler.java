@@ -6,7 +6,7 @@ import org.moper.cap.common.converter.TypeResolver;
 import org.moper.cap.common.priority.Priority;
 import org.moper.cap.web.annotation.request.RequestHeader;
 import org.moper.cap.web.handler.parameter.ParameterMetadata;
-import org.moper.cap.web.handler.parameter.ParameterResolver;
+import org.moper.cap.web.handler.parameter.ParameterHandler;
 
 import java.util.Map;
 
@@ -16,14 +16,14 @@ import java.util.Map;
  * <p>将 HTTP 请求头的值绑定到标注了 {@link RequestHeader} 的方法参数。
  */
 @Priority(60)
-public class RequestHeaderResolver implements ParameterResolver {
+public class RequestHeaderHandler implements ParameterHandler {
 
     private TypeResolver typeResolver;
 
-    public RequestHeaderResolver() {
+    public RequestHeaderHandler() {
     }
 
-    public RequestHeaderResolver(TypeResolver typeResolver) {
+    public RequestHeaderHandler(TypeResolver typeResolver) {
         this.typeResolver = typeResolver;
     }
 

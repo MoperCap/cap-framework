@@ -1,7 +1,0 @@
-org.moper.cap.web.handler.parameter.impl.ServletRequestResolver
-org.moper.cap.web.handler.parameter.impl.ServletResponseResolver
-org.moper.cap.web.handler.parameter.impl.PathVariableResolver
-org.moper.cap.web.handler.parameter.impl.RequestParamResolver
-org.moper.cap.web.handler.parameter.impl.RequestBodyResolver
-org.moper.cap.web.handler.parameter.impl.RequestHeaderResolver
-org.moper.cap.web.handler.parameter.impl.CookieValueResolver

@@ -5,8 +5,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.common.annotation.Priority;
-import org.moper.cap.web.handler.result.ReturnValueHandler;
-import org.moper.cap.web.handler.result.impl.JsonReturnValueHandler;
+import org.moper.cap.web.handler.result.ResultHandler;
+import org.moper.cap.web.handler.result.impl.JsonResultHandler;
 import org.moper.cap.web.handler.result.impl.ResponseEntityHandler;
 
 import java.util.ArrayList;
@@ -17,14 +17,14 @@ import java.util.ServiceLoader;
 /**
  * 返回值处理器注册表。
  *
- * <p>管理所有 {@link ReturnValueHandler} 实现，按优先级（降序）匹配并处理控制器方法的返回值。
+ * <p>管理所有 {@link ResultHandler} 实现，按优先级（降序）匹配并处理控制器方法的返回值。
  * 使用 {@link ServiceLoader} 加载所有实现，通过 {@link Priority} 注解获取优先级。
  */
 @Slf4j
 public class ReturnValueHandlerRegistry {
 
     private final ObjectMapper objectMapper;
-    private volatile List<ReturnValueHandler> handlers;
+    private volatile List<ResultHandler> handlers;
 
     /**
      * 使用 ServiceLoader 加载并按优先级排序的方式初始化注册表。
@@ -41,7 +41,7 @@ public class ReturnValueHandlerRegistry {
      *
      * @param handler 处理器实现
      */
-    public void addHandler(ReturnValueHandler handler) {
+    public void addHandler(ResultHandler handler) {
         handlers.add(handler);
         handlers.sort(Comparator.comparingInt(this::getPriority).reversed());
     }
@@ -68,7 +68,7 @@ public class ReturnValueHandlerRegistry {
                        HandlerMapping mapping,
                        HttpServletRequest request,
                        HttpServletResponse response) throws Exception {
-        for (ReturnValueHandler handler : handlers) {
+        for (ResultHandler handler : handlers) {
             if (handler.supports(returnType, mapping)) {
                 handler.handle(returnValue, mapping, request, response);
                 return;
@@ -79,9 +79,9 @@ public class ReturnValueHandlerRegistry {
                         + (returnType != null ? returnType.getName() : "null"));
     }
 
-    private List<ReturnValueHandler> loadAndSort() {
-        List<ReturnValueHandler> list = new ArrayList<>();
-        ServiceLoader.load(ReturnValueHandler.class).forEach(handler -> {
+    private List<ResultHandler> loadAndSort() {
+        List<ResultHandler> list = new ArrayList<>();
+        ServiceLoader.load(ResultHandler.class).forEach(handler -> {
             injectDependencies(handler);
             list.add(handler);
             log.debug("加载返回值处理器: {} (priority={})", handler.getClass().getName(), getPriority(handler));
@@ -91,15 +91,15 @@ public class ReturnValueHandlerRegistry {
         return list;
     }
 
-    private void injectDependencies(ReturnValueHandler handler) {
+    private void injectDependencies(ResultHandler handler) {
         if (handler instanceof ResponseEntityHandler h) {
             h.setObjectMapper(objectMapper);
-        } else if (handler instanceof JsonReturnValueHandler h) {
+        } else if (handler instanceof JsonResultHandler h) {
             h.setObjectMapper(objectMapper);
         }
     }
 
-    private int getPriority(ReturnValueHandler handler) {
+    private int getPriority(ResultHandler handler) {
         Priority priority = handler.getClass().getAnnotation(Priority.class);
         return priority != null ? priority.value() : 0;
     }

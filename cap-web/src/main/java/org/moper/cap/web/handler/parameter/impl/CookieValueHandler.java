@@ -1,29 +1,30 @@
 package org.moper.cap.web.handler.parameter.impl;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.moper.cap.common.converter.TypeResolver;
 import org.moper.cap.common.priority.Priority;
-import org.moper.cap.web.annotation.request.RequestParam;
+import org.moper.cap.web.annotation.request.CookieValue;
 import org.moper.cap.web.handler.parameter.ParameterMetadata;
-import org.moper.cap.web.handler.parameter.ParameterResolver;
+import org.moper.cap.web.handler.parameter.ParameterHandler;
 
 import java.util.Map;
 
 /**
- * 请求参数解析器。
+ * Cookie 值解析器。
  *
- * <p>将 HTTP 查询字符串或表单数据中的参数绑定到标注了 {@link RequestParam} 的方法参数。
+ * <p>将 HTTP Cookie 的值绑定到标注了 {@link CookieValue} 的方法参数。
  */
-@Priority(80)
-public class RequestParamResolver implements ParameterResolver {
+@Priority(50)
+public class CookieValueHandler implements ParameterHandler {
 
     private TypeResolver typeResolver;
 
-    public RequestParamResolver() {
+    public CookieValueHandler() {
     }
 
-    public RequestParamResolver(TypeResolver typeResolver) {
+    public CookieValueHandler(TypeResolver typeResolver) {
         this.typeResolver = typeResolver;
     }
 
@@ -33,7 +34,7 @@ public class RequestParamResolver implements ParameterResolver {
 
     @Override
     public boolean supports(ParameterMetadata metadata) {
-        return metadata.parameter().isAnnotationPresent(RequestParam.class);
+        return metadata.parameter().isAnnotationPresent(CookieValue.class);
     }
 
     @Override
@@ -41,14 +42,14 @@ public class RequestParamResolver implements ParameterResolver {
                           HttpServletRequest request,
                           HttpServletResponse response,
                           Map<String, String> pathVariables) {
-        RequestParam annotation = metadata.parameter().getAnnotation(RequestParam.class);
+        CookieValue annotation = metadata.parameter().getAnnotation(CookieValue.class);
         String name = resolveName(annotation, metadata);
-        String value = request.getParameter(name);
+        String value = findCookieValue(request, name);
         if (value == null) {
             if (!annotation.defaultValue().isEmpty()) {
                 value = annotation.defaultValue();
             } else if (annotation.required()) {
-                throw new IllegalStateException("Required request parameter '" + name + "' not present");
+                throw new IllegalStateException("Required cookie '" + name + "' not present");
             } else {
                 return null;
             }
@@ -56,7 +57,20 @@ public class RequestParamResolver implements ParameterResolver {
         return typeResolver.resolve(value, metadata.type());
     }
 
-    private String resolveName(RequestParam annotation, ParameterMetadata metadata) {
+    private String findCookieValue(HttpServletRequest request, String name) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return null;
+        }
+        for (Cookie cookie : cookies) {
+            if (name.equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        return null;
+    }
+
+    private String resolveName(CookieValue annotation, ParameterMetadata metadata) {
         String name = annotation.value().isBlank() ? annotation.name() : annotation.value();
         return name.isBlank() ? metadata.name() : name;
     }

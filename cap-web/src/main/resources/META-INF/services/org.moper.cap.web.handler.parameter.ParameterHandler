@@ -1,0 +1,7 @@
+org.moper.cap.web.handler.parameter.impl.ServletRequestHandler
+org.moper.cap.web.handler.parameter.impl.ServletResponseHandler
+org.moper.cap.web.handler.parameter.impl.PathVariableHandler
+org.moper.cap.web.handler.parameter.impl.RequestParamHandler
+org.moper.cap.web.handler.parameter.impl.RequestBodyHandler
+org.moper.cap.web.handler.parameter.impl.RequestHeaderHandler
+org.moper.cap.web.handler.parameter.impl.CookieValueHandler

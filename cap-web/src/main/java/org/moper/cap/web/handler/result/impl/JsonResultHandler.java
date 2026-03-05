@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.moper.cap.common.priority.Priority;
 import org.moper.cap.web.annotation.response.ResponseBody;
 import org.moper.cap.web.annotation.controller.RestController;
-import org.moper.cap.web.handler.result.ReturnValueHandler;
+import org.moper.cap.web.handler.result.ResultHandler;
 import org.moper.cap.web.handler.HandlerMapping;
 
 import java.nio.charset.StandardCharsets;
@@ -18,14 +18,14 @@ import java.nio.charset.StandardCharsets;
  * 使用 Jackson 将返回值序列化为 JSON 写入响应体。
  */
 @Priority(70)
-public class JsonReturnValueHandler implements ReturnValueHandler {
+public class JsonResultHandler implements ResultHandler {
 
     private ObjectMapper objectMapper;
 
-    public JsonReturnValueHandler() {
+    public JsonResultHandler() {
     }
 
-    public JsonReturnValueHandler(ObjectMapper objectMapper) {
+    public JsonResultHandler(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 

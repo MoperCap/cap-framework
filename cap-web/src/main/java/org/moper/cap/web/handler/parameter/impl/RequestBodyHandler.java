@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.moper.cap.common.priority.Priority;
 import org.moper.cap.web.annotation.request.RequestBody;
 import org.moper.cap.web.handler.parameter.ParameterMetadata;
-import org.moper.cap.web.handler.parameter.ParameterResolver;
+import org.moper.cap.web.handler.parameter.ParameterHandler;
 
 import java.io.IOException;
 import java.util.Map;
@@ -18,14 +18,14 @@ import java.util.stream.Collectors;
  * <p>将 HTTP 请求体（JSON）反序列化并绑定到标注了 {@link RequestBody} 的方法参数。
  */
 @Priority(70)
-public class RequestBodyResolver implements ParameterResolver {
+public class RequestBodyHandler implements ParameterHandler {
 
     private ObjectMapper objectMapper;
 
-    public RequestBodyResolver() {
+    public RequestBodyHandler() {
     }
 
-    public RequestBodyResolver(ObjectMapper objectMapper) {
+    public RequestBodyHandler(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 

@@ -3,7 +3,7 @@ package org.moper.cap.web.handler.result.impl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.moper.cap.common.priority.Priority;
-import org.moper.cap.web.handler.result.ReturnValueHandler;
+import org.moper.cap.web.handler.result.ResultHandler;
 import org.moper.cap.web.handler.HandlerMapping;
 
 /**
@@ -12,7 +12,7 @@ import org.moper.cap.web.handler.HandlerMapping;
  * <p>当返回值为 null 且没有其他处理器匹配时，返回 204 No Content。
  */
 @Priority(10)
-public class NullReturnValueHandler implements ReturnValueHandler {
+public class NullResultHandler implements ResultHandler {
 
     @Override
     public boolean supports(Class<?> returnType, HandlerMapping mapping) {
