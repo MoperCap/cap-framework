@@ -12,8 +12,7 @@ public record RouteDefinition(
         HttpMethod httpMethod,
         Object controller,
         Method controllerMethod,
-        List<ParameterMetadata> parameters,
-        List<String> pathVariableNames
+        List<ParameterMetadata> parameters
 ) {
 
     public RouteDefinition {
@@ -33,13 +32,22 @@ public record RouteDefinition(
         if (parameters == null) {
             throw new IllegalArgumentException("parameters cannot be null");
         }
-
-        if (pathVariableNames == null) {
-            throw new IllegalArgumentException("pathVariableNames cannot be null");
-        }
     }
 
     public boolean matches(String requestPath, HttpMethod method) {
-        return httpMethod == method && path.equals(requestPath);
+        return httpMethod == method && matchesPath(requestPath);
+    }
+
+    /**
+     * Extracts path variables from the given request path.
+     * Currently returns an empty map; future implementations will support
+     * path variable patterns such as {@code /users/{id}}.
+     */
+    public Map<String, String> extractPathVariables(String requestPath) {
+        return Map.of();
+    }
+
+    private boolean matchesPath(String requestPath) {
+        return path.equals(requestPath);
     }
 }
