@@ -20,14 +20,14 @@ public class ExceptionResolverRegistry {
     private final Map<Class<?>, ExceptionHandler<?>> handlers;
 
     public ExceptionResolverRegistry() {
-        Map<Class<?>, ExceptionHandler<?>> map = new ConcurrentHashMap<>();
+        Map<Class<? extends Throwable>, ExceptionHandler<?>> map = new ConcurrentHashMap<>();
 
         @SuppressWarnings("rawtypes")
         ServiceLoader<ExceptionHandler> loader = ServiceLoader.load(ExceptionHandler.class);
         for (ExceptionHandler<?> handler : loader) {
             int hPriority = PriorityUtils.getPriority(handler.getClass());
-            Class<?> key = handler.getExceptionType();
-            ExceptionHandler<?> prev = map.get(key);
+            Class<? extends Throwable> key = handler.getExceptionType();
+            ExceptionHandler<? extends Throwable> prev = map.get(key);
             if (prev == null) {
                 log.debug("注册异常处理器 [{}]: {} (priority={})", key.getName(), handler.getClass().getName(), hPriority);
                 map.put(key, handler);
