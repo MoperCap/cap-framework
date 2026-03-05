@@ -70,7 +70,7 @@ class ExceptionResolverRegistryTest {
 
         @Override
         @SuppressWarnings("unchecked")
-        public <E extends Exception> void resolve(E exception) throws E {
+        public <E extends Throwable> void resolve(E exception) throws E {
             if (exception == null) return;
             ExceptionHandler<E> handler = (ExceptionHandler<E>) testHandlers.get(exception.getClass());
             if (handler != null) {
@@ -81,7 +81,7 @@ class ExceptionResolverRegistryTest {
         }
 
         @Override
-        public boolean hasHandler(Class<? extends Exception> exceptionType) {
+        public boolean hasHandler(Class<? extends Throwable> exceptionType) {
             return testHandlers.containsKey(exceptionType);
         }
     }
@@ -133,8 +133,11 @@ class ExceptionResolverRegistryTest {
     }
 
     @Test
-    void testEmptyRegistryHasNoHandlers() {
+    void testDefaultHandlersAreLoaded() {
         ExceptionResolverRegistry registry = new ExceptionResolverRegistry();
-        assertFalse(registry.hasHandler(TestException.class));
+        // Default SPI handlers are loaded, so common types are covered
+        assertTrue(registry.hasHandler(NullPointerException.class));
+        // Recursive lookup: TestException -> Exception -> ExceptionHandler_Impl
+        assertTrue(registry.hasHandler(TestException.class));
     }
 }
