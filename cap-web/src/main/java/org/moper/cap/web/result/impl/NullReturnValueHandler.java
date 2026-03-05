@@ -2,7 +2,7 @@ package org.moper.cap.web.result.impl;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.moper.cap.common.annotation.Priority;
+import org.moper.cap.common.priority.Priority;
 import org.moper.cap.web.result.ReturnValueHandler;
 import org.moper.cap.web.model.HandlerMapping;
 

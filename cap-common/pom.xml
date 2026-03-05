@@ -10,37 +10,10 @@
     </parent>
 
     <artifactId>cap-common</artifactId>
-
-    <properties>
-        <jackson.version>2.16.1</jackson.version>
-    </properties>
-
-    <dependencies>
-        <!-- Jackson 核心 -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-
-        <!-- 日志 -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-
-        <!-- Lombok -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
-
+    <packaging>pom</packaging>
+    <modules>
+        <module>cap-common-priority</module>
+        <module>cap-common-converter</module>
+        <module>cap-common-banner</module>
+    </modules>
 </project>

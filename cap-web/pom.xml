@@ -19,6 +19,11 @@
 
         <dependency>
             <groupId>org.moper.cap</groupId>
+            <artifactId>cap-common-priority</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.moper.cap</groupId>
             <artifactId>cap-core</artifactId>
         </dependency>
 

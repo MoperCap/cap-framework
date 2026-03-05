@@ -7,6 +7,12 @@
     <file url="file://$PROJECT_DIR$/cap-bean/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cap-boot/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cap-boot/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/cap-common/cap-common-banner/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/cap-common/cap-common-banner/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/cap-common/cap-common-converter/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/cap-common/cap-common-converter/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/cap-common/cap-common-priority/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/cap-common/cap-common-priority/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cap-common/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cap-common/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cap-core/src/main/java" charset="UTF-8" />

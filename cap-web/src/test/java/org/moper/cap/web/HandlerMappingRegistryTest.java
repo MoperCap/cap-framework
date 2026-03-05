@@ -2,13 +2,13 @@ package org.moper.cap.web;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.moper.cap.web.annotation.*;
 import org.moper.cap.web.annotation.controller.Controller;
 import org.moper.cap.web.annotation.controller.RestController;
 import org.moper.cap.web.annotation.mapping.DeleteMapping;
 import org.moper.cap.web.annotation.mapping.GetMapping;
 import org.moper.cap.web.annotation.mapping.PostMapping;
 import org.moper.cap.web.annotation.mapping.PutMapping;
+import org.moper.cap.web.annotation.request.PathVariable;
 import org.moper.cap.web.annotation.request.RequestBody;
 import org.moper.cap.web.http.HttpMethod;
 import org.moper.cap.web.model.HandlerMapping;

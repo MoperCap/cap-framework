@@ -2,9 +2,9 @@ package org.moper.cap.web.parameter.impl;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.moper.cap.common.annotation.Priority;
 import org.moper.cap.common.converter.TypeResolver;
-import org.moper.cap.web.annotation.PathVariable;
+import org.moper.cap.common.priority.Priority;
+import org.moper.cap.web.annotation.request.PathVariable;
 import org.moper.cap.web.parameter.ParameterMetadata;
 import org.moper.cap.web.parameter.ParameterResolver;
 
