@@ -68,9 +68,17 @@ public class OrderController {
      */
     @PostMapping
     public ApiResponse<Order> createOrder(@RequestBody Map<String, Object> request) {
-        long userId = ((Number) request.get("userId")).longValue();
-        long productId = ((Number) request.get("productId")).longValue();
-        int quantity = ((Number) request.get("quantity")).intValue();
+        Object userIdObj = request.get("userId");
+        Object productIdObj = request.get("productId");
+        Object quantityObj = request.get("quantity");
+
+        if (userIdObj == null || productIdObj == null || quantityObj == null) {
+            return ApiResponse.error("缺少必填字段: userId, productId, quantity");
+        }
+
+        long userId = ((Number) userIdObj).longValue();
+        long productId = ((Number) productIdObj).longValue();
+        int quantity = ((Number) quantityObj).intValue();
 
         log.info("创建订单: userId={}, productId={}, quantity={}", userId, productId, quantity);
 

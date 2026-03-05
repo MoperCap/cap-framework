@@ -34,6 +34,11 @@ public class RouterAnnotationResolver {
         };
     }
 
+    /**
+     * 解析 {@link RequestMapping} 注解，取第一个指定的 HTTP 方法。
+     * 若未指定方法，默认使用 GET。
+     * 注意：仅支持单一 HTTP 方法映射；若指定多个方法，只取第一个。
+     */
     private static RouterAnnotation resolveRequestMapping(RequestMapping requestMapping) {
         HttpMethod[] methods = requestMapping.method();
         HttpMethod httpMethod = (methods != null && methods.length > 0) ? methods[0] : HttpMethod.GET;
