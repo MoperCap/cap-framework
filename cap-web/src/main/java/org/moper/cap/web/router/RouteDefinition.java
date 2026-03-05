@@ -35,19 +35,6 @@ public record RouteDefinition(
     }
 
     public boolean matches(String requestPath, HttpMethod method) {
-        return httpMethod == method && matchesPath(requestPath);
-    }
-
-    /**
-     * Extracts path variables from the given request path.
-     * Currently returns an empty map; future implementations will support
-     * path variable patterns such as {@code /users/{id}}.
-     */
-    public Map<String, String> extractPathVariables(String requestPath) {
-        return Map.of();
-    }
-
-    private boolean matchesPath(String requestPath) {
-        return path.equals(requestPath);
+        return httpMethod == method && path.equals(requestPath);
     }
 }
