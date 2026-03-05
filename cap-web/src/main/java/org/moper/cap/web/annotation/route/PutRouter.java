@@ -1,11 +1,11 @@
-package org.moper.cap.web.annotation.mapping;
+package org.moper.cap.web.annotation.route;
 
 import java.lang.annotation.*;
 
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface OptionsRouter {
+public @interface PutRouter {
 
     String value() default "";
 }

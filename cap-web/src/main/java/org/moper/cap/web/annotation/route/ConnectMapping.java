@@ -1,4 +1,4 @@
-package org.moper.cap.web.annotation.mapping;
+package org.moper.cap.web.annotation.route;
 
 import java.lang.annotation.*;
 

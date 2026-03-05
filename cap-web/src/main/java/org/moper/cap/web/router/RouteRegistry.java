@@ -5,7 +5,7 @@ import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.web.annotation.controller.Controller;
 import org.moper.cap.web.annotation.controller.RestController;
-import org.moper.cap.web.annotation.mapping.*;
+import org.moper.cap.web.annotation.route.*;
 import org.moper.cap.web.annotation.request.PathVariable;
 import org.moper.cap.web.binder.ParameterMetadata;
 import lombok.extern.slf4j.Slf4j;

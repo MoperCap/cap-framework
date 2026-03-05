@@ -1,4 +1,4 @@
-package org.moper.cap.web.annotation.mapping;
+package org.moper.cap.web.annotation.route;
 
 import org.moper.cap.web.http.HttpMethod;
 

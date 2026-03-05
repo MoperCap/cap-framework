@@ -29,17 +29,17 @@ public record RouteDefinition(
         if (controllerMethod == null) {
             throw new IllegalArgumentException("controllerMethod cannot be null");
         }
+
+        if (parameters == null) {
+            throw new IllegalArgumentException("parameters cannot be null");
+        }
+
+        if (pathVariableNames == null) {
+            throw new IllegalArgumentException("pathVariableNames cannot be null");
+        }
     }
 
     public boolean matches(String requestPath, HttpMethod method) {
-        return httpMethod == method && matchesPath(requestPath);
-    }
-
-    public Map<String, String> extractPathVariables(String requestPath) {
-        return Map.of();
-    }
-
-    private boolean matchesPath(String requestPath) {
-        return path.equals(requestPath);
+        return httpMethod == method && path.equals(requestPath);
     }
 }
