@@ -1,9 +1,7 @@
-package org.moper.cap.web.router.util;
+package org.moper.cap.web.util;
 
 import org.moper.cap.web.http.HttpMethod;
 import org.moper.cap.web.annotation.route.*;
-import org.moper.cap.web.annotation.controller.Controller;
-import org.moper.cap.web.annotation.controller.RestController;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -14,37 +12,19 @@ public class RouterAnnotationResolver {
      * 解析任意注解，返回 RouterAnnotation 或 null
      */
     public static RouterAnnotation resolve(Annotation annotation) {
-        if (annotation instanceof GetRouter) {
-            return resolve((GetRouter) annotation);
-        }
-        if (annotation instanceof PostRouter) {
-            return resolve((PostRouter) annotation);
-        }
-        if (annotation instanceof PutRouter) {
-            return resolve((PutRouter) annotation);
-        }
-        if (annotation instanceof DeleteRouter) {
-            return resolve((DeleteRouter) annotation);
-        }
-        if (annotation instanceof PatchRouter) {
-            return resolve((PatchRouter) annotation);
-        }
-        if (annotation instanceof HeadRouter) {
-            return resolve((HeadRouter) annotation);
-        }
-        if (annotation instanceof OptionsRouter) {
-            return resolve((OptionsRouter) annotation);
-        }
-        if (annotation instanceof ConnectRouter) {
-            return resolve((ConnectRouter) annotation);
-        }
-        if (annotation instanceof TraceRouter) {
-            return resolve((TraceRouter) annotation);
-        }
-        if (annotation instanceof Router) {
-            return resolve((Router) annotation);
-        }
-        return null;
+        return switch (annotation){
+            case GetRouter getRouter -> resolve(getRouter);
+            case PostRouter postRouter -> resolve(postRouter);
+            case PutRouter putRouter -> resolve(putRouter);
+            case DeleteRouter deleteRouter -> resolve(deleteRouter);
+            case PatchRouter patchRouter -> resolve(patchRouter);
+            case HeadRouter headRouter -> resolve(headRouter);
+            case OptionsRouter optionsRouter -> resolve(optionsRouter);
+            case TraceRouter traceRouter -> resolve(traceRouter);
+            case ConnectRouter connectRouter -> resolve(connectRouter);
+            case Router router -> resolve(router);
+            default -> null;
+        };
     }
 
     public static RouterAnnotation resolve(Router router) {
@@ -123,20 +103,21 @@ public class RouterAnnotationResolver {
         return "";
     }
 
-    /**
-     * 检查类是否为控制器
-     */
-    public static boolean isController(Class<?> clazz) {
-        if (clazz == null) {
-            return false;
-        }
-        return clazz.isAnnotationPresent(Controller.class) ||
-               clazz.isAnnotationPresent(RestController.class);
-    }
 
     /**
      * 路由注解的解析结果
      */
     public record RouterAnnotation(HttpMethod httpMethod, String path) {
+
+        public RouterAnnotation{
+            if(httpMethod == null){
+                throw new NullPointerException("httpMethod is null");
+            }
+
+            if(path == null || path.isBlank()){
+                throw new NullPointerException("path is null or blank");
+            }
+        }
+
     }
 }

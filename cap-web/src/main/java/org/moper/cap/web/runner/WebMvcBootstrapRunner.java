@@ -10,14 +10,14 @@ import org.moper.cap.web.annotation.request.PathVariable;
 import org.moper.cap.web.binder.ParameterMetadata;
 import org.moper.cap.web.router.RouteDefinition;
 import org.moper.cap.web.router.RouteRegistry;
-import org.moper.cap.web.router.util.RouterAnnotationResolver;
-import org.moper.cap.web.router.util.RouterAnnotationResolver.RouterAnnotation;
+import org.moper.cap.web.util.ControllerUtils;
+import org.moper.cap.web.util.RouterAnnotationResolver;
+import org.moper.cap.web.util.RouterAnnotationResolver.RouterAnnotation;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -53,7 +53,7 @@ public class WebMvcBootstrapRunner implements BootstrapRunner {
             BeanDefinition definition = beanContainer.getBeanDefinition(beanName);
             Class<?> beanClass = definition.type();
 
-            if (!RouterAnnotationResolver.isController(beanClass)) {
+            if (!ControllerUtils.isController(beanClass)) {
                 continue;
             }
 
