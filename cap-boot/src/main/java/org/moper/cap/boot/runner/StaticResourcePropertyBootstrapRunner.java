@@ -6,7 +6,7 @@ import io.github.classgraph.ClassGraph;
 import io.github.classgraph.Resource;
 import io.github.classgraph.ScanResult;
 import lombok.extern.slf4j.Slf4j;
-import org.moper.cap.common.loader.ResourceFileLoader;
+import org.moper.cap.boot.util.ResourceFileLoader;
 import org.moper.cap.core.annotation.RunnerMeta;
 import org.moper.cap.core.constants.ResourceConstants;
 import org.moper.cap.core.context.BootstrapContext;

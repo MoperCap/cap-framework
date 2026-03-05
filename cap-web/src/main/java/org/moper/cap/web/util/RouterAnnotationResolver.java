@@ -1,7 +1,7 @@
 package org.moper.cap.web.util;
 
 import org.moper.cap.web.http.HttpMethod;
-import org.moper.cap.web.annotation.route.*;
+import org.moper.cap.web.annotation.router.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;

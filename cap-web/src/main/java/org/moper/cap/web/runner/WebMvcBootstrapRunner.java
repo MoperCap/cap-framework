@@ -11,6 +11,7 @@ import org.moper.cap.web.binder.ParameterMetadata;
 import org.moper.cap.web.router.RouteDefinition;
 import org.moper.cap.web.router.RouteRegistry;
 import org.moper.cap.web.util.ControllerUtils;
+import org.moper.cap.web.util.PathVariableResolver;
 import org.moper.cap.web.util.RouterAnnotationResolver;
 import org.moper.cap.web.util.RouterAnnotationResolver.RouterAnnotation;
 import lombok.extern.slf4j.Slf4j;
@@ -69,7 +70,7 @@ public class WebMvcBootstrapRunner implements BootstrapRunner {
 
                 String fullPath = basePath + routerAnnotation.path();
                 List<ParameterMetadata> parameters = extractParameters(method);
-                List<String> pathVariableNames = extractPathVariableNames(method);
+                List<String> pathVariableNames = PathVariableResolver.resolvePathVariableNames(method);
 
                 RouteDefinition route = new RouteDefinition(
                         fullPath,
@@ -101,23 +102,5 @@ public class WebMvcBootstrapRunner implements BootstrapRunner {
         }
 
         return metadata;
-    }
-
-    /**
-     * 提取方法中的路径变量名
-     */
-    private List<String> extractPathVariableNames(Method method) {
-        List<String> names = new ArrayList<>();
-        Parameter[] parameters = method.getParameters();
-
-        for (Parameter param : parameters) {
-            if (param.isAnnotationPresent(PathVariable.class)) {
-                PathVariable annotation = param.getAnnotation(PathVariable.class);
-                String varName = annotation.value().isBlank() ? param.getName() : annotation.value();
-                names.add(varName);
-            }
-        }
-
-        return names;
     }
 }

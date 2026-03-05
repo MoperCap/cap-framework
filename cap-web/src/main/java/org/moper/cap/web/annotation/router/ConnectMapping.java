@@ -1,22 +1,22 @@
-package org.moper.cap.web.annotation.route;
+package org.moper.cap.web.annotation.router;
 
 import java.lang.annotation.*;
 
 /**
- * 将 HTTP TRACE 请求映射到控制器方法的快捷注解
+ * 将 HTTP CONNECT 请求映射到控制器方法的快捷注解
  *
  * <p>使用示例：
  * <pre>
  * {@code
- * @TraceMapping(path = "/trace")
- * public void trace() { ... }
+ * @ConnectMapping(path = "/tunnel")
+ * public void connect() { ... }
  * }
  * </pre>
  */
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface TraceMapping {
+public @interface ConnectMapping {
 
     /**
      * 请求路径（{@code path} 的别名）
