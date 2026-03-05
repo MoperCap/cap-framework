@@ -6,7 +6,7 @@ package org.moper.cap.common.exception;
  *
  * @param <E> 异常类型
  */
-public interface ExceptionHandler<E extends Exception> {
+public interface ExceptionHandler<E extends Throwable> {
 
     /**
      * 处理的异常类型

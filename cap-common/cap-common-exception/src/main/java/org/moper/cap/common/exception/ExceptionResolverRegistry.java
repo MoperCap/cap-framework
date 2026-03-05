@@ -47,20 +47,43 @@ public class ExceptionResolverRegistry {
     }
 
     /**
-     * 处理异常。若找到对应类型的处理器则委托给它，否则重新抛出。
+     * 递归查找异常类型对应的处理器，沿继承链向上查找直到 Throwable。
+     *
+     * @param clazz 异常类型
+     * @return 找到的处理器，或 null
+     */
+    private ExceptionHandler<?> findHandlerByClass(Class<?> clazz) {
+        if (clazz == null) {
+            return null;
+        }
+        log.debug("递归查找处理器 [{}]", clazz.getSimpleName());
+        ExceptionHandler<?> handler = handlers.get(clazz);
+        if (handler != null) {
+            log.debug("找到处理器 [{}]", handler.getClass().getSimpleName());
+            return handler;
+        }
+        if (clazz == Throwable.class) {
+            return null;
+        }
+        log.debug("未找到精确处理器，查找父类 [{}]", clazz.getSuperclass() != null ? clazz.getSuperclass().getSimpleName() : "null");
+        return findHandlerByClass(clazz.getSuperclass());
+    }
+
+    /**
+     * 处理异常。若找到对应类型（或父类型）的处理器则委托给它，否则重新抛出。
      *
      * @param exception 待处理的异常
      * @throws E        若无对应处理器则将原异常重新抛出
      * @param <E>       异常类型
      */
     @SuppressWarnings("unchecked")
-    public <E extends Exception> void resolve(E exception) throws E {
+    public <E extends Throwable> void resolve(E exception) throws E {
         if (exception == null) {
             return;
         }
-        ExceptionHandler<E> handler = (ExceptionHandler<E>) handlers.get(exception.getClass());
+        ExceptionHandler<E> handler = (ExceptionHandler<E>) findHandlerByClass(exception.getClass());
         if (handler != null) {
-            log.debug("使用处理器 [{}] 处理异常: {}", handler.getClass().getName(), exception.getMessage());
+            log.info("异常已处理 [{}] by {}", exception.getClass().getSimpleName(), handler.getClass().getSimpleName());
             handler.handle(exception);
         } else {
             log.warn("未找到异常处理器 [{}]，重新抛出", exception.getClass().getName());
@@ -69,13 +92,23 @@ public class ExceptionResolverRegistry {
     }
 
     /**
-     * 判断是否存在对应异常类型的处理器。
+     * 获取对应异常类型的处理器（递归查找父类）。
+     *
+     * @param exceptionType 异常类型
+     * @return 找到的处理器，或 null
+     */
+    public ExceptionHandler<?> getHandler(Class<? extends Throwable> exceptionType) {
+        return findHandlerByClass(exceptionType);
+    }
+
+    /**
+     * 判断是否存在对应异常类型（或其父类型）的处理器。
      *
      * @param exceptionType 异常类型
      * @return 是否存在处理器
      */
-    public boolean hasHandler(Class<? extends Exception> exceptionType) {
-        return handlers.containsKey(exceptionType);
+    public boolean hasHandler(Class<? extends Throwable> exceptionType) {
+        return findHandlerByClass(exceptionType) != null;
     }
 
     /**

@@ -5,7 +5,7 @@ package org.moper.cap.common.exception;
  *
  * @param <E> 异常类型
  */
-public abstract class AbstractExceptionHandler<E extends Exception> implements ExceptionHandler<E> {
+public abstract class AbstractExceptionHandler<E extends Throwable> implements ExceptionHandler<E> {
     private final Class<E> exceptionType;
 
     public AbstractExceptionHandler(Class<E> exceptionType) {
