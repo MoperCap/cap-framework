@@ -1,0 +1,5 @@
+org.moper.cap.web.exception.handler.ServletExceptionHandler
+org.moper.cap.web.exception.handler.HttpMethodNotAllowedExceptionHandler
+org.moper.cap.web.exception.handler.HttpNotFoundExceptionHandler
+org.moper.cap.web.exception.handler.HttpBadRequestExceptionHandler
+org.moper.cap.web.exception.handler.HttpInternalServerErrorExceptionHandler

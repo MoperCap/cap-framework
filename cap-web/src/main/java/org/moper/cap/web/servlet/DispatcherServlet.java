@@ -5,10 +5,14 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.moper.cap.common.exception.ExceptionResolverRegistry;
+import org.moper.cap.web.exception.BadRequestException;
+import org.moper.cap.web.exception.InternalServerErrorException;
+import org.moper.cap.web.exception.MethodNotAllowedException;
+import org.moper.cap.web.exception.ResourceNotFoundException;
 import org.moper.cap.web.http.HttpMethod;
 import org.moper.cap.web.invoker.HandlerInvoker;
 import org.moper.cap.web.model.HandlerMapping;
-import org.moper.cap.web.exception.ExceptionResolverRegistry;
 import org.moper.cap.web.registry.HandlerMappingRegistry;
 import org.moper.cap.web.result.ReturnValueHandlerRegistry;
 
@@ -55,26 +59,22 @@ public class DispatcherServlet extends HttpServlet {
 
         log.debug("DispatcherServlet: {} {}", methodStr, requestPath);
 
-        HttpMethod httpMethod;
         try {
-            httpMethod = HttpMethod.fromString(methodStr);
-        } catch (IllegalArgumentException e) {
-            response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
-                    "Unsupported HTTP method: " + methodStr);
-            return;
-        }
+            HttpMethod httpMethod;
+            try {
+                httpMethod = HttpMethod.fromString(methodStr);
+            } catch (IllegalArgumentException e) {
+                throw new MethodNotAllowedException("Unsupported HTTP method: " + methodStr);
+            }
 
-        Optional<HandlerMapping> mappingOpt = handlerMappingRegistry.findMapping(requestPath, httpMethod);
-        if (mappingOpt.isEmpty()) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                    "No handler found for " + methodStr + " " + requestPath);
-            return;
-        }
+            Optional<HandlerMapping> mappingOpt = handlerMappingRegistry.findMapping(requestPath, httpMethod);
+            if (mappingOpt.isEmpty()) {
+                throw new ResourceNotFoundException("No handler found for " + methodStr + " " + requestPath);
+            }
 
-        HandlerMapping mapping = mappingOpt.get();
-        Map<String, String> pathVariables = mapping.extractPathVariables(requestPath);
+            HandlerMapping mapping = mappingOpt.get();
+            Map<String, String> pathVariables = mapping.extractPathVariables(requestPath);
 
-        try {
             Object returnValue = handlerInvoker.invoke(mapping, request, response, pathVariables);
             Class<?> returnType = mapping.handlerMethod().getReturnType();
             if (returnType == void.class) {
@@ -84,10 +84,41 @@ public class DispatcherServlet extends HttpServlet {
         } catch (Exception ex) {
             log.error("Error processing request: {} {}", methodStr, requestPath, ex);
             if (!response.isCommitted()) {
-                if (!exceptionResolverRegistry.resolve(ex, request, response)) {
-                    exceptionResolverRegistry.handleDefault(ex, response);
+                try {
+                    exceptionResolverRegistry.resolve(ex);
+                } catch (Throwable unhandled) {
+                    log.error("未处理的异常: {}", unhandled.getClass().getName());
+                    sendErrorResponse(response, 500, unhandled);
+                    return;
+                }
+                if (!response.isCommitted()) {
+                    sendErrorResponse(response, resolveHttpStatus(ex), ex);
                 }
             }
+        }
+    }
+
+    private int resolveHttpStatus(Throwable ex) {
+        if (ex instanceof MethodNotAllowedException mna) {
+            return mna.getStatusCode();
+        }
+        if (ex instanceof ResourceNotFoundException rne) {
+            return rne.getStatusCode();
+        }
+        if (ex instanceof BadRequestException bre) {
+            return bre.getStatusCode();
+        }
+        if (ex instanceof InternalServerErrorException ise) {
+            return ise.getStatusCode();
+        }
+        return 500;
+    }
+
+    private void sendErrorResponse(HttpServletResponse response, int status, Throwable ex) {
+        try {
+            response.sendError(status, ex.getMessage());
+        } catch (IOException e) {
+            log.error("Failed to send error response", e);
         }
     }
 }
