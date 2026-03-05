@@ -1,11 +1,24 @@
 package org.moper.cap.web.runner;
 
+import org.moper.cap.bean.container.BeanContainer;
+import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.core.annotation.RunnerMeta;
 import org.moper.cap.core.context.BootstrapContext;
 import org.moper.cap.core.runner.BootstrapRunner;
 import org.moper.cap.core.runner.RunnerType;
+import org.moper.cap.web.annotation.request.PathVariable;
+import org.moper.cap.web.binder.ParameterMetadata;
+import org.moper.cap.web.router.RouteDefinition;
 import org.moper.cap.web.router.RouteRegistry;
+import org.moper.cap.web.router.util.RouterAnnotationResolver;
+import org.moper.cap.web.router.util.RouterAnnotationResolver.RouterAnnotation;
 import lombok.extern.slf4j.Slf4j;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Web MVC 框架启动器。
@@ -20,12 +33,91 @@ public class WebMvcBootstrapRunner implements BootstrapRunner {
     public void initialize(BootstrapContext context) throws Exception {
         log.info("初始化 Web MVC 模块");
 
+        BeanContainer beanContainer = context.getBeanContainer();
         RouteRegistry routeRegistry = new RouteRegistry();
-        routeRegistry.registerRoutesFromBeans(context.getBeanContainer());
 
-        context.getBeanContainer().registerSingleton("routeRegistry", routeRegistry);
+        scanAndRegisterRoutes(beanContainer, routeRegistry);
 
-        log.info("Web MVC 模块初始化完成，共注册 {} 个路由",
-                 routeRegistry.getAllRoutes().size());
+        beanContainer.registerSingleton("routeRegistry", routeRegistry);
+
+        log.info("Web MVC 模块初始化完成，共注册 {} 个路由", routeRegistry.getAllRoutes().size());
+    }
+
+    /**
+     * 扫描 BeanContainer 中的所有控制器并注册路由
+     */
+    private void scanAndRegisterRoutes(BeanContainer beanContainer, RouteRegistry routeRegistry) {
+        String[] beanNames = beanContainer.getBeanDefinitionNames();
+
+        for (String beanName : beanNames) {
+            BeanDefinition definition = beanContainer.getBeanDefinition(beanName);
+            Class<?> beanClass = definition.type();
+
+            if (!RouterAnnotationResolver.isController(beanClass)) {
+                continue;
+            }
+
+            Object beanInstance = beanContainer.getBean(beanName);
+            String basePath = RouterAnnotationResolver.resolve(beanClass);
+
+            for (Method method : beanClass.getDeclaredMethods()) {
+                RouterAnnotation routerAnnotation = RouterAnnotationResolver.resolve(method);
+
+                if (routerAnnotation == null) {
+                    continue;
+                }
+
+                String fullPath = basePath + routerAnnotation.path();
+                List<ParameterMetadata> parameters = extractParameters(method);
+                List<String> pathVariableNames = extractPathVariableNames(method);
+
+                RouteDefinition route = new RouteDefinition(
+                        fullPath,
+                        routerAnnotation.httpMethod(),
+                        beanInstance,
+                        method,
+                        parameters,
+                        pathVariableNames
+                );
+
+                routeRegistry.registerRoute(route);
+            }
+        }
+    }
+
+    /**
+     * 提取方法的参数元数据
+     */
+    private List<ParameterMetadata> extractParameters(Method method) {
+        List<ParameterMetadata> metadata = new ArrayList<>();
+        Parameter[] parameters = method.getParameters();
+
+        for (Parameter param : parameters) {
+            metadata.add(new ParameterMetadata(
+                    param,
+                    param.getName(),
+                    param.getType()
+            ));
+        }
+
+        return metadata;
+    }
+
+    /**
+     * 提取方法中的路径变量名
+     */
+    private List<String> extractPathVariableNames(Method method) {
+        List<String> names = new ArrayList<>();
+        Parameter[] parameters = method.getParameters();
+
+        for (Parameter param : parameters) {
+            if (param.isAnnotationPresent(PathVariable.class)) {
+                PathVariable annotation = param.getAnnotation(PathVariable.class);
+                String varName = annotation.value().isBlank() ? param.getName() : annotation.value();
+                names.add(varName);
+            }
+        }
+
+        return names;
     }
 }
