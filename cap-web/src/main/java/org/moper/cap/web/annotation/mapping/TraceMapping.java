@@ -1,13 +1,9 @@
 package org.moper.cap.web.annotation.mapping;
 
-import org.moper.cap.web.http.HttpMethod;
-
 import java.lang.annotation.*;
 
 /**
  * 将 HTTP TRACE 请求映射到控制器方法的快捷注解
- *
- * <p>等同于 {@code @RequestMapping(method = HttpMethod.TRACE)}。
  *
  * <p>使用示例：
  * <pre>
@@ -20,7 +16,6 @@ import java.lang.annotation.*;
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@RequestMapping(method = HttpMethod.TRACE)
 public @interface TraceMapping {
 
     /**

@@ -4,8 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.core.annotation.ComponentScan;
 import org.moper.cap.core.annotation.ResourceScan;
 import org.moper.cap.core.config.ConfigurationClassParser;
-import org.moper.cap.common.merger.ResourcePackageMerger;
-import org.moper.cap.common.merger.ResourcePathMerger;
+import org.moper.cap.core.util.ResourcePackageMerger;
+import org.moper.cap.core.util.ResourcePathMerger;
 
 import java.util.*;
 
