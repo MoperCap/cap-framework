@@ -20,10 +20,7 @@ public class DefaultParameterBinderRegistry implements ParameterBinderRegistry {
 
     public DefaultParameterBinderRegistry() {
         this.binders = new PriorityQueue<>(
-            (b1, b2) -> Integer.compare(
-                PriorityUtils.getPriority(b1.getClass()),
-                PriorityUtils.getPriority(b2.getClass())
-            )
+                Comparator.comparingInt(b -> PriorityUtils.getPriority(b.getClass()))
         );
         this.cache = new ConcurrentHashMap<>();
 
