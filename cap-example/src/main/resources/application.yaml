@@ -1,7 +1,2 @@
-app:
-  name: "cap-example"
-  version: "1.0-SNAPSHOT"
-  port: 8080
-
 db:
   url: "jdbc:example://localhost:5432/example"

@@ -1,19 +1,59 @@
 package org.moper.cap.example.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.bean.annotation.Capper;
-import org.moper.cap.bean.definition.BeanScope;
+import org.moper.cap.example.model.Product;
 
-/**
- * 商品服务，演示多名称（别名）和原型作用域。
- *
- * <p>{@code names} 中第一个名称 {@code "product"} 为主名称，
- * {@code "productService"} 作为别名注册，两者均可从容器中获取同一 Bean 定义。
- * 由于作用域为 {@link BeanScope#PROTOTYPE}，每次获取都会创建新实例。
- */
-@Capper(names = {"product", "productService"}, scope = BeanScope.PROTOTYPE, description = "商品服务")
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
+@Slf4j
+@Capper
 public class ProductService {
 
-    public String findProduct(long id) {
-        return "Product#" + id;
+    private final Map<Long, Product> productStore = new ConcurrentHashMap<>();
+    private final AtomicLong idGenerator = new AtomicLong(0);
+
+    public ProductService() {
+        log.info("ProductService 初始化");
+        createProduct(new Product("Laptop", 1299.99, 50));
+        createProduct(new Product("Mouse", 29.99, 200));
+        createProduct(new Product("Keyboard", 99.99, 150));
+    }
+
+    public Product getProductById(long id) {
+        log.debug("获取商品: {}", id);
+        return productStore.get(id);
+    }
+
+    public List<Product> getAllProducts() {
+        log.debug("获取所有商品");
+        return new ArrayList<>(productStore.values());
+    }
+
+    public Product createProduct(Product product) {
+        long id = idGenerator.incrementAndGet();
+        product.setId(id);
+        productStore.put(id, product);
+        log.info("创建商品: id={}, name={}, price={}", id, product.getName(), product.getPrice());
+        return product;
+    }
+
+    public boolean productExists(long id) {
+        return productStore.containsKey(id);
+    }
+
+    public boolean decrementStock(long id, int quantity) {
+        Product product = productStore.get(id);
+        if (product == null || product.getStock() < quantity) {
+            return false;
+        }
+        product.setStock(product.getStock() - quantity);
+        log.info("减少商品库存: id={}, quantity={}", id, quantity);
+        return true;
     }
 }
+
