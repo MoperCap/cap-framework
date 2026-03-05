@@ -1,0 +1,5 @@
+org.moper.cap.web.view.support.StringViewHandler
+org.moper.cap.web.view.support.VoidViewHandler
+org.moper.cap.web.view.support.ByteArrayViewHandler
+org.moper.cap.web.view.support.ResponseEntityViewHandler
+org.moper.cap.web.view.support.JsonViewHandler
