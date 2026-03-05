@@ -2,6 +2,7 @@ package org.moper.cap.core.context.impl;
 
 import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.common.converter.TypeResolver;
+import org.moper.cap.common.converter.TypeResolverFactory;
 import org.moper.cap.core.command.CommandArgumentParser;
 import org.moper.cap.core.config.ConfigurationClassParser;
 import org.moper.cap.core.context.RuntimeContext;
@@ -19,8 +20,6 @@ public class DefaultBootstrapContext implements BootstrapContext {
     private final CommandArgumentParser commandArgumentParser;
 
     private final ConfigurationClassParser configurationClassParser;
-
-    private volatile TypeResolver typeResolver;
 
     public DefaultBootstrapContext(BeanContainer beanContainer, PropertyOfficer propertyOfficer, CommandArgumentParser commandArgumentParser, ConfigurationClassParser configurationClassParser, TypeResolver typeResolver) {
         if(beanContainer == null){
@@ -47,7 +46,9 @@ public class DefaultBootstrapContext implements BootstrapContext {
         this.propertyOfficer = propertyOfficer;
         this.commandArgumentParser = commandArgumentParser;
         this.configurationClassParser = configurationClassParser;
-        this.typeResolver = typeResolver;
+        
+        // 设置全局单例 TypeResolver
+        TypeResolverFactory.setTypeResolver(typeResolver);
     }
 
 
@@ -66,25 +67,6 @@ public class DefaultBootstrapContext implements BootstrapContext {
     @Override
     public PropertyOfficer getPropertyOfficer() {
         return propertyOfficer;
-    }
-
-    /**
-     * 获取类型解析器
-     */
-    @Override
-    public TypeResolver getTypeResolver() {
-        return typeResolver;
-    }
-
-    /**
-     * 注册自定义类型解析器
-     */
-    @Override
-    public void registerTypeResolver(TypeResolver typeResolver) {
-        if (typeResolver == null) {
-            throw new IllegalArgumentException("typeResolver cannot be null");
-        }
-        this.typeResolver = typeResolver;
     }
 
     /**

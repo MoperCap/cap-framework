@@ -4,8 +4,7 @@ import org.moper.cap.web.binder.ParameterBinder;
 import org.moper.cap.web.binder.ParameterMetadata;
 import org.moper.cap.web.annotation.request.RequestParam;
 import org.moper.cap.common.priority.Priority;
-import org.moper.cap.common.converter.TypeResolver;
-import org.moper.cap.common.converter.impl.DefaultTypeResolver;
+import org.moper.cap.common.converter.TypeResolverFactory;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -13,12 +12,6 @@ import java.util.Map;
 
 @Priority(100)
 public class RequestParamBinder implements ParameterBinder {
-
-    private final TypeResolver typeResolver;
-
-    public RequestParamBinder() {
-        this.typeResolver = new DefaultTypeResolver();
-    }
 
     @Override
     public boolean supports(ParameterMetadata metadata) {
@@ -48,6 +41,6 @@ public class RequestParamBinder implements ParameterBinder {
             }
         }
 
-        return typeResolver.resolve(value, metadata.type());
+        return TypeResolverFactory.getTypeResolver().resolve(value, metadata.type());
     }
 }
