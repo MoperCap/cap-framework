@@ -9,7 +9,7 @@ import org.moper.cap.core.annotation.RunnerMeta;
 import org.moper.cap.core.context.BootstrapContext;
 import org.moper.cap.core.runner.BootstrapRunner;
 import org.moper.cap.core.runner.RunnerType;
-import org.moper.cap.web.exception.ExceptionResolverRegistry;
+import org.moper.cap.common.exception.ExceptionResolverRegistry;
 import org.moper.cap.web.result.ReturnValueHandlerRegistry;
 import org.moper.cap.web.registry.HandlerMappingRegistry;
 import org.moper.cap.web.invoker.HandlerInvoker;
@@ -56,9 +56,7 @@ public class WebMvcBootstrapRunner implements BootstrapRunner {
                 new ReturnValueHandlerRegistry(objectMapper);
 
         // Exception handling
-        ExceptionResolverRegistry exceptionResolverRegistry =
-                new ExceptionResolverRegistry(objectMapper);
-        exceptionResolverRegistry.register(container);
+        ExceptionResolverRegistry exceptionResolverRegistry = new ExceptionResolverRegistry();
 
         // Handler invoker
         HandlerInvoker handlerInvoker = new HandlerInvoker(parameterResolverRegistry);
