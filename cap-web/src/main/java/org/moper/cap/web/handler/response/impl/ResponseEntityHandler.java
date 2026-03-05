@@ -1,11 +1,11 @@
-package org.moper.cap.web.handler.result.impl;
+package org.moper.cap.web.handler.response.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.moper.cap.common.priority.Priority;
-import org.moper.cap.web.handler.result.ResultHandler;
 import org.moper.cap.web.handler.HandlerMapping;
+import org.moper.cap.web.handler.response.ResultHandler;
 import org.moper.cap.web.handler.result.ResponseEntity;
 
 import java.nio.charset.StandardCharsets;

@@ -14,7 +14,7 @@ import org.moper.cap.web.http.HttpMethod;
 import org.moper.cap.web.invoker.HandlerInvoker;
 import org.moper.cap.web.handler.HandlerMapping;
 import org.moper.cap.web.handler.HandlerMappingRegistry;
-import org.moper.cap.web.handler.ReturnValueHandlerRegistry;
+import org.moper.cap.web.handler.response.ResultHandlerRegistry;
 
 import java.io.IOException;
 import java.util.Map;
@@ -29,7 +29,7 @@ import java.util.Optional;
  *   <li>通过 {@link HandlerMappingRegistry} 查找匹配的 {@link HandlerMapping}</li>
  *   <li>从请求路径中提取路径变量</li>
  *   <li>通过 {@link HandlerInvoker} 解析参数并调用控制器方法</li>
- *   <li>通过 {@link ReturnValueHandlerRegistry} 处理返回值</li>
+ *   <li>通过 {@link ResultHandlerRegistry} 处理返回值</li>
  *   <li>通过 {@link ExceptionResolverRegistry} 处理异常</li>
  * </ol>
  */
@@ -38,16 +38,16 @@ public class DispatcherServlet extends HttpServlet {
 
     private final HandlerMappingRegistry handlerMappingRegistry;
     private final HandlerInvoker handlerInvoker;
-    private final ReturnValueHandlerRegistry returnValueHandlerRegistry;
+    private final ResultHandlerRegistry resultHandlerRegistry;
     private final ExceptionResolverRegistry exceptionResolverRegistry;
 
     public DispatcherServlet(HandlerMappingRegistry handlerMappingRegistry,
                              HandlerInvoker handlerInvoker,
-                             ReturnValueHandlerRegistry returnValueHandlerRegistry,
+                             ResultHandlerRegistry resultHandlerRegistry,
                              ExceptionResolverRegistry exceptionResolverRegistry) {
         this.handlerMappingRegistry = handlerMappingRegistry;
         this.handlerInvoker = handlerInvoker;
-        this.returnValueHandlerRegistry = returnValueHandlerRegistry;
+        this.resultHandlerRegistry = resultHandlerRegistry;
         this.exceptionResolverRegistry = exceptionResolverRegistry;
     }
 
@@ -80,7 +80,7 @@ public class DispatcherServlet extends HttpServlet {
             if (returnType == void.class) {
                 returnType = null;
             }
-            returnValueHandlerRegistry.handle(returnValue, returnType, mapping, request, response);
+            resultHandlerRegistry.handle(returnValue, returnType, mapping, request, response);
         } catch (Exception ex) {
             log.error("Error processing request: {} {}", methodStr, requestPath, ex);
             if (!response.isCommitted()) {

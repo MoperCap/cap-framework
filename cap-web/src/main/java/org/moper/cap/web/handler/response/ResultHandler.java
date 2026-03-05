@@ -1,11 +1,11 @@
-package org.moper.cap.web.handler.result;
+package org.moper.cap.web.handler.response;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.moper.cap.web.handler.HandlerMapping;
 
 /**
- * 返回值处理器接口。
+ * 返回值处理器接口（SPI 模式）。
  *
  * <p>每个实现负责处理控制器方法返回的特定类型的值，
  * 将结果写入 HTTP 响应或执行视图跳转。

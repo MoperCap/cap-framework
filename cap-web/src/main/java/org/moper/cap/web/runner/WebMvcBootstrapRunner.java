@@ -10,10 +10,10 @@ import org.moper.cap.core.context.BootstrapContext;
 import org.moper.cap.core.runner.BootstrapRunner;
 import org.moper.cap.core.runner.RunnerType;
 import org.moper.cap.common.exception.ExceptionResolverRegistry;
-import org.moper.cap.web.handler.ReturnValueHandlerRegistry;
 import org.moper.cap.web.handler.HandlerMappingRegistry;
+import org.moper.cap.web.handler.parameter.ParameterHandlerRegistry;
+import org.moper.cap.web.handler.response.ResultHandlerRegistry;
 import org.moper.cap.web.invoker.HandlerInvoker;
-import org.moper.cap.web.handler.ParameterResolverRegistry;
 import org.moper.cap.web.servlet.DispatcherServlet;
 
 /**
@@ -22,8 +22,8 @@ import org.moper.cap.web.servlet.DispatcherServlet;
  * <p>在框架启动阶段（order = 300）初始化所有 Web MVC 核心组件：
  * <ul>
  *   <li>{@link HandlerMappingRegistry} — 扫描并注册路由映射</li>
- *   <li>{@link ParameterResolverRegistry} — 注册参数解析器</li>
- *   <li>{@link ReturnValueHandlerRegistry} — 注册返回值处理器</li>
+ *   <li>{@link ParameterHandlerRegistry} — 注册参数处理器</li>
+ *   <li>{@link ResultHandlerRegistry} — 注册返回值处理器</li>
  *   <li>{@link ExceptionResolverRegistry} — 注册异常处理器</li>
  *   <li>{@link HandlerInvoker} — 控制器方法调用器</li>
  *   <li>{@link DispatcherServlet} — 前端控制器</li>
@@ -48,28 +48,28 @@ public class WebMvcBootstrapRunner implements BootstrapRunner {
         handlerMappingRegistry.register(container);
 
         // Parameter resolution
-        ParameterResolverRegistry parameterResolverRegistry =
-                new ParameterResolverRegistry(objectMapper, context.getTypeResolver());
+        ParameterHandlerRegistry parameterHandlerRegistry =
+                new ParameterHandlerRegistry(objectMapper, context.getTypeResolver());
 
         // Return value handling
-        ReturnValueHandlerRegistry returnValueHandlerRegistry =
-                new ReturnValueHandlerRegistry(objectMapper);
+        ResultHandlerRegistry resultHandlerRegistry =
+                new ResultHandlerRegistry(objectMapper);
 
         // Exception handling
         ExceptionResolverRegistry exceptionResolverRegistry = new ExceptionResolverRegistry();
 
         // Handler invoker
-        HandlerInvoker handlerInvoker = new HandlerInvoker(parameterResolverRegistry);
+        HandlerInvoker handlerInvoker = new HandlerInvoker(parameterHandlerRegistry);
 
         // DispatcherServlet
         DispatcherServlet dispatcherServlet = new DispatcherServlet(
                 handlerMappingRegistry, handlerInvoker,
-                returnValueHandlerRegistry, exceptionResolverRegistry);
+                resultHandlerRegistry, exceptionResolverRegistry);
 
         // Register all components as singletons for external access
         container.registerSingleton("handlerMappingRegistry", handlerMappingRegistry);
-        container.registerSingleton("parameterResolverRegistry", parameterResolverRegistry);
-        container.registerSingleton("returnValueHandlerRegistry", returnValueHandlerRegistry);
+        container.registerSingleton("parameterHandlerRegistry", parameterHandlerRegistry);
+        container.registerSingleton("resultHandlerRegistry", resultHandlerRegistry);
         container.registerSingleton("exceptionResolverRegistry", exceptionResolverRegistry);
         container.registerSingleton("handlerInvoker", handlerInvoker);
         container.registerSingleton("dispatcherServlet", dispatcherServlet);
