@@ -1,0 +1,10 @@
+{
+  "name": "Cap Local",
+  "variables": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "secret": false
+    }
+  ]
+}
