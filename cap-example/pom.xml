@@ -18,6 +18,12 @@
             <artifactId>cap-boot</artifactId>
         </dependency>
 
+        <!-- cap-web 提供 Web MVC 能力 -->
+        <dependency>
+            <groupId>org.moper.cap</groupId>
+            <artifactId>cap-web</artifactId>
+        </dependency>
+
         <!-- cap-aop 提供 AOP 动态代理能力 -->
         <dependency>
             <groupId>org.moper.cap</groupId>

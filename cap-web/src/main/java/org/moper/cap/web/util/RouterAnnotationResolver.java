@@ -1,6 +1,7 @@
 package org.moper.cap.web.util;
 
 import org.moper.cap.web.http.HttpMethod;
+import org.moper.cap.web.annotation.mapping.*;
 import org.moper.cap.web.annotation.router.*;
 
 import java.lang.annotation.Annotation;
@@ -23,8 +24,25 @@ public class RouterAnnotationResolver {
             case TraceRouter traceRouter -> resolve(traceRouter);
             case ConnectRouter connectRouter -> resolve(connectRouter);
             case Router router -> resolve(router);
+            case GetMapping getMapping -> new RouterAnnotation(HttpMethod.GET, getMapping.value());
+            case PostMapping postMapping -> new RouterAnnotation(HttpMethod.POST, postMapping.value());
+            case PutMapping putMapping -> new RouterAnnotation(HttpMethod.PUT, putMapping.value());
+            case DeleteMapping deleteMapping -> new RouterAnnotation(HttpMethod.DELETE, deleteMapping.value());
+            case PatchMapping patchMapping -> new RouterAnnotation(HttpMethod.PATCH, patchMapping.value());
+            case RequestMapping requestMapping -> resolveRequestMapping(requestMapping);
             default -> null;
         };
+    }
+
+    /**
+     * 解析 {@link RequestMapping} 注解，取第一个指定的 HTTP 方法。
+     * 若未指定方法，默认使用 GET。
+     * 注意：仅支持单一 HTTP 方法映射；若指定多个方法，只取第一个。
+     */
+    private static RouterAnnotation resolveRequestMapping(RequestMapping requestMapping) {
+        HttpMethod[] methods = requestMapping.method();
+        HttpMethod httpMethod = (methods != null && methods.length > 0) ? methods[0] : HttpMethod.GET;
+        return new RouterAnnotation(httpMethod, requestMapping.value());
     }
 
     public static RouterAnnotation resolve(Router router) {
@@ -100,6 +118,11 @@ public class RouterAnnotationResolver {
             return path.isBlank() ? router.value() : path;
         }
 
+        RequestMapping requestMapping = clazz.getAnnotation(RequestMapping.class);
+        if (requestMapping != null) {
+            return requestMapping.value();
+        }
+
         return "";
     }
 
@@ -114,8 +137,8 @@ public class RouterAnnotationResolver {
                 throw new NullPointerException("httpMethod is null");
             }
 
-            if(path == null || path.isBlank()){
-                throw new NullPointerException("path is null or blank");
+            if(path == null){
+                path = "";
             }
         }
 

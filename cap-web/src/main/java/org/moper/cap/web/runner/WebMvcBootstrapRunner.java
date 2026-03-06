@@ -27,7 +27,7 @@ import java.util.List;
  * <p>在框架启动阶段（order = 300）初始化 Web MVC 核心组件。
  */
 @Slf4j
-@RunnerMeta(type = RunnerType.FEATURE, order = 300, description = "Initializes Web MVC components")
+@RunnerMeta(type = RunnerType.FEATURE, order = 390, description = "Initializes Web MVC components")
 public class WebMvcBootstrapRunner implements BootstrapRunner {
 
     @Override
@@ -71,6 +71,10 @@ public class WebMvcBootstrapRunner implements BootstrapRunner {
                 }
 
                 String fullPath = basePath + routerAnnotation.path();
+                if (fullPath.isBlank()) {
+                    log.warn("跳过路由注册：方法 {} 的完整路径为空", method.getName());
+                    continue;
+                }
                 List<ParameterMetadata> parameters = extractParameters(method);
 
                 RouteDefinition route = new RouteDefinition(

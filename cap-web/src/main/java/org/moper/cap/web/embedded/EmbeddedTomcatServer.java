@@ -76,16 +76,18 @@ public class EmbeddedTomcatServer {
         connector.setProperty("maxConnections", String.valueOf(maxConnections));
         connector.setProperty("maxThreads", String.valueOf(maxThreads));
         tomcat.setConnector(connector);
-        tomcat.getService().addConnector(connector);
 
         log.info("配置连接器: port={}, maxConnections={}, maxThreads={}",
                 port, maxConnections, maxThreads);
 
         // 3. 创建应用上下文
-        String appBase = baseDir + "/webapps";
+        java.io.File appBaseDir = new java.io.File(baseDir, "webapps");
+        if (!appBaseDir.exists()) {
+            appBaseDir.mkdirs();
+        }
+        String appBase = appBaseDir.getAbsolutePath();
         Context context = tomcat.addContext(contextPath, appBase);
         context.setReloadable(false);
-        context.setDocBase(appBase);
 
         // 4. 配置资源
         StandardRoot standardRoot = new StandardRoot(context);
