@@ -7,25 +7,32 @@ import org.moper.cap.core.context.BootstrapContext;
 import org.moper.cap.core.runner.BootstrapRunner;
 import org.moper.cap.core.runner.RunnerType;
 import org.moper.cap.transaction.interceptor.TransactionBeanInterceptor;
-import org.moper.cap.transaction.manager.JdbcTransactionManager;
-import org.moper.cap.transaction.manager.TransactionManager;
-
-import javax.sql.DataSource;
 
 /**
- * 事务启动器 - 作为 BootstrapRunner 初始化事务系统
+ * 事务启动器 - 完全独立，不依赖任何实现
  *
  * <p>职责：
  * <ol>
- *   <li>从 BeanContainer 中获取 {@link DataSource}</li>
- *   <li>创建并注册 {@link TransactionManager}</li>
- *   <li>创建 {@link TransactionBeanInterceptor} 并注册到容器</li>
+ *   <li>注册 {@link TransactionBeanInterceptor}</li>
+ *   <li>拦截所有标注 {@code @Transactional} 的方法</li>
+ *   <li>在运行时查找 TransactionManager 实现</li>
  * </ol>
  *
- * <p>若容器中没有 {@link DataSource}，本 Runner 会跳过初始化并打印警告日志。
+ * <p>设计原则：
+ * <ul>
+ *   <li>不依赖 DataSource</li>
+ *   <li>不依赖 JdbcTransactionManager</li>
+ *   <li>不依赖任何具体实现</li>
+ *   <li>由具体的实现（如 cap-data）提供 TransactionManager</li>
+ * </ul>
  */
 @Slf4j
-@RunnerMeta(type = RunnerType.FEATURE, order = 380, description = "初始化事务系统：创建 TransactionManager 并注册 TransactionBeanInterceptor")
+@RunnerMeta(
+    type = RunnerType.FEATURE,
+    order = 380,
+    name = "CapTransactionBootstrapRunner",
+    description = "注册事务拦截器 - 完全独立，不依赖具体实现"
+)
 public class TransactionBootstrapRunner implements BootstrapRunner {
 
     @Override
@@ -34,31 +41,21 @@ public class TransactionBootstrapRunner implements BootstrapRunner {
 
         BeanContainer container = context.getBeanContainer();
 
-        // 1. 获取 DataSource
-        DataSource dataSource = obtainDataSource(container);
-        if (dataSource == null) {
-            log.warn("容器中未找到 DataSource，事务功能将被跳过");
-            log.warn("提示：请在应用中配置 DataSource Bean");
-            log.warn("   例如：在 @Capper 标注的类中创建 DataSource 工厂方法");
-            return;
-        }
-
-        // 2. 创建 TransactionManager 并注册到容器
-        TransactionManager txManager = new JdbcTransactionManager(dataSource);
-        container.registerSingleton("transactionManager", txManager);
-        log.info("事务管理器已注册");
-
-        // 3. 注册 TransactionBeanInterceptor
-        container.addBeanInterceptor(new TransactionBeanInterceptor(txManager));
-        log.info("事务 Bean 拦截器已注册（order=500，在 AOP 拦截器之后执行）");
-    }
-
-    private DataSource obtainDataSource(BeanContainer container) {
         try {
-            return container.getBean(DataSource.class);
+            // 创建并注册 TransactionBeanInterceptor
+            // 注意：此时不需要 TransactionManager，在运行时延迟获取
+            TransactionBeanInterceptor interceptor = new TransactionBeanInterceptor(container);
+
+            container.addBeanInterceptor(interceptor);
+
+            log.info("✅ 事务模块初始化完成");
+            log.info("   - TransactionBeanInterceptor 已注册");
+            log.info("   - 现在可以使用 @Transactional 注解");
+            log.info("   💡 注意：事务功能依赖于 TransactionManager 的具体实现");
+            log.info("           请确保已在应用中配置 TransactionManager 实现");
         } catch (Exception e) {
-            log.debug("容器中未找到 DataSource: {}", e.getMessage());
-            return null;
+            log.error("❌ 事务模块初始化失败", e);
+            throw e;
         }
     }
 }

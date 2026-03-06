@@ -1,15 +1,26 @@
-package org.moper.cap.transaction.manager;
+package org.moper.cap.data.transaction;
 
 import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.transaction.annotation.IsolationLevel;
 import org.moper.cap.transaction.context.TransactionContext;
+import org.moper.cap.transaction.manager.TransactionManager;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * JDBC 事务管理器实现
+ * JDBC 事务管理器实现 - 由 cap-data 模块提供
+ *
+ * <p>这是 {@link TransactionManager} 接口的具体实现，
+ * 使用 {@link DataSource} 和 JDBC {@link Connection} 来管理事务。
+ *
+ * <p>特性：
+ * <ul>
+ *   <li>支持嵌套事务（通过 {@link TransactionContext} 的 Stack 实现）</li>
+ *   <li>支持事务隔离级别配置</li>
+ *   <li>支持只读事务</li>
+ * </ul>
  */
 @Slf4j
 public class JdbcTransactionManager implements TransactionManager {
