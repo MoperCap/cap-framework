@@ -5,15 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.exception.BeanException;
 import org.moper.cap.bean.interceptor.BeanInterceptor;
-import org.moper.cap.transaction.annotation.Propagation;
 import org.moper.cap.transaction.annotation.Transactional;
-import org.moper.cap.transaction.context.TransactionContext;
-import org.moper.cap.transaction.exception.TransactionException;
+import org.moper.cap.transaction.aspect.TransactionAspect;
 import org.moper.cap.transaction.manager.TransactionManager;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.*;
-import java.sql.Connection;
 
 /**
  * 事务 Bean 拦截器
@@ -39,9 +36,11 @@ public class TransactionBeanInterceptor implements BeanInterceptor {
     private static final Unsafe UNSAFE = getUnsafe();
 
     private final TransactionManager transactionManager;
+    private final TransactionAspect transactionAspect;
 
     public TransactionBeanInterceptor(TransactionManager transactionManager) {
         this.transactionManager = transactionManager;
+        this.transactionAspect = new TransactionAspect(transactionManager);
     }
 
     @Override
@@ -103,7 +102,7 @@ public class TransactionBeanInterceptor implements BeanInterceptor {
         return Proxy.newProxyInstance(
                 targetClass.getClassLoader(),
                 interfaces,
-                new TransactionInvocationHandler(target, targetClass, transactionManager)
+                new TransactionInvocationHandler(target, targetClass, transactionAspect)
         );
     }
 
@@ -122,13 +121,27 @@ public class TransactionBeanInterceptor implements BeanInterceptor {
             Object proxyInstance = UNSAFE.allocateInstance(proxyClass);
 
             ((javassist.util.proxy.Proxy) proxyInstance).setHandler((self, thisMethod, proceed, args) -> {
-                // thisMethod is declared in targetClass (the immediate superclass)
-                Transactional tx = findTransactionalAnnotation(thisMethod);
-                if (tx == null) {
+                // thisMethod may be declared in an intermediate proxy class (e.g., AOP proxy);
+                // traverse the class hierarchy to find the method with @Transactional
+                Method annotatedMethod = findAnnotatedMethodInHierarchy(thisMethod);
+                if (annotatedMethod == null) {
                     thisMethod.setAccessible(true);
                     return thisMethod.invoke(target, args);
                 }
-                return executeWithTransaction(target, thisMethod, args, tx);
+                try {
+                    transactionAspect.handleTransactionBegin(annotatedMethod);
+                    thisMethod.setAccessible(true);
+                    Object result = thisMethod.invoke(target, args);
+                    transactionAspect.handleTransactionEnd(annotatedMethod, null);
+                    return result;
+                } catch (InvocationTargetException ite) {
+                    Throwable cause = ite.getCause() != null ? ite.getCause() : ite;
+                    transactionAspect.handleTransactionEnd(annotatedMethod, cause);
+                    throw cause;
+                } catch (Exception e) {
+                    transactionAspect.handleTransactionEnd(annotatedMethod, e);
+                    throw e;
+                }
             });
 
             return proxyInstance;
@@ -138,213 +151,30 @@ public class TransactionBeanInterceptor implements BeanInterceptor {
     }
 
     /**
-     * 事务感知的 JDK 调用处理器。
-     */
-    private static class TransactionInvocationHandler implements InvocationHandler {
-
-        private final Object target;
-        private final Class<?> targetClass;
-        private final TransactionManager transactionManager;
-
-        TransactionInvocationHandler(Object target, Class<?> targetClass, TransactionManager transactionManager) {
-            this.target = target;
-            this.targetClass = targetClass;
-            this.transactionManager = transactionManager;
-        }
-
-        @Override
-        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            // Find the corresponding method on the target class (not the interface)
-            Transactional tx = findTransactionalOnTargetClass(method, targetClass);
-            if (tx == null) {
-                method.setAccessible(true);
-                return method.invoke(target, args);
-            }
-            return executeWithTransaction(target, method, args, tx, transactionManager);
-        }
-
-        private Transactional findTransactionalOnTargetClass(Method interfaceMethod, Class<?> targetClass) {
-            Class<?> current = targetClass;
-            while (current != null && current != Object.class) {
-                try {
-                    Method m = current.getDeclaredMethod(interfaceMethod.getName(), interfaceMethod.getParameterTypes());
-                    Transactional tx = m.getAnnotation(Transactional.class);
-                    if (tx != null) return tx;
-                } catch (NoSuchMethodException e) {
-                    // not in this class, try superclass
-                }
-                current = current.getSuperclass();
-            }
-            return null;
-        }
-    }
-
-    /**
-     * 在方法及其父类层级中查找 {@link Transactional} 注解。
+     * 在方法声明类及其父类层级中查找带有 {@link Transactional} 注解的同名同参数方法。
      *
      * <p>Javassist 代理的 {@code thisMethod} 声明在直接父类（可能是 AOP 代理类）中，
      * AOP 代理类的方法没有 {@link Transactional} 注解，因此需要向上遍历到原始类。
      */
-    private static Transactional findTransactionalAnnotation(Method method) {
-        Transactional tx = method.getAnnotation(Transactional.class);
-        if (tx != null) return tx;
+    private static Method findAnnotatedMethodInHierarchy(Method method) {
+        // Check the method itself first
+        if (method.isAnnotationPresent(Transactional.class)) {
+            return method;
+        }
 
         Class<?> superClass = method.getDeclaringClass().getSuperclass();
         while (superClass != null && superClass != Object.class) {
             try {
                 Method superMethod = superClass.getDeclaredMethod(method.getName(), method.getParameterTypes());
-                tx = superMethod.getAnnotation(Transactional.class);
-                if (tx != null) return tx;
+                if (superMethod.isAnnotationPresent(Transactional.class)) {
+                    return superMethod;
+                }
             } catch (NoSuchMethodException e) {
                 // not declared in this superclass
             }
             superClass = superClass.getSuperclass();
         }
         return null;
-    }
-
-    /**
-     * 在事务上下文中执行目标方法（Javassist 代理入口）。
-     */
-    private Object executeWithTransaction(Object target, Method method, Object[] args, Transactional tx) throws Throwable {
-        return executeWithTransaction(target, method, args, tx, transactionManager);
-    }
-
-    /**
-     * 核心事务执行逻辑：
-     * <ol>
-     *   <li>根据传播性决定是否开启新事务</li>
-     *   <li>执行目标方法</li>
-     *   <li>成功则提交；异常则根据回滚规则决定回滚或提交</li>
-     * </ol>
-     */
-    static Object executeWithTransaction(Object target, Method method, Object[] args,
-                                         Transactional tx, TransactionManager transactionManager) throws Throwable {
-        Propagation propagation = tx.propagation();
-        TransactionContext.TransactionInfo currentTx = TransactionContext.getCurrentTransaction();
-
-        // Handle propagation modes that don't require starting a transaction
-        switch (propagation) {
-            case NEVER:
-                if (currentTx != null) {
-                    throw new TransactionException(
-                            "NEVER propagation: transaction already exists for method " + method.getName());
-                }
-                method.setAccessible(true);
-                return invokeTarget(target, method, args);
-
-            case NOT_SUPPORTED:
-                // Suspend current transaction (not truly suspended here, just proceed without one)
-                log.debug("NOT_SUPPORTED: 不在事务中执行方法 {}", method.getName());
-                method.setAccessible(true);
-                return invokeTarget(target, method, args);
-
-            case MANDATORY:
-                if (currentTx == null) {
-                    throw new TransactionException(
-                            "MANDATORY propagation: no transaction exists for method " + method.getName());
-                }
-                method.setAccessible(true);
-                return invokeTarget(target, method, args);
-
-            case SUPPORTS:
-                // Execute with or without transaction, no new transaction created
-                method.setAccessible(true);
-                return invokeTarget(target, method, args);
-
-            default:
-                // REQUIRED, REQUIRES_NEW, NESTED — need transaction management
-                break;
-        }
-
-        // Begin transaction (respects propagation via TransactionContext)
-        Connection connection = transactionManager.beginTransaction(tx.readOnly(), tx.isolation());
-
-        try {
-            method.setAccessible(true);
-            Object result = invokeTarget(target, method, args);
-
-            // Check timeout before committing
-            checkTimeout(tx);
-
-            transactionManager.commit(connection);
-            return result;
-        } catch (Throwable t) {
-            if (shouldRollback(tx, t)) {
-                log.debug("回滚事务: method={}, exception={}", method.getName(), t.getClass().getName());
-                transactionManager.rollback(connection);
-            } else {
-                log.debug("提交事务（异常不触发回滚）: method={}, exception={}", method.getName(), t.getClass().getName());
-                transactionManager.commit(connection);
-            }
-            throw t;
-        }
-    }
-
-    /**
-     * 调用目标方法，将 {@link InvocationTargetException} 解包为原始异常。
-     */
-    private static Object invokeTarget(Object target, Method method, Object[] args) throws Throwable {
-        try {
-            return method.invoke(target, args);
-        } catch (InvocationTargetException ite) {
-            throw ite.getCause() != null ? ite.getCause() : ite;
-        }
-    }
-
-    /**
-     * 检查事务是否超时（仅当 {@link Transactional#timeout()} &gt; 0 时有效）。
-     *
-     * <p>在方法执行完成、提交之前检查已用时间；若超时则抛出
-     * {@link TransactionException} 触发回滚。
-     */
-    private static void checkTimeout(Transactional tx) {
-        int timeout = tx.timeout();
-        if (timeout <= 0) return;
-
-        TransactionContext.TransactionInfo txInfo = TransactionContext.getCurrentTransaction();
-        if (txInfo == null) return;
-
-        long elapsedSeconds = (System.currentTimeMillis() - txInfo.getStartTime()) / 1000;
-        if (elapsedSeconds >= timeout) {
-            throw new TransactionException(
-                    "Transaction timed out after " + elapsedSeconds + "s (limit: " + timeout + "s)");
-        }
-    }
-
-    /**
-     * 根据 {@link Transactional} 配置判断给定异常是否应触发回滚。
-     *
-     * <p>规则（按优先级）：
-     * <ol>
-     *   <li>{@code noRollbackFor} 匹配 → 不回滚</li>
-     *   <li>{@code rollbackFor} 非空且匹配 → 回滚</li>
-     *   <li>{@code rollbackFor} 非空但不匹配 → 不回滚</li>
-     *   <li>默认：{@link RuntimeException} 及其子类回滚，{@link Error} 也回滚</li>
-     * </ol>
-     */
-    static boolean shouldRollback(Transactional tx, Throwable t) {
-        if (!(t instanceof Exception exception)) {
-            // Errors always roll back
-            return true;
-        }
-
-        for (Class<? extends Exception> noRollback : tx.noRollbackFor()) {
-            if (noRollback.isInstance(exception)) {
-                return false;
-            }
-        }
-
-        if (tx.rollbackFor().length > 0) {
-            for (Class<? extends Exception> rollback : tx.rollbackFor()) {
-                if (rollback.isInstance(exception)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        return t instanceof RuntimeException;
     }
 
     @Override
