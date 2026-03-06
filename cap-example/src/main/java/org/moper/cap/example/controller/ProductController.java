@@ -40,7 +40,7 @@ public class ProductController {
      * GET /api/products/{id}
      */
     @GetMapping("/{id}")
-    public ApiResponse<Product> getProductById(@PathVariable long id) {
+    public ApiResponse<Product> getProductById(@PathVariable("id") long id) {
         log.info("获取商品: id={}", id);
         Product product = productService.getProductById(id);
         if (product == null) {

@@ -149,6 +149,8 @@
                 <version>3.11.0</version>
                 <configuration>
                     <parameters>true</parameters>
+                    <verbose>false</verbose>
+                    <fork>true</fork>
                 </configuration>
             </plugin>
         </plugins>

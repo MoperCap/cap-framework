@@ -7,9 +7,11 @@ import org.moper.cap.common.priority.Priority;
 import org.moper.cap.common.converter.TypeResolverFactory;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 
+@Slf4j
 @Priority(100)
 public class PathVariableBinder implements ParameterBinder {
 
@@ -29,9 +31,14 @@ public class PathVariableBinder implements ParameterBinder {
                       (annotation.name().isBlank() ? metadata.name() : annotation.name()) :
                       annotation.value();
 
+        log.debug("PathVariable binding: annotation.value='{}', annotation.name='{}', parameter name='{}', resolved name='{}'",
+                annotation.value(), annotation.name(), metadata.getNameWithDebug(), name);
+        log.debug("Available path variables: {}", pathVariables);
+
         String value = pathVariables.get(name);
 
         if (value == null && annotation.required()) {
+            log.error("Path variable not found: {} (available variables: {})", name, pathVariables.keySet());
             throw new IllegalArgumentException("Required path variable not found: " + name);
         }
 

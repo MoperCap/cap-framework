@@ -41,7 +41,7 @@ public class OrderController {
      * GET /api/orders/{id}
      */
     @GetMapping("/{id}")
-    public ApiResponse<Order> getOrderById(@PathVariable long id) {
+    public ApiResponse<Order> getOrderById(@PathVariable("id") long id) {
         log.info("获取订单: id={}", id);
         Order order = orderService.getOrderById(id);
         if (order == null) {
@@ -55,7 +55,7 @@ public class OrderController {
      * GET /api/orders/user/{userId}
      */
     @GetMapping("/user/{userId}")
-    public ApiResponse<List<Order>> getOrdersByUserId(@PathVariable long userId) {
+    public ApiResponse<List<Order>> getOrdersByUserId(@PathVariable("userId") long userId) {
         log.info("获取用户订单: userId={}", userId);
         List<Order> orders = orderService.getOrdersByUserId(userId);
         return ApiResponse.success("获取用户订单成功", orders);
