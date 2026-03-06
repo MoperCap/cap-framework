@@ -3,11 +3,10 @@ package org.moper.cap.aop.proxy;
 import javassist.util.proxy.Proxy;
 import javassist.util.proxy.ProxyFactory;
 import org.moper.cap.aop.exception.AspectException;
-import org.moper.cap.aop.model.JoinPoint;
+import org.moper.cap.aop.model.DefaultProceedingJoinPoint;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -53,45 +52,30 @@ public final class JavassistProxyFactory implements org.moper.cap.aop.proxy.Prox
 
             ((Proxy) proxyInstance).setHandler((self, thisMethod, proceed, args) -> {
                 Class<?> actualTargetClass = target.getClass();
-                AdvisorInvoker.invokeBefore(advisors, thisMethod, actualTargetClass, args);
+                DefaultProceedingJoinPoint pjp = new DefaultProceedingJoinPoint(target, thisMethod, args);
 
-                JoinPoint joinPoint = new DefaultJoinPoint(target, thisMethod, args);
-                Object result = AdvisorInvoker.invokeAround(advisors, thisMethod, actualTargetClass, joinPoint);
+                AdvisorInvoker.invokeBefore(advisors, thisMethod, actualTargetClass, pjp);
 
-                AdvisorInvoker.invokeAfter(advisors, thisMethod, actualTargetClass, args);
+                Throwable thrown = null;
+                Object result = null;
+                try {
+                    result = AdvisorInvoker.invokeAround(advisors, thisMethod, actualTargetClass, pjp);
+                } catch (Throwable t) {
+                    thrown = t;
+                } finally {
+                    AdvisorInvoker.invokeAfter(advisors, thisMethod, actualTargetClass, pjp);
+                }
+
+                if (thrown != null) {
+                    AdvisorInvoker.invokeAfterThrowing(advisors, thisMethod, actualTargetClass, pjp, thrown);
+                    throw thrown;
+                }
                 return result;
             });
 
             return proxyInstance;
         } catch (Exception e) {
             throw new AspectException("Failed to create Javassist proxy for class: " + targetClass.getName(), e);
-        }
-    }
-
-    /** Default JoinPoint implementation used inside Javassist proxies. */
-    static final class DefaultJoinPoint implements JoinPoint {
-        private final Object target;
-        private final Method method;
-        private final Object[] args;
-
-        DefaultJoinPoint(Object target, Method method, Object[] args) {
-            this.target = target;
-            this.method = method;
-            this.args = args;
-        }
-
-        @Override public Object getTarget() { return target; }
-        @Override public Method getMethod() { return method; }
-        @Override public Object[] getArgs()  { return args; }
-
-        @Override
-        public Object proceed() throws Throwable {
-            try {
-                method.setAccessible(true);
-                return method.invoke(target, args);
-            } catch (InvocationTargetException ite) {
-                throw ite.getCause() != null ? ite.getCause() : ite;
-            }
         }
     }
 }

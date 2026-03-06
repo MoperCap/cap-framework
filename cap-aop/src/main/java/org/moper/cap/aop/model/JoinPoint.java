@@ -3,10 +3,14 @@ package org.moper.cap.aop.model;
 import java.lang.reflect.Method;
 
 /**
- * AOP join point - represents the method being intercepted by an {@code @Around} advice.
+ * AOP join point - provides context about the method being intercepted.
  *
- * <p>Provides access to the target object, the intercepted method, and its arguments,
- * and allows the advice to invoke the original method via {@link #proceed()}.
+ * <p>Provides access to the target object, the intercepted method, its arguments,
+ * and the method signature. Used by {@code @Before}, {@code @After}, and
+ * {@code @AfterThrowing} advice.
+ *
+ * <p>To proceed with the original method invocation (for {@code @Around} advice),
+ * use {@link ProceedingJoinPoint}.
  */
 public interface JoinPoint {
 
@@ -26,10 +30,7 @@ public interface JoinPoint {
     Object[] getArgs();
 
     /**
-     * Proceeds with the original method invocation.
-     *
-     * @return the return value of the original method
-     * @throws Throwable if the original method throws
+     * Returns the signature of the intercepted method.
      */
-    Object proceed() throws Throwable;
+    MethodSignature getSignature();
 }

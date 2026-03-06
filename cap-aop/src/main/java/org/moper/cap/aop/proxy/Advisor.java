@@ -1,125 +1,92 @@
 package org.moper.cap.aop.proxy;
 
 import lombok.Getter;
+import org.moper.cap.aop.pointcut.Pointcut;
+import org.moper.cap.aop.pointcut.PointcutParser;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 public class Advisor {
-    public enum Type { BEFORE, AFTER, AROUND }
+
+    public enum Type { BEFORE, AFTER, AROUND, AFTER_THROWING }
+
     @Getter
     private final Type type;
-    private final String pointcut;
+    private final Pointcut pointcut;
     @Getter
     private final Object aspectInstance;
     @Getter
     private final Method adviceMethod;
+    /**
+     * The expected exception type for {@link Type#AFTER_THROWING} advisors.
+     * {@code null} means the advisor matches any throwable.
+     */
+    @Getter
+    private final Class<?> exceptionType;
 
-    public Advisor(Type type, String pointcut, Object aspectInstance, Method adviceMethod) {
+    /**
+     * Primary constructor.
+     *
+     * @param type           the advice type
+     * @param pointcut       the pointcut that determines which methods are intercepted
+     * @param aspectInstance the aspect bean instance
+     * @param adviceMethod   the advice method to invoke
+     * @param exceptionType  the exception type to match (only used for {@link Type#AFTER_THROWING});
+     *                       {@code null} means match any throwable
+     */
+    public Advisor(Type type, Pointcut pointcut, Object aspectInstance, Method adviceMethod,
+                   Class<?> exceptionType) {
         this.type = type;
         this.pointcut = pointcut;
         this.aspectInstance = aspectInstance;
         this.adviceMethod = adviceMethod;
+        this.exceptionType = exceptionType;
     }
 
     /**
-     * Matches a method using the pointcut expression.
+     * Convenience constructor that parses a pointcut expression string.
      *
-     * <p>Supports two matching modes:
-     * <ul>
-     *   <li><b>Exact signature:</b> {@code "com.example.Foo.bar"}</li>
-     *   <li><b>Annotation-based:</b> {@code "@method(annotationFqn)"} or {@code "@target(annotationFqn)"},
-     *       optionally combined with {@code " || "}</li>
-     * </ul>
+     * <p>The exception type is derived automatically from the advice method parameters for
+     * {@link Type#AFTER_THROWING} advisors.
      *
-     * @param m the method to match (may be an interface or proxy method)
+     * @param type                the advice type
+     * @param pointcutExpression  the pointcut expression string (parsed via {@link PointcutParser})
+     * @param aspectInstance      the aspect bean instance
+     * @param adviceMethod        the advice method to invoke
      */
-    public boolean matches(Method m) {
-        return matches(m, null);
+    public Advisor(Type type, String pointcutExpression, Object aspectInstance, Method adviceMethod) {
+        this(type, PointcutParser.parse(pointcutExpression), aspectInstance, adviceMethod,
+                deriveExceptionType(adviceMethod, type));
     }
 
     /**
-     * Matches a method using the pointcut expression, with awareness of the actual target class.
-     *
-     * <p>When {@code targetClass} is provided, annotation-based patterns also look up
-     * the corresponding method on {@code targetClass} to find annotations that may be
-     * absent on the proxy or interface method.
+     * Returns {@code true} if this advisor matches the given method on the target class.
      *
      * @param m           the method to match (may be an interface or proxy method)
      * @param targetClass the actual implementation class (may be {@code null})
      */
     public boolean matches(Method m, Class<?> targetClass) {
-        if (isAnnotationBased(pointcut)) {
-            return matchesAnnotationPointcut(m, targetClass, pointcut);
-        }
-        String sig = m.getDeclaringClass().getName() + "." + m.getName();
-        return sig.equals(pointcut);
+        return pointcut.matches(m, targetClass);
     }
 
-    private static boolean isAnnotationBased(String expr) {
-        return expr.contains("@method(") || expr.contains("@target(");
+    /**
+     * Returns {@code true} if this advisor matches the given method.
+     */
+    public boolean matches(Method m) {
+        return pointcut.matches(m, null);
     }
 
-    private static boolean matchesAnnotationPointcut(Method m, Class<?> targetClass, String expr) {
-        if (expr.contains(" || ")) {
-            for (String part : expr.split("\\|\\|")) {
-                if (matchesSingleAnnotationPointcut(m, targetClass, part.trim())) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        return matchesSingleAnnotationPointcut(m, targetClass, expr);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static boolean matchesSingleAnnotationPointcut(Method m, Class<?> targetClass, String expr) {
-        if (expr.startsWith("@method(") && expr.endsWith(")")) {
-            String annotationFqn = expr.substring(8, expr.length() - 1).trim();
-            try {
-                Class<? extends Annotation> annotationClass =
-                        (Class<? extends Annotation>) Class.forName(annotationFqn);
-                // Check the method itself first (works for implementation-class methods)
-                if (m.isAnnotationPresent(annotationClass)) {
-                    return true;
-                }
-                // Also look up the corresponding method on the target class
-                if (targetClass != null && targetClass != m.getDeclaringClass()) {
-                    Method targetMethod = findMethod(targetClass, m.getName(), m.getParameterTypes());
-                    if (targetMethod != null && targetMethod.isAnnotationPresent(annotationClass)) {
-                        return true;
-                    }
-                }
-            } catch (ClassNotFoundException e) {
-                return false;
+    /**
+     * Derives the exception type for an {@link Type#AFTER_THROWING} advisor by inspecting the
+     * advice method's parameter list for the first {@link Throwable} subtype.
+     */
+    private static Class<?> deriveExceptionType(Method adviceMethod, Type type) {
+        if (type != Type.AFTER_THROWING) return null;
+        for (Class<?> paramType : adviceMethod.getParameterTypes()) {
+            if (Throwable.class.isAssignableFrom(paramType)) {
+                return paramType;
             }
         }
-        if (expr.startsWith("@target(") && expr.endsWith(")")) {
-            String annotationFqn = expr.substring(8, expr.length() - 1).trim();
-            try {
-                Class<? extends Annotation> annotationClass =
-                        (Class<? extends Annotation>) Class.forName(annotationFqn);
-                Class<?> classToCheck = targetClass != null ? targetClass : m.getDeclaringClass();
-                return classToCheck.isAnnotationPresent(annotationClass);
-            } catch (ClassNotFoundException e) {
-                return false;
-            }
-        }
-        return false;
-    }
-
-    /** Finds a method by name and parameter types, traversing the class hierarchy. */
-    private static Method findMethod(Class<?> clazz, String name, Class<?>[] paramTypes) {
-        Class<?> current = clazz;
-        while (current != null && current != Object.class) {
-            try {
-                Method m = current.getDeclaredMethod(name, paramTypes);
-                m.setAccessible(true);
-                return m;
-            } catch (NoSuchMethodException ignored) {
-                current = current.getSuperclass();
-            }
-        }
-        return null;
+        return null; // matches all throwables
     }
 }
