@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.transaction.annotation.IsolationLevel;
 import org.moper.cap.transaction.annotation.Propagation;
 import org.moper.cap.transaction.context.TransactionContext;
+import org.moper.cap.transaction.context.TransactionStatus;
 import org.moper.cap.transaction.exception.TransactionException;
 import org.moper.cap.transaction.manager.TransactionManager;
 
@@ -98,30 +99,38 @@ public class TransactionTemplate {
             case NESTED:
                 return executeNested(action, currentTx);
 
-            case SUPPORTS:
+            case SUPPORTS: {
                 // Join existing or run non-transactionally
+                TransactionStatus status = (currentTx != null)
+                        ? new TransactionStatus(currentTx.getConnection(), false)
+                        : new TransactionStatus(null, false);
                 if (currentTx != null) {
                     log.debug("SUPPORTS: 加入现有事务");
-                    return doInvoke(action);
+                } else {
+                    log.debug("SUPPORTS: 以非事务方式执行");
                 }
-                log.debug("SUPPORTS: 以非事务方式执行");
-                return doInvoke(action);
+                return doInvoke(action, status);
+            }
 
-            case MANDATORY:
+            case MANDATORY: {
                 if (currentTx == null) {
                     throw new TransactionException(
                             "MANDATORY propagation: no existing transaction found");
                 }
                 log.debug("MANDATORY: 在事务中执行");
-                return doInvoke(action);
+                TransactionStatus status = new TransactionStatus(currentTx.getConnection(), false);
+                return doInvoke(action, status);
+            }
 
-            case NEVER:
+            case NEVER: {
                 if (currentTx != null) {
                     throw new TransactionException(
                             "NEVER propagation: a transaction is already active");
                 }
                 log.debug("NEVER: 以非事务方式执行");
-                return doInvoke(action);
+                TransactionStatus status = new TransactionStatus(null, false);
+                return doInvoke(action, status);
+            }
 
             case NOT_SUPPORTED:
                 return executeNotSupported(action);
@@ -140,7 +149,8 @@ public class TransactionTemplate {
                                   TransactionContext.TransactionInfo currentTx) {
         if (currentTx != null) {
             log.debug("REQUIRED: 加入现有事务 (depth={})", TransactionContext.getTransactionDepth());
-            return doInvoke(action);
+            TransactionStatus status = new TransactionStatus(currentTx.getConnection(), false);
+            return doInvoke(action, status);
         }
         return beginAndExecute(action);
     }
@@ -181,8 +191,9 @@ public class TransactionTemplate {
             throw new RuntimeException("Failed to create savepoint for NESTED transaction", e);
         }
 
+        TransactionStatus status = new TransactionStatus(conn, false, savepoint);
         try {
-            T result = doInvoke(action);
+            T result = doInvoke(action, status);
             // Success – release the savepoint
             try {
                 transactionManager.releaseSavepoint(conn, savepoint);
@@ -211,7 +222,8 @@ public class TransactionTemplate {
             log.debug("NOT_SUPPORTED: 以非事务方式执行");
         }
         try {
-            return doInvoke(action);
+            TransactionStatus status = new TransactionStatus(null, false);
+            return doInvoke(action, status);
         } finally {
             TransactionContext.resumeTransaction(suspended);
             if (suspended != null) {
@@ -230,16 +242,23 @@ public class TransactionTemplate {
      */
     private <T> T beginAndExecute(TransactionCallback<T> action) {
         Connection conn = null;
-        long startTime = System.currentTimeMillis();
         try {
             conn = transactionManager.beginTransaction(readOnly, isolationLevel);
             log.debug("编程式事务已开始");
 
-            T result = doInvoke(action);
+            TransactionStatus status = new TransactionStatus(conn, true);
+            T result = doInvoke(action, status);
 
-            checkTimeout(startTime);
-            transactionManager.commit(conn);
-            log.debug("编程式事务已提交");
+            checkTimeout(status.getStartTime());
+
+            if (status.isRollbackOnly()) {
+                transactionManager.rollback(conn);
+                log.debug("编程式事务已回滚（rollback-only 标记）");
+            } else {
+                transactionManager.commit(conn);
+                log.debug("编程式事务已提交");
+            }
+            status.setCompleted();
             return result;
         } catch (Exception e) {
             if (conn != null) {
@@ -257,10 +276,10 @@ public class TransactionTemplate {
         }
     }
 
-    /** Invokes the callback, wrapping checked exceptions in {@link RuntimeException}. */
-    private <T> T doInvoke(TransactionCallback<T> action) {
+    /** Invokes the callback with the given {@link TransactionStatus}, wrapping checked exceptions. */
+    private <T> T doInvoke(TransactionCallback<T> action, TransactionStatus status) {
         try {
-            return action.doInTransaction();
+            return action.doInTransaction(status);
         } catch (RuntimeException | Error e) {
             throw e;
         } catch (Exception e) {
