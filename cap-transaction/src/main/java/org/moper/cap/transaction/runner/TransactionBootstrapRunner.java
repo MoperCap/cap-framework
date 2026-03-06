@@ -6,24 +6,21 @@ import org.moper.cap.core.annotation.RunnerMeta;
 import org.moper.cap.core.context.BootstrapContext;
 import org.moper.cap.core.runner.BootstrapRunner;
 import org.moper.cap.core.runner.RunnerType;
-import org.moper.cap.transaction.interceptor.TransactionBeanInterceptor;
+import org.moper.cap.transaction.aspect.TransactionAspect;
 
 /**
- * 事务启动器 - 完全独立，不依赖任何实现
+ * 事务启动器 - 注册事务 Aspect，基于 AOP 框架处理 @Transactional 方法
  *
  * <p>职责：
  * <ol>
- *   <li>注册 {@link TransactionBeanInterceptor}</li>
- *   <li>拦截所有标注 {@code @Transactional} 的方法</li>
- *   <li>在运行时查找 TransactionManager 实现</li>
+ *   <li>在 AOP 框架（order=400）扫描切面 Bean 之前，将 {@link TransactionAspect} 注册到容器</li>
+ *   <li>AOP 框架自动发现并应用 {@link TransactionAspect}，为所有 {@code @Transactional} 方法创建代理</li>
  * </ol>
  *
- * <p>设计原则：
+ * <p>设计说明：
  * <ul>
- *   <li>不依赖 DataSource</li>
- *   <li>不依赖 JdbcTransactionManager</li>
- *   <li>不依赖任何具体实现</li>
- *   <li>由具体的实现（如 cap-data）提供 TransactionManager</li>
+ *   <li>{@link TransactionAspect} 持有 {@link BeanContainer} 引用，在运行时延迟获取 TransactionManager</li>
+ *   <li>不再需要独立的 Bean 拦截器或 Javassist 代理生成器</li>
  * </ul>
  */
 @Slf4j
@@ -31,7 +28,7 @@ import org.moper.cap.transaction.interceptor.TransactionBeanInterceptor;
     type = RunnerType.FEATURE,
     order = 380,
     name = "CapTransactionBootstrapRunner",
-    description = "注册事务拦截器 - 完全独立，不依赖具体实现"
+    description = "注册事务 Aspect - 基于 AOP 框架"
 )
 public class TransactionBootstrapRunner implements BootstrapRunner {
 
@@ -42,16 +39,15 @@ public class TransactionBootstrapRunner implements BootstrapRunner {
         BeanContainer container = context.getBeanContainer();
 
         try {
-            // 创建并注册 TransactionBeanInterceptor
-            // 注意：此时不需要 TransactionManager，在运行时延迟获取
-            TransactionBeanInterceptor interceptor = new TransactionBeanInterceptor(container);
-
-            container.addBeanInterceptor(interceptor);
+            if (!container.containsBean("transactionAspect")) {
+                TransactionAspect aspect = new TransactionAspect(container);
+                container.registerSingleton("transactionAspect", aspect);
+            }
 
             log.info("✅ 事务模块初始化完成");
-            log.info("   - TransactionBeanInterceptor 已注册");
-            log.info("   - 现在可以使用 @Transactional 注解");
-            log.info("   - 事务实现由其他模块动态提供（如 cap-data）");
+            log.info("   - TransactionAspect 已注册");
+            log.info("   - @Transactional 注解已启用");
+            log.info("   - 所有 @Transactional 方法将通过 AOP 自动代理");
         } catch (Exception e) {
             log.error("❌ 事务模块初始化失败", e);
             throw e;

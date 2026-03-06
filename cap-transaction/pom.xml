@@ -23,6 +23,11 @@
             <artifactId>cap-bean</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.moper.cap</groupId>
+            <artifactId>cap-aop</artifactId>
+        </dependency>
+
         <!-- 日志 -->
         <dependency>
             <groupId>org.slf4j</groupId>
