@@ -16,6 +16,7 @@
         <module>cap-aop</module>
         <module>cap-data</module>
         <module>cap-web</module>
+        <module>cap-transaction</module>
         <module>cap-example</module>
         <module>cap-common</module>
     </modules>
@@ -106,6 +107,12 @@
             <dependency>
                 <groupId>org.moper.cap</groupId>
                 <artifactId>cap-data</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.moper.cap</groupId>
+                <artifactId>cap-transaction</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
