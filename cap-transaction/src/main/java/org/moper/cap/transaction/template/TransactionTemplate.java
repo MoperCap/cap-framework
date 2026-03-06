@@ -4,14 +4,27 @@ import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.transaction.annotation.IsolationLevel;
 import org.moper.cap.transaction.annotation.Propagation;
 import org.moper.cap.transaction.context.TransactionContext;
+import org.moper.cap.transaction.exception.TransactionException;
 import org.moper.cap.transaction.manager.TransactionManager;
 
 import java.sql.Connection;
+import java.sql.Savepoint;
 
 /**
  * 事务模板 - 提供编程式事务 API
  *
  * <p>允许在任何地方使用事务，无需 {@code @Transactional} 注解。
+ *
+ * <p>支持所有传播性：
+ * <ul>
+ *   <li>{@link Propagation#REQUIRED}      – 加入已有事务或创建新事务（默认）</li>
+ *   <li>{@link Propagation#REQUIRES_NEW}  – 始终创建新事务，挂起已有事务</li>
+ *   <li>{@link Propagation#NESTED}        – 嵌套事务（Savepoint 支持）</li>
+ *   <li>{@link Propagation#SUPPORTS}      – 支持但非强制事务</li>
+ *   <li>{@link Propagation#MANDATORY}     – 强制在事务中执行</li>
+ *   <li>{@link Propagation#NEVER}         – 禁止事务</li>
+ *   <li>{@link Propagation#NOT_SUPPORTED} – 暂停事务后以非事务方式执行</li>
+ * </ul>
  *
  * <p>使用示例：
  * <pre>{@code
@@ -31,6 +44,7 @@ import java.sql.Connection;
  * <pre>{@code
  * txTemplate
  *     .isolationLevel(IsolationLevel.REPEATABLE_READ)
+ *     .propagation(Propagation.REQUIRES_NEW)
  *     .timeout(30)
  *     .execute(() -> {
  *         return result;
@@ -43,9 +57,6 @@ public class TransactionTemplate {
     private final TransactionManager transactionManager;
     private boolean readOnly = false;
     private IsolationLevel isolationLevel = IsolationLevel.READ_COMMITTED;
-    // NOTE: propagation and timeout are reserved for future implementation.
-    // Currently execute() implements REQUIRED semantics: join existing transaction
-    // or begin a new one.
     private Propagation propagation = Propagation.REQUIRED;
     private int timeout = -1;
 
@@ -54,10 +65,18 @@ public class TransactionTemplate {
     }
 
     /**
-     * 执行事务内的业务逻辑。
+     * 在配置的事务语义下执行给定的业务逻辑。
      *
-     * <p>若当前已存在事务，则加入已有事务（REQUIRED 语义）；
-     * 否则开启新事务，执行完成后提交，异常时回滚。
+     * <p>根据 {@link #propagation} 配置选择以下行为之一：
+     * <ul>
+     *   <li>REQUIRED      – 加入已有事务，或开启并在完成后提交/回滚新事务</li>
+     *   <li>REQUIRES_NEW  – 挂起已有事务，开启并在完成后提交/回滚新事务，然后恢复被挂起的事务</li>
+     *   <li>NESTED        – 若已有事务则创建 Savepoint；失败回滚到 Savepoint，成功则释放</li>
+     *   <li>SUPPORTS      – 若已有事务则加入；否则以非事务方式执行</li>
+     *   <li>MANDATORY     – 必须已有事务，否则抛出异常</li>
+     *   <li>NEVER         – 不允许事务，否则抛出异常</li>
+     *   <li>NOT_SUPPORTED – 挂起已有事务，以非事务方式执行，然后恢复</li>
+     * </ul>
      *
      * @param action 事务内的业务逻辑回调
      * @param <T>    返回值类型
@@ -65,32 +84,165 @@ public class TransactionTemplate {
      * @throws RuntimeException 业务逻辑抛出异常时封装后重新抛出
      */
     public <T> T execute(TransactionCallback<T> action) {
-        log.debug("开始编程式事务执行");
+        log.debug("编程式事务执行: propagation={}, isolationLevel={}", propagation, isolationLevel);
 
-        // 检查是否已在事务中
         TransactionContext.TransactionInfo currentTx = TransactionContext.getCurrentTransaction();
-        boolean isNew = (currentTx == null);
 
-        Connection conn = null;
+        switch (propagation) {
+            case REQUIRED:
+                return executeRequired(action, currentTx);
+
+            case REQUIRES_NEW:
+                return executeRequiresNew(action);
+
+            case NESTED:
+                return executeNested(action, currentTx);
+
+            case SUPPORTS:
+                // Join existing or run non-transactionally
+                if (currentTx != null) {
+                    log.debug("SUPPORTS: 加入现有事务");
+                    return doInvoke(action);
+                }
+                log.debug("SUPPORTS: 以非事务方式执行");
+                return doInvoke(action);
+
+            case MANDATORY:
+                if (currentTx == null) {
+                    throw new TransactionException(
+                            "MANDATORY propagation: no existing transaction found");
+                }
+                log.debug("MANDATORY: 在事务中执行");
+                return doInvoke(action);
+
+            case NEVER:
+                if (currentTx != null) {
+                    throw new TransactionException(
+                            "NEVER propagation: a transaction is already active");
+                }
+                log.debug("NEVER: 以非事务方式执行");
+                return doInvoke(action);
+
+            case NOT_SUPPORTED:
+                return executeNotSupported(action);
+
+            default:
+                return executeRequired(action, currentTx);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Per-propagation execution strategies
+    // -------------------------------------------------------------------------
+
+    /** REQUIRED – join existing or begin new. */
+    private <T> T executeRequired(TransactionCallback<T> action,
+                                  TransactionContext.TransactionInfo currentTx) {
+        if (currentTx != null) {
+            log.debug("REQUIRED: 加入现有事务 (depth={})", TransactionContext.getTransactionDepth());
+            return doInvoke(action);
+        }
+        return beginAndExecute(action);
+    }
+
+    /** REQUIRES_NEW – suspend existing (if any), begin new, restore on completion. */
+    private <T> T executeRequiresNew(TransactionCallback<T> action) {
+        TransactionContext.TransactionInfo suspended = TransactionContext.suspendTransaction();
+        if (suspended != null) {
+            log.debug("REQUIRES_NEW: 挂起现有事务，创建独立新事务");
+        } else {
+            log.debug("REQUIRES_NEW: 创建新事务");
+        }
         try {
-            if (isNew) {
-                conn = transactionManager.beginTransaction(readOnly, isolationLevel);
-                log.debug("编程式事务已开始");
-            } else {
-                conn = currentTx.getConnection();
-                log.debug("加入现有事务，深度: {}", TransactionContext.getTransactionDepth());
+            return beginAndExecute(action);
+        } finally {
+            TransactionContext.resumeTransaction(suspended);
+            if (suspended != null) {
+                log.debug("REQUIRES_NEW: 已恢复挂起事务");
             }
+        }
+    }
 
-            T result = action.doInTransaction();
+    /** NESTED – savepoint if inside existing tx; otherwise begin new. */
+    private <T> T executeNested(TransactionCallback<T> action,
+                                TransactionContext.TransactionInfo currentTx) {
+        if (currentTx == null) {
+            log.debug("NESTED: 无外层事务，创建新事务");
+            return beginAndExecute(action);
+        }
 
-            if (isNew) {
-                transactionManager.commit(conn);
-                log.debug("编程式事务已提交");
+        // Create a savepoint on the current connection
+        Connection conn = currentTx.getConnection();
+        Savepoint savepoint;
+        try {
+            savepoint = transactionManager.createSavepoint(conn);
+            log.debug("NESTED: 在现有事务中创建 Savepoint");
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create savepoint for NESTED transaction", e);
+        }
+
+        try {
+            T result = doInvoke(action);
+            // Success – release the savepoint
+            try {
+                transactionManager.releaseSavepoint(conn, savepoint);
+            } catch (Exception e) {
+                log.debug("释放 Savepoint 失败（已忽略）: {}", e.getMessage());
             }
-
             return result;
         } catch (Exception e) {
-            if (isNew && conn != null) {
+            // Failure – roll back to savepoint
+            try {
+                transactionManager.rollbackToSavepoint(conn, savepoint);
+                log.debug("NESTED: 已回滚到 Savepoint");
+            } catch (Exception rollbackEx) {
+                log.error("回滚到 Savepoint 失败", rollbackEx);
+            }
+            throw new RuntimeException("NESTED transaction execution failed", e);
+        }
+    }
+
+    /** NOT_SUPPORTED – suspend existing (if any), execute non-transactionally, restore. */
+    private <T> T executeNotSupported(TransactionCallback<T> action) {
+        TransactionContext.TransactionInfo suspended = TransactionContext.suspendTransaction();
+        if (suspended != null) {
+            log.debug("NOT_SUPPORTED: 挂起现有事务，以非事务方式执行");
+        } else {
+            log.debug("NOT_SUPPORTED: 以非事务方式执行");
+        }
+        try {
+            return doInvoke(action);
+        } finally {
+            TransactionContext.resumeTransaction(suspended);
+            if (suspended != null) {
+                log.debug("NOT_SUPPORTED: 已恢复挂起事务");
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
+    /**
+     * Begins a new transaction, executes the action, and commits/rolls back.
+     * Also enforces the configured {@link #timeout}.
+     */
+    private <T> T beginAndExecute(TransactionCallback<T> action) {
+        Connection conn = null;
+        long startTime = System.currentTimeMillis();
+        try {
+            conn = transactionManager.beginTransaction(readOnly, isolationLevel);
+            log.debug("编程式事务已开始");
+
+            T result = doInvoke(action);
+
+            checkTimeout(startTime);
+            transactionManager.commit(conn);
+            log.debug("编程式事务已提交");
+            return result;
+        } catch (Exception e) {
+            if (conn != null) {
                 try {
                     transactionManager.rollback(conn);
                     log.debug("编程式事务已回滚");
@@ -98,9 +250,40 @@ public class TransactionTemplate {
                     log.error("回滚失败", rollbackEx);
                 }
             }
+            if (e instanceof RuntimeException rte) {
+                throw rte;
+            }
             throw new RuntimeException("Transaction execution failed", e);
         }
     }
+
+    /** Invokes the callback, wrapping checked exceptions in {@link RuntimeException}. */
+    private <T> T doInvoke(TransactionCallback<T> action) {
+        try {
+            return action.doInTransaction();
+        } catch (RuntimeException | Error e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Transaction callback threw checked exception", e);
+        }
+    }
+
+    /** Checks whether the timeout (if configured) has been exceeded.
+     *  Both -1 (default) and 0 are treated as "no timeout", consistent with
+     *  {@code @Transactional#timeout} semantics in {@code TransactionAspect}.
+     */
+    private void checkTimeout(long startTime) {
+        if (timeout <= 0) return;
+        long elapsedSeconds = (System.currentTimeMillis() - startTime) / 1000;
+        if (elapsedSeconds >= timeout) {
+            throw new TransactionException(
+                    "Transaction timed out after " + elapsedSeconds + "s (limit: " + timeout + "s)");
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Fluent builder methods (return copies to support thread-safe chaining)
+    // -------------------------------------------------------------------------
 
     /**
      * 设置只读模式（返回新实例以支持线程安全的链式调用）。

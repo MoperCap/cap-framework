@@ -14,6 +14,7 @@ import org.moper.cap.transaction.exception.TransactionException;
 import org.moper.cap.transaction.manager.TransactionManager;
 
 import java.lang.reflect.Method;
+import java.sql.Savepoint;
 import java.util.Map;
 
 /**
@@ -21,12 +22,24 @@ import java.util.Map;
  *
  * <p>与 cap-aop 模块集成，使用 {@link Around} 切面拦截 {@link Transactional} 方法。
  *
+ * <p>支持的传播性：
+ * <ul>
+ *   <li>{@link Propagation#REQUIRED}      – 加入已有事务或创建新事务（默认）</li>
+ *   <li>{@link Propagation#REQUIRES_NEW}  – 始终创建新事务，挂起已有事务</li>
+ *   <li>{@link Propagation#NESTED}        – 嵌套事务（Savepoint 支持）</li>
+ *   <li>{@link Propagation#SUPPORTS}      – 支持但非强制事务</li>
+ *   <li>{@link Propagation#MANDATORY}     – 强制在事务中执行</li>
+ *   <li>{@link Propagation#NEVER}         – 禁止事务</li>
+ *   <li>{@link Propagation#NOT_SUPPORTED} – 暂停事务后以非事务方式执行</li>
+ * </ul>
+ *
  * <p>职责：
  * <ol>
  *   <li>拦截所有标注 {@link Transactional} 的方法或类下的所有方法</li>
- *   <li>在方法执行前根据传播性开启事务</li>
- *   <li>在方法成功后提交事务</li>
- *   <li>在方法异常后按回滚规则回滚事务</li>
+ *   <li>在方法执行前根据传播性开启/加入/挂起事务</li>
+ *   <li>在方法成功后提交事务或释放 Savepoint</li>
+ *   <li>在方法异常后按回滚规则回滚事务或回滚到 Savepoint</li>
+ *   <li>在方法完成后恢复被挂起的事务</li>
  * </ol>
  */
 @Slf4j
@@ -70,33 +83,48 @@ public class TransactionAspect {
     // Transaction lifecycle
     // -------------------------------------------------------------------------
 
+    /**
+     * Internal value type that carries the outcome of {@link #handlePropagation}.
+     *
+     * @param isOwner      {@code true} when this invocation started a brand-new top-level
+     *                     transaction that it must commit or roll back on completion.
+     * @param suspendedTx  The transaction that was suspended (for REQUIRES_NEW /
+     *                     NOT_SUPPORTED); {@code null} if nothing was suspended.
+     * @param savepoint    The Savepoint created for a NESTED transaction inside an
+     *                     existing transaction; {@code null} otherwise.
+     */
+    private record PropagationContext(boolean isOwner,
+                                      TransactionContext.TransactionInfo suspendedTx,
+                                      Savepoint savepoint) {}
+
     private Object handleTransaction(ProceedingJoinPoint joinPoint, Transactional tx,
                                      TransactionManager txManager) throws Throwable {
         Method method = joinPoint.getMethod();
-        log.debug("处理事务方法: method={}", method.getName());
+        log.debug("处理事务方法: method={}, propagation={}", method.getName(), tx.propagation());
 
-        // Capture the transaction context before we potentially push a new entry.
-        // We are only responsible for commit/rollback if we started a new transaction.
-        TransactionContext.TransactionInfo existingTx = TransactionContext.getCurrentTransaction();
-
-        handlePropagation(tx.propagation(), tx.readOnly(), tx.isolation(), txManager);
-
+        PropagationContext propCtx = handlePropagation(tx.propagation(), tx.readOnly(),
+                tx.isolation(), txManager);
         TransactionContext.TransactionInfo txInfo = TransactionContext.getCurrentTransaction();
-        // We own the transaction only when a new entry was pushed onto the stack
-        boolean isOwner = txInfo != null && txInfo != existingTx;
 
         try {
             Object result = joinPoint.proceed();
 
-            if (isOwner) {
+            if (propCtx.isOwner() && txInfo != null) {
                 checkTimeout(tx, txInfo);
                 log.debug("事务提交: method={}", method.getName());
                 txManager.commit(txInfo.getConnection());
+            } else if (propCtx.savepoint() != null && txInfo != null) {
+                // NESTED success – try to release the savepoint
+                try {
+                    txManager.releaseSavepoint(txInfo.getConnection(), propCtx.savepoint());
+                } catch (Exception e) {
+                    log.debug("释放 Savepoint 失败（已忽略）: {}", e.getMessage());
+                }
             }
 
             return result;
         } catch (Throwable throwable) {
-            if (isOwner) {
+            if (propCtx.isOwner() && txInfo != null) {
                 if (shouldRollback(tx, throwable)) {
                     log.debug("事务回滚: method={}, exception={}",
                             method.getName(), throwable.getClass().getName());
@@ -106,10 +134,37 @@ public class TransactionAspect {
                         log.error("事务回滚失败", rollbackEx);
                     }
                 } else {
-                    txManager.commit(txInfo.getConnection());
+                    try {
+                        txManager.commit(txInfo.getConnection());
+                    } catch (Exception commitEx) {
+                        log.error("事务提交失败", commitEx);
+                    }
+                }
+            } else if (propCtx.savepoint() != null && txInfo != null) {
+                // NESTED failure – roll back to or release the savepoint
+                if (shouldRollback(tx, throwable)) {
+                    log.debug("NESTED 回滚到 Savepoint: method={}, exception={}",
+                            method.getName(), throwable.getClass().getName());
+                    try {
+                        txManager.rollbackToSavepoint(txInfo.getConnection(), propCtx.savepoint());
+                    } catch (Exception rollbackEx) {
+                        log.error("回滚到 Savepoint 失败", rollbackEx);
+                    }
+                } else {
+                    try {
+                        txManager.releaseSavepoint(txInfo.getConnection(), propCtx.savepoint());
+                    } catch (Exception releaseEx) {
+                        log.debug("释放 Savepoint 失败（已忽略）: {}", releaseEx.getMessage());
+                    }
                 }
             }
             throw throwable;
+        } finally {
+            // Always restore a suspended transaction, regardless of outcome.
+            if (propCtx.suspendedTx() != null) {
+                TransactionContext.resumeTransaction(propCtx.suspendedTx());
+                log.debug("恢复挂起的事务: method={}", method.getName());
+            }
         }
     }
 
@@ -152,16 +207,22 @@ public class TransactionAspect {
     }
 
     /**
-     * Handles transaction propagation by starting/joining a transaction as required.
+     * Applies the requested propagation behaviour and returns a {@link PropagationContext}
+     * that describes what happened (new transaction owner, suspended transaction, or savepoint).
      *
-     * <p>A new transaction entry is pushed onto the context stack only when this method
-     * actually begins a transaction. The caller tracks whether a new entry was pushed
-     * by comparing {@link TransactionContext#getCurrentTransaction()} before and after
-     * this call, and uses that to decide whether it owns the commit/rollback.
+     * <ul>
+     *   <li><b>REQUIRED</b>  – join existing or begin new</li>
+     *   <li><b>REQUIRES_NEW</b> – suspend existing (if any), begin new</li>
+     *   <li><b>NESTED</b>    – if existing: create Savepoint; else begin new</li>
+     *   <li><b>NEVER</b>     – fail if existing transaction present</li>
+     *   <li><b>NOT_SUPPORTED</b> – suspend existing (if any), proceed non-transactionally</li>
+     *   <li><b>MANDATORY</b> – fail if no existing transaction</li>
+     *   <li><b>SUPPORTS</b>  – join if existing, else proceed non-transactionally</li>
+     * </ul>
      */
-    private void handlePropagation(Propagation propagation, boolean readOnly,
-                                   IsolationLevel isolation, TransactionManager txManager)
-            throws Exception {
+    private PropagationContext handlePropagation(Propagation propagation, boolean readOnly,
+                                                 IsolationLevel isolation,
+                                                 TransactionManager txManager) throws Exception {
         TransactionContext.TransactionInfo currentTx = TransactionContext.getCurrentTransaction();
 
         switch (propagation) {
@@ -169,55 +230,69 @@ public class TransactionAspect {
                 if (currentTx == null) {
                     txManager.beginTransaction(readOnly, isolation);
                     log.debug("REQUIRED: 创建新事务");
-                } else {
-                    log.debug("REQUIRED: 加入现有事务");
+                    return new PropagationContext(true, null, null);
                 }
-                break;
+                log.debug("REQUIRED: 加入现有事务 (depth={})", TransactionContext.getTransactionDepth());
+                return new PropagationContext(false, null, null);
 
-            case REQUIRES_NEW:
+            case REQUIRES_NEW: {
+                TransactionContext.TransactionInfo suspended = TransactionContext.suspendTransaction();
+                if (suspended != null) {
+                    log.debug("REQUIRES_NEW: 挂起现有事务，创建独立新事务");
+                } else {
+                    log.debug("REQUIRES_NEW: 创建新事务");
+                }
                 txManager.beginTransaction(readOnly, isolation);
-                log.debug("REQUIRES_NEW: 创建新事务");
-                break;
+                return new PropagationContext(true, suspended, null);
+            }
 
             case NESTED:
                 if (currentTx == null) {
                     txManager.beginTransaction(readOnly, isolation);
-                    log.debug("NESTED: 创建新事务");
-                } else {
-                    log.debug("NESTED: 在现有事务中执行");
+                    log.debug("NESTED: 无外层事务，创建新事务");
+                    return new PropagationContext(true, null, null);
                 }
-                break;
+                // Existing transaction – create a savepoint for partial rollback
+                Savepoint sp = txManager.createSavepoint(currentTx.getConnection());
+                log.debug("NESTED: 在现有事务中创建 Savepoint");
+                return new PropagationContext(false, null, sp);
 
             case NEVER:
                 if (currentTx != null) {
-                    throw new TransactionException("NEVER propagation but transaction already exists");
+                    throw new TransactionException(
+                            "NEVER propagation: a transaction is already active");
                 }
-                log.debug("NEVER: 不使用事务");
-                break;
+                log.debug("NEVER: 以非事务方式执行");
+                return new PropagationContext(false, null, null);
 
-            case NOT_SUPPORTED:
-                if (currentTx != null) {
-                    log.debug("NOT_SUPPORTED: 暂停当前事务");
+            case NOT_SUPPORTED: {
+                TransactionContext.TransactionInfo suspended = TransactionContext.suspendTransaction();
+                if (suspended != null) {
+                    log.debug("NOT_SUPPORTED: 挂起现有事务，以非事务方式执行");
+                } else {
+                    log.debug("NOT_SUPPORTED: 以非事务方式执行");
                 }
-                break;
+                return new PropagationContext(false, suspended, null);
+            }
 
             case MANDATORY:
                 if (currentTx == null) {
-                    throw new TransactionException("MANDATORY propagation but no transaction exists");
+                    throw new TransactionException(
+                            "MANDATORY propagation: no existing transaction found");
                 }
-                log.debug("MANDATORY: 在事务中执行");
-                break;
+                log.debug("MANDATORY: 在事务中执行 (depth={})", TransactionContext.getTransactionDepth());
+                return new PropagationContext(false, null, null);
 
             case SUPPORTS:
                 if (currentTx != null) {
-                    log.debug("SUPPORTS: 加入现有事务");
+                    log.debug("SUPPORTS: 加入现有事务 (depth={})", TransactionContext.getTransactionDepth());
                 } else {
-                    log.debug("SUPPORTS: 不在事务中");
+                    log.debug("SUPPORTS: 以非事务方式执行");
                 }
-                break;
+                return new PropagationContext(false, null, null);
 
             default:
-                break;
+                return new PropagationContext(false, null, null);
         }
     }
 

@@ -140,6 +140,38 @@ public class JdbcTransactionManager implements TransactionManager {
         return connection;
     }
 
+    @Override
+    public java.sql.Savepoint createSavepoint(Connection connection) throws Exception {
+        try {
+            java.sql.Savepoint sp = connection.setSavepoint();
+            log.debug("创建 Savepoint: {}", sp);
+            return sp;
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to create savepoint", e);
+        }
+    }
+
+    @Override
+    public void rollbackToSavepoint(Connection connection, java.sql.Savepoint savepoint) throws Exception {
+        try {
+            connection.rollback(savepoint);
+            log.debug("已回滚到 Savepoint");
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to rollback to savepoint", e);
+        }
+    }
+
+    @Override
+    public void releaseSavepoint(Connection connection, java.sql.Savepoint savepoint) throws Exception {
+        try {
+            connection.releaseSavepoint(savepoint);
+            log.debug("已释放 Savepoint");
+        } catch (SQLException e) {
+            // Some databases (e.g. H2 in certain modes) may not support release savepoint; log and ignore.
+            log.debug("释放 Savepoint 失败（数据库可能不支持此操作）: {}", e.getMessage());
+        }
+    }
+
     private void closeConnection(Connection connection) {
         try {
             connection.close();
