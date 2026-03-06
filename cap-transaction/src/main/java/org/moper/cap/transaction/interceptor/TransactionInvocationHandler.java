@@ -1,8 +1,10 @@
 package org.moper.cap.transaction.interceptor;
 
 import lombok.extern.slf4j.Slf4j;
+import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.transaction.annotation.Transactional;
 import org.moper.cap.transaction.aspect.TransactionAspect;
+import org.moper.cap.transaction.manager.TransactionManager;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -15,21 +17,35 @@ import java.lang.reflect.Method;
  * 本处理器负责在代理方法被调用时：
  * <ol>
  *   <li>查找目标实现类上是否存在 {@link Transactional} 注解</li>
- *   <li>若存在，委托 {@link TransactionAspect} 进行事务生命周期管理</li>
- *   <li>若不存在，直接透传到目标对象</li>
+ *   <li>若存在，在运行时从容器查找 {@link TransactionManager} 实现</li>
+ *   <li>委托 {@link TransactionAspect} 进行事务生命周期管理</li>
+ *   <li>若找不到 {@link TransactionManager}，直接透传到目标对象</li>
  * </ol>
+ *
+ * <p>设计特点：
+ * <ul>
+ *   <li>缓存 {@link TransactionManager} 避免重复查找</li>
+ *   <li>如果找不到 {@link TransactionManager}，直接调用方法（不使用事务）</li>
+ * </ul>
  */
 @Slf4j
 public class TransactionInvocationHandler implements InvocationHandler {
 
     private final Object target;
     private final Class<?> targetClass;
-    private final TransactionAspect transactionAspect;
+    private final BeanContainer beanContainer;
 
-    public TransactionInvocationHandler(Object target, Class<?> targetClass, TransactionAspect transactionAspect) {
+    // 缓存 TransactionManager，避免每次都查找
+    private volatile TransactionManager cachedTransactionManager;
+    private volatile boolean transactionManagerLookupAttempted = false;
+
+    // 缓存 TransactionAspect
+    private volatile TransactionAspect cachedTransactionAspect;
+
+    public TransactionInvocationHandler(Object target, Class<?> targetClass, BeanContainer beanContainer) {
         this.target = target;
         this.targetClass = targetClass;
-        this.transactionAspect = transactionAspect;
+        this.beanContainer = beanContainer;
     }
 
     @Override
@@ -43,26 +59,87 @@ public class TransactionInvocationHandler implements InvocationHandler {
 
         log.debug("事务代理拦截: method={}", method.getName());
 
+        // 运行时获取 TransactionManager 实现
+        TransactionManager txManager = getTransactionManager();
+
+        if (txManager == null) {
+            // TransactionManager 不可用，直接调用目标方法
+            log.warn("⚠️  未找到 TransactionManager 实现，方法 [{}] 将在无事务环境下执行", method.getName());
+            log.warn("💡 提示：请确保已在应用中配置 TransactionManager Bean");
+            return method.invoke(target, args);
+        }
+
+        TransactionAspect aspect = getTransactionAspect(txManager);
+
         try {
             // 1. 事务开始
-            transactionAspect.handleTransactionBegin(targetMethod);
+            aspect.handleTransactionBegin(targetMethod);
 
             // 2. 调用目标方法
             Object result = method.invoke(target, args);
 
             // 3. 事务提交（正常流程）
-            transactionAspect.handleTransactionEnd(targetMethod, null);
+            aspect.handleTransactionEnd(targetMethod, null);
 
             return result;
         } catch (InvocationTargetException ite) {
             Throwable cause = ite.getCause() != null ? ite.getCause() : ite;
             // 4. 捕获异常，进行事务回滚或提交
-            transactionAspect.handleTransactionEnd(targetMethod, cause);
+            aspect.handleTransactionEnd(targetMethod, cause);
             throw cause;
         } catch (Exception e) {
-            transactionAspect.handleTransactionEnd(targetMethod, e);
+            aspect.handleTransactionEnd(targetMethod, e);
             throw e;
         }
+    }
+
+    /**
+     * 获取 TransactionManager 实现，缓存查找结果以提高性能。
+     *
+     * <p>使用双重检查锁定模式（double-checked locking）保证线程安全：
+     * 外部检查 {@code cachedTransactionManager}（volatile 字段），
+     * 仅在需要时进入同步块以完成懒加载。
+     */
+    private TransactionManager getTransactionManager() {
+        if (cachedTransactionManager != null) {
+            return cachedTransactionManager;
+        }
+
+        synchronized (this) {
+            // Re-check inside synchronized block (double-checked locking)
+            if (cachedTransactionManager != null) {
+                return cachedTransactionManager;
+            }
+            if (transactionManagerLookupAttempted) {
+                // 已经尝试过查找但失败，直接返回 null
+                return null;
+            }
+
+            try {
+                cachedTransactionManager = beanContainer.getBean(TransactionManager.class);
+                log.debug("✅ 找到 TransactionManager 实现: {}",
+                         cachedTransactionManager.getClass().getSimpleName());
+            } catch (Exception e) {
+                log.debug("❌ 未找到 TransactionManager 实现: {}", e.getMessage());
+            }
+            transactionManagerLookupAttempted = true;
+        }
+
+        return cachedTransactionManager;
+    }
+
+    /**
+     * 获取或创建 TransactionAspect。
+     */
+    private TransactionAspect getTransactionAspect(TransactionManager txManager) {
+        if (cachedTransactionAspect == null) {
+            synchronized (this) {
+                if (cachedTransactionAspect == null) {
+                    cachedTransactionAspect = new TransactionAspect(txManager);
+                }
+            }
+        }
+        return cachedTransactionAspect;
     }
 
     /**

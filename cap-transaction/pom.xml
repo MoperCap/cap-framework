@@ -11,25 +11,16 @@
 
     <artifactId>cap-transaction</artifactId>
 
-    <properties>
-        <javassist.version>3.29.2-GA</javassist.version>
-    </properties>
-
     <dependencies>
 
         <dependency>
             <groupId>org.moper.cap</groupId>
-            <artifactId>cap-aop</artifactId>
+            <artifactId>cap-core</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.moper.cap</groupId>
             <artifactId>cap-bean</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.moper.cap</groupId>
-            <artifactId>cap-core</artifactId>
         </dependency>
 
         <!-- 日志 -->
@@ -57,13 +48,6 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
-        </dependency>
-
-        <!-- Javassist (transitive from cap-aop, declared explicitly for clarity) -->
-        <dependency>
-            <groupId>org.javassist</groupId>
-            <artifactId>javassist</artifactId>
-            <version>${javassist.version}</version>
         </dependency>
 
     </dependencies>

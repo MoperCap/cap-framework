@@ -3,6 +3,8 @@ package org.moper.cap.example.config;
 import lombok.extern.slf4j.Slf4j;
 import org.h2.jdbcx.JdbcDataSource;
 import org.moper.cap.bean.annotation.Capper;
+import org.moper.cap.data.transaction.JdbcTransactionManager;
+import org.moper.cap.transaction.manager.TransactionManager;
 
 import javax.sql.DataSource;
 
@@ -32,6 +34,22 @@ public class DataSourceConfig {
         log.info("DataSource 配置完成: URL={}", ds.getURL());
 
         return ds;
+    }
+
+    /**
+     * 创建 TransactionManager Bean。
+     *
+     * <p>使用 cap-data 模块提供的 {@link JdbcTransactionManager} 实现。
+     *
+     * @param dataSource 数据源
+     * @return JDBC 事务管理器
+     */
+    @Capper
+    public TransactionManager transactionManager(DataSource dataSource) {
+        log.info("=== 创建 TransactionManager ===");
+        TransactionManager txManager = new JdbcTransactionManager(dataSource);
+        log.info("TransactionManager 创建完成");
+        return txManager;
     }
 
     /**
