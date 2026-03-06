@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.common.converter.TypeConversionException;
 import org.moper.cap.common.converter.TypeConverter;
 import org.moper.cap.common.converter.TypeResolver;
+import org.moper.cap.common.converter.TypeResolverFactory;
 import org.moper.cap.common.priority.PriorityUtils;
 
 import java.util.*;
@@ -50,27 +51,76 @@ public class DefaultTypeResolver implements TypeResolver {
         }
 
         if (value == null) return null;
-        if (targetType.isInstance(value)) return (T) value;
-        @SuppressWarnings("rawtypes")
-        TypeConverter converter = converters.get(new ConverterKey(value.getClass(), targetType));
+
+        // 源类型等价于目标类型（含基本类型与包装类型互判），直接返回
+        if (TypeResolverFactory.isEquivalent(value.getClass(), targetType)) {
+            return (T) value;
+        }
+
+        Class<?> sourceType = value.getClass();
+
+        // 策略1：精确匹配 (sourceType -> targetType)
+        TypeConverter<?, ?> converter = converters.get(new ConverterKey(sourceType, targetType));
         if (converter != null) {
-            try {
-                return (T) converter.convert(value);
-            } catch (Exception e) {
-                log.warn("类型转换失败 [{} -> {}]，异常：{}", value.getClass().getName(), targetType.getName(), e.getMessage(), e);
-                throw new TypeConversionException("类型转换失败: " + value.getClass().getName() + " -> " + targetType.getName(), e);
+            return invokeConverter(converter, value, sourceType, targetType);
+        }
+
+        // 策略2：目标是基本类型，尝试其包装类型的转换器
+        Class<?> wrapperTarget = targetType.isPrimitive() ? TypeResolverFactory.getWrapperType(targetType) : null;
+        if (wrapperTarget != null) {
+            converter = converters.get(new ConverterKey(sourceType, wrapperTarget));
+            if (converter != null) {
+                // 包装类型结果会被自动拆箱
+                return (T) invokeConverter(converter, value, sourceType, wrapperTarget);
             }
         }
+
+        // 策略3：源是基本类型，尝试其包装类型的转换器
+        // （在 Java 运行时值已自动装箱，此分支通常不会触发，但保留以防反射等特殊场景）
+        Class<?> wrapperSource = sourceType.isPrimitive() ? TypeResolverFactory.getWrapperType(sourceType) : null;
+        if (wrapperSource != null) {
+            converter = converters.get(new ConverterKey(wrapperSource, targetType));
+            if (converter != null) {
+                return invokeConverter(converter, value, wrapperSource, targetType);
+            }
+        }
+
+        // 策略4：两者都转为包装类型后再查找（仅在上两步均未成功时执行）
+        if (wrapperSource != null || wrapperTarget != null) {
+            Class<?> effectiveSource = wrapperSource != null ? wrapperSource : sourceType;
+            Class<?> effectiveTarget = wrapperTarget != null ? wrapperTarget : targetType;
+            converter = converters.get(new ConverterKey(effectiveSource, effectiveTarget));
+            if (converter != null) {
+                return (T) invokeConverter(converter, value, effectiveSource, effectiveTarget);
+            }
+        }
+
         if (targetType.isEnum()) {
             return parseEnum(value, targetType);
         }
-        log.warn("找不到类型转换器 [{} -> {}]，值: {}", value.getClass().getName(), targetType.getName(), value);
-        throw new TypeConversionException("未找到类型转换器: " + value.getClass().getName() + " -> " + targetType.getName());
+        log.warn("找不到类型转换器 [{} -> {}]，值: {}", sourceType.getName(), targetType.getName(), value);
+        throw new TypeConversionException("未找到类型转换器: " + sourceType.getName() + " -> " + targetType.getName());
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private <T> T invokeConverter(TypeConverter<?, ?> converter, Object value, Class<?> sourceType, Class<?> targetType) {
+        try {
+            return (T) ((TypeConverter) converter).convert(value);
+        } catch (Exception e) {
+            log.warn("类型转换失败 [{} -> {}]，异常：{}", sourceType.getName(), targetType.getName(), e.getMessage(), e);
+            throw new TypeConversionException("类型转换失败: " + sourceType.getName() + " -> " + targetType.getName(), e);
+        }
     }
 
     @Override
     public boolean hasConverter(Class<?> sourceType, Class<?> targetType) {
-        return converters.containsKey(new ConverterKey(sourceType, targetType));
+        if (converters.containsKey(new ConverterKey(sourceType, targetType))) {
+            return true;
+        }
+        // 检查基本类型与包装类型的等价映射
+        Class<?> wrapperSource = TypeResolverFactory.getWrapperType(sourceType);
+        Class<?> wrapperTarget = TypeResolverFactory.getWrapperType(targetType);
+        return converters.containsKey(new ConverterKey(wrapperSource, wrapperTarget));
     }
 
     @SuppressWarnings("unchecked")
