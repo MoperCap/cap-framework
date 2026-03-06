@@ -176,7 +176,7 @@ public class OrderService {
             return orders;
         }
 
-        return txTemplate.execute(() -> {
+        return txTemplate.execute(status -> {
             List<Order> orders = new ArrayList<>();
 
             for (OrderRequest request : requests) {
