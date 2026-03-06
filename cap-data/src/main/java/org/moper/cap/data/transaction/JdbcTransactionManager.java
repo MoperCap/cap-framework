@@ -50,7 +50,9 @@ public class JdbcTransactionManager implements TransactionManager {
 
         try {
             connection.setAutoCommit(false);
-            connection.setTransactionIsolation(isolationLevel.level);
+            if (isolationLevel.level >= 0) {
+                connection.setTransactionIsolation(isolationLevel.level);
+            }
             connection.setReadOnly(readOnly);
             log.debug("开始新事务: isolationLevel={}, readOnly={}", isolationLevel, readOnly);
         } catch (SQLException e) {
