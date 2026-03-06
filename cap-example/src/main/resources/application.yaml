@@ -1,14 +1,65 @@
-# 数据库配置
-# 注意：这是可选的！如果不配置，框架会自动使用 H2 内存数据库
-database:
-  # 数据库驱动
-  driver: org.h2.Driver
+# =====================================================
+# CAP Example 应用配置
+# =====================================================
 
-  # 连接 URL（H2 内存数据库）
-  url: jdbc:h2:mem:capdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+# 应用基本配置
+app:
+  name: cap-example
+  version: 1.0.0
+  description: CAP Framework 示例应用 - Web MVC + 事务管理
+
+# 服务器配置
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    org.moper.cap: DEBUG
+    org.moper.cap.transaction: DEBUG
+    org.moper.cap.data: DEBUG
+    org.moper.cap.web: DEBUG
+
+# =====================================================
+# 数据库配置 - MySQL
+# =====================================================
+database:
+  # MySQL JDBC 驱动
+  driver: com.mysql.cj.jdbc.Driver
+
+  # MySQL 连接字符串
+  # useSSL=false: 禁用 SSL（开发环境）
+  # serverTimezone=UTC: 指定时区
+  # allowPublicKeyRetrieval=true: 允许公钥检索（开发环境）
+  # characterEncoding=utf8mb4: 字符编码
+  url: jdbc:mysql://localhost:3306/cap-example-db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&characterEncoding=utf8mb4
 
   # 数据库用户名
-  username: sa
+  username: root
 
   # 数据库密码
-  password: ""
+  password: moper
+
+  # 连接池配置（可选）
+  pool:
+    max-pool-size: 10
+    min-idle-size: 2
+    connection-timeout: 30000
+
+# =====================================================
+# Web 配置
+# =====================================================
+web:
+  mvc:
+    # 静态资源路径
+    static-locations:
+      - classpath:/static/
+      - classpath:/public/
+
+    # 视图前缀后缀
+    view:
+      prefix: /
+      suffix: .html

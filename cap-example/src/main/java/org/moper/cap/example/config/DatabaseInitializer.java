@@ -1,22 +1,29 @@
 package org.moper.cap.example.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.moper.cap.bean.annotation.Capper;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.SQLException;
+import java.sql.ResultSet;
 import java.sql.Statement;
 
 /**
- * 数据库初始化器
+ * 数据库初始化器 - 验证数据库连接和表结构
  *
- * <p>在应用启动时创建必要的数据库表结构并插入初始数据。
+ * <p>在应用启动时：
+ * <ol>
+ *   <li>验证数据库连接是否正常</li>
+ *   <li>检查必要的表是否存在</li>
+ *   <li>输出数据库统计信息</li>
+ * </ol>
  */
 @Slf4j
+@Capper
 public class DatabaseInitializer {
 
     private final DataSource dataSource;
-    private boolean initialized = false;
+    private volatile boolean initialized = false;
 
     public DatabaseInitializer(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -24,84 +31,99 @@ public class DatabaseInitializer {
     }
 
     /**
-     * 初始化数据库。
+     * 初始化数据库连接和信息检查。
      */
     private void initialize() {
+        if (initialized) {
+            return;
+        }
+
         synchronized (this) {
             if (initialized) {
                 return;
             }
 
-            try (Connection conn = dataSource.getConnection();
-                 Statement stmt = conn.createStatement()) {
+            try {
+                log.info("=== 初始化数据库连接 ===");
 
-                // 创建用户表
-                stmt.execute(
-                    "CREATE TABLE IF NOT EXISTS users (" +
-                    "  id BIGINT PRIMARY KEY," +
-                    "  name VARCHAR(100) NOT NULL," +
-                    "  email VARCHAR(100)," +
-                    "  created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
-                    ")"
-                );
-                log.info("用户表创建成功");
-
-                // 创建商品表
-                stmt.execute(
-                    "CREATE TABLE IF NOT EXISTS products (" +
-                    "  id BIGINT PRIMARY KEY," +
-                    "  name VARCHAR(100) NOT NULL," +
-                    "  price DECIMAL(10, 2)," +
-                    "  stock INT DEFAULT 0," +
-                    "  created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
-                    ")"
-                );
-                log.info("商品表创建成功");
-
-                // 创建订单表
-                stmt.execute(
-                    "CREATE TABLE IF NOT EXISTS orders (" +
-                    "  id BIGINT PRIMARY KEY," +
-                    "  user_id BIGINT NOT NULL," +
-                    "  product_id BIGINT NOT NULL," +
-                    "  quantity INT NOT NULL," +
-                    "  created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
-                    "  FOREIGN KEY (user_id) REFERENCES users(id)," +
-                    "  FOREIGN KEY (product_id) REFERENCES products(id)" +
-                    ")"
-                );
-                log.info("订单表创建成功");
-
-                insertInitialData(stmt);
+                try (Connection conn = dataSource.getConnection()) {
+                    log.info("✅ 数据库连接成功");
+                    logDatabaseInfo(conn);
+                    checkTableStructure(conn);
+                }
 
                 initialized = true;
-                log.info("数据库初始化完成");
-            } catch (SQLException e) {
-                log.error("数据库初始化失败", e);
+                log.info("✅ 数据库初始化完成");
+            } catch (Exception e) {
+                log.error("❌ 数据库初始化失败", e);
                 throw new RuntimeException("Failed to initialize database", e);
             }
         }
     }
 
     /**
-     * 插入初始数据。
+     * 输出数据库信息。
      */
-    private void insertInitialData(Statement stmt) throws SQLException {
-        // 清空现有数据
-        stmt.execute("DELETE FROM orders");
-        stmt.execute("DELETE FROM products");
-        stmt.execute("DELETE FROM users");
+    private void logDatabaseInfo(Connection conn) throws Exception {
+        String dbProductName = conn.getMetaData().getDatabaseProductName();
+        String dbProductVersion = conn.getMetaData().getDatabaseProductVersion();
+        String dbUrl = conn.getMetaData().getURL();
+        String dbUser = conn.getMetaData().getUserName();
 
-        // 插入用户数据
-        stmt.execute("INSERT INTO users VALUES (1, 'Alice', 'alice@example.com', CURRENT_TIMESTAMP)");
-        stmt.execute("INSERT INTO users VALUES (2, 'Bob', 'bob@example.com', CURRENT_TIMESTAMP)");
-        stmt.execute("INSERT INTO users VALUES (3, 'Charlie', 'charlie@example.com', CURRENT_TIMESTAMP)");
-        log.info("已插入 3 个用户");
+        log.info("数据库信息：");
+        log.info("  - 产品: {}", dbProductName);
+        log.info("  - 版本: {}", dbProductVersion);
+        log.info("  - URL: {}", dbUrl);
+        log.info("  - 用户: {}", dbUser);
+    }
 
-        // 插入商品数据
-        stmt.execute("INSERT INTO products VALUES (1, 'Laptop', 999.99, 100, CURRENT_TIMESTAMP)");
-        stmt.execute("INSERT INTO products VALUES (2, 'Mouse', 29.99, 500, CURRENT_TIMESTAMP)");
-        stmt.execute("INSERT INTO products VALUES (3, 'Keyboard', 79.99, 200, CURRENT_TIMESTAMP)");
-        log.info("已插入 3 个商品");
+    /**
+     * 检查必要的表是否存在。
+     */
+    private void checkTableStructure(Connection conn) throws Exception {
+        String[] requiredTables = {
+            "users",
+            "products",
+            "orders",
+            "order_items",
+            "payments",
+            "shopping_carts",
+            "inventory_logs"
+        };
+
+        log.info("检查表结构：");
+
+        try (Statement stmt = conn.createStatement()) {
+            for (String tableName : requiredTables) {
+                if (!isValidTableName(tableName)) {
+                    log.warn("  ⚠️  {} (无效的表名，已跳过)", tableName);
+                    continue;
+                }
+
+                String sql = "SELECT COUNT(*) FROM information_schema.tables " +
+                           "WHERE table_schema = DATABASE() AND table_name = '" + tableName + "'";
+
+                try (ResultSet rs = stmt.executeQuery(sql)) {
+                    if (rs.next() && rs.getInt(1) > 0) {
+                        String countSql = "SELECT COUNT(*) FROM `" + tableName + "`";
+                        try (ResultSet countRs = stmt.executeQuery(countSql)) {
+                            if (countRs.next()) {
+                                long count = countRs.getLong(1);
+                                log.info("  ✅ {} (数据行数: {})", tableName, count);
+                            }
+                        }
+                    } else {
+                        log.warn("  ⚠️  {} (表不存在)", tableName);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 校验表名合法性，只允许字母、数字和下划线，防止 SQL 注入。
+     */
+    private boolean isValidTableName(String tableName) {
+        return tableName != null && tableName.matches("[a-zA-Z0-9_]+");
     }
 }

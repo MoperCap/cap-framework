@@ -6,6 +6,12 @@ import org.moper.cap.bean.annotation.Capper;
 import org.moper.cap.property.annotation.Value;
 
 import javax.sql.DataSource;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.util.logging.Logger;
 
 /**
  * 数据源工厂 - 根据属性配置动态创建 DataSource
@@ -101,18 +107,81 @@ public class DataSourceFactory {
     }
 
     /**
-     * 创建 MySQL DataSource（可扩展）。
+     * 创建 MySQL DataSource。
      */
     private DataSource createMySqlDataSource(String url, String username, String password) {
-        throw new UnsupportedOperationException(
-                "MySQL DataSource 尚未实现。建议引入 HikariCP 等连接池并自定义 DataSource Bean。");
+        return new DriverManagerDataSource(url, username, password);
     }
 
     /**
-     * 创建 PostgreSQL DataSource（可扩展）。
+     * 创建 PostgreSQL DataSource。
      */
     private DataSource createPostgresDataSource(String url, String username, String password) {
-        throw new UnsupportedOperationException(
-                "PostgreSQL DataSource 尚未实现。建议引入 HikariCP 等连接池并自定义 DataSource Bean。");
+        return new DriverManagerDataSource(url, username, password);
+    }
+
+    /**
+     * 基于 DriverManager 的简单 DataSource 实现，适用于开发/测试环境。
+     *
+     * <p>每次调用 {@link #getConnection()} 时通过 {@link DriverManager} 创建新连接。
+     * 生产环境建议使用 HikariCP 等连接池。
+     */
+    private static class DriverManagerDataSource implements DataSource {
+
+        private final String url;
+        private final String username;
+        private final String password;
+        private PrintWriter logWriter;
+
+        DriverManagerDataSource(String url, String username, String password) {
+            this.url = url;
+            this.username = username;
+            this.password = password;
+        }
+
+        @Override
+        public Connection getConnection() throws SQLException {
+            return DriverManager.getConnection(url, username, password);
+        }
+
+        @Override
+        public Connection getConnection(String username, String password) throws SQLException {
+            return DriverManager.getConnection(url, username, password);
+        }
+
+        @Override
+        public PrintWriter getLogWriter() {
+            return logWriter;
+        }
+
+        @Override
+        public void setLogWriter(PrintWriter out) {
+            this.logWriter = out;
+        }
+
+        @Override
+        public void setLoginTimeout(int seconds) {
+            DriverManager.setLoginTimeout(seconds);
+        }
+
+        @Override
+        public int getLoginTimeout() {
+            return DriverManager.getLoginTimeout();
+        }
+
+        @Override
+        public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+            throw new SQLFeatureNotSupportedException("getParentLogger not supported");
+        }
+
+        @Override
+        public <T> T unwrap(Class<T> iface) throws SQLException {
+            throw new SQLException("Not a wrapper for " + iface);
+        }
+
+        @Override
+        public boolean isWrapperFor(Class<?> iface) {
+            return false;
+        }
     }
 }
