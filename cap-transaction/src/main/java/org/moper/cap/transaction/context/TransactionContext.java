@@ -10,7 +10,8 @@ import java.util.Stack;
 /**
  * 事务上下文 - 使用 ThreadLocal 存储当前线程的事务信息
  *
- * 支持嵌套事务：使用 Stack 存储事务堆栈，实现嵌套事务的支持
+ * <p>支持嵌套事务：使用 Stack 存储事务堆栈，实现嵌套事务的支持。
+ * <p>支持事务挂起/恢复（用于 REQUIRES_NEW 和 NOT_SUPPORTED 传播性）。
  */
 @Slf4j
 public class TransactionContext {
@@ -84,6 +85,40 @@ public class TransactionContext {
             return info;
         }
         return null;
+    }
+
+    /**
+     * 挂起当前事务（弹出堆栈并返回，供 REQUIRES_NEW / NOT_SUPPORTED 使用）。
+     *
+     * @return 被挂起的事务信息，若当前无活跃事务则返回 {@code null}
+     */
+    public static TransactionInfo suspendTransaction() {
+        Stack<TransactionInfo> stack = TRANSACTION_STACK.get();
+        if (!stack.isEmpty()) {
+            TransactionInfo suspended = stack.pop();
+            log.debug("挂起事务: remaining depth={}", stack.size());
+            if (stack.isEmpty()) {
+                TRANSACTION_STACK.remove();
+            }
+            return suspended;
+        }
+        return null;
+    }
+
+    /**
+     * 恢复之前挂起的事务（压回堆栈，供 REQUIRES_NEW / NOT_SUPPORTED 使用）。
+     *
+     * <p>如果 {@link #suspendTransaction()} 清除了 ThreadLocal（因堆栈已空），
+     * {@code TRANSACTION_STACK.get()} 将通过 {@code withInitial} 初始化器返回一个新的空堆栈，
+     * 保证不会发生 {@link NullPointerException}。
+     *
+     * @param txInfo 之前挂起的事务信息；若为 {@code null} 则不执行任何操作
+     */
+    public static void resumeTransaction(TransactionInfo txInfo) {
+        if (txInfo != null) {
+            TRANSACTION_STACK.get().push(txInfo);
+            log.debug("恢复事务: depth={}", TRANSACTION_STACK.get().size());
+        }
     }
 
     /**
