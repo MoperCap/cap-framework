@@ -1,6 +1,7 @@
 package org.moper.cap.aop.runner;
 
 import org.moper.cap.aop.annotation.After;
+import org.moper.cap.aop.annotation.AfterThrowing;
 import org.moper.cap.aop.annotation.Around;
 import org.moper.cap.aop.annotation.Aspect;
 import org.moper.cap.aop.annotation.Before;
@@ -39,6 +40,11 @@ public class AopBootstrapRunner implements BootstrapRunner {
                 }
                 if (m.isAnnotationPresent(After.class)) {
                     list.add(new Advisor(Advisor.Type.AFTER, m.getAnnotation(After.class).value(), bean, m));
+                }
+                if (m.isAnnotationPresent(AfterThrowing.class)) {
+                    AfterThrowing at = m.getAnnotation(AfterThrowing.class);
+                    String pointcutExpr = at.pointcut().isEmpty() ? at.value() : at.pointcut();
+                    list.add(new Advisor(Advisor.Type.AFTER_THROWING, pointcutExpr, bean, m));
                 }
             }
 

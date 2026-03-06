@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.aop.annotation.Around;
 import org.moper.cap.aop.annotation.Aspect;
 import org.moper.cap.aop.model.JoinPoint;
+import org.moper.cap.aop.model.ProceedingJoinPoint;
 import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.transaction.annotation.IsolationLevel;
 import org.moper.cap.transaction.annotation.Propagation;
@@ -49,7 +50,7 @@ public class TransactionAspect {
      * (either on the method itself or on its declaring class).
      */
     @Around("@target(org.moper.cap.transaction.annotation.Transactional) || @method(org.moper.cap.transaction.annotation.Transactional)")
-    public Object transactionInterceptor(JoinPoint joinPoint) throws Throwable {
+    public Object transactionInterceptor(ProceedingJoinPoint joinPoint) throws Throwable {
         Transactional tx = getTransactionalAnnotation(joinPoint);
         if (tx == null) {
             return joinPoint.proceed();
@@ -69,7 +70,7 @@ public class TransactionAspect {
     // Transaction lifecycle
     // -------------------------------------------------------------------------
 
-    private Object handleTransaction(JoinPoint joinPoint, Transactional tx,
+    private Object handleTransaction(ProceedingJoinPoint joinPoint, Transactional tx,
                                      TransactionManager txManager) throws Throwable {
         Method method = joinPoint.getMethod();
         log.debug("处理事务方法: method={}", method.getName());
