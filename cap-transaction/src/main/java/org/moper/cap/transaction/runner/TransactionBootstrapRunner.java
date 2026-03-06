@@ -42,7 +42,9 @@ public class TransactionBootstrapRunner implements BootstrapRunner {
         // 1. 获取 DataSource
         DataSource dataSource = obtainDataSource(container);
         if (dataSource == null) {
-            log.warn("容器中未找到 DataSource，跳过事务模块初始化");
+            log.warn("容器中未找到 DataSource，事务功能将被跳过");
+            log.warn("提示：请在应用中配置 DataSource Bean");
+            log.warn("   例如：在 @Capper 标注的类中创建 DataSource 工厂方法");
             return;
         }
 
