@@ -8,9 +8,8 @@ app:
   version: 1.0.0
   description: CAP Framework 示例应用 - Web MVC + 事务管理
 
-# 服务器配置
+# 服务器配置（端口使用默认值 8080，可通过命令行 --server.port=<port> 覆盖）
 server:
-  port: 8080
   servlet:
     context-path: /
 
@@ -24,30 +23,14 @@ logging:
     org.moper.cap.web: DEBUG
 
 # =====================================================
-# 数据库配置 - MySQL
+# 数据库配置
+# 默认使用 H2 内存数据库（开发/测试环境）。
+# 生产环境请通过命令行参数覆盖，例如：
+#   --database.driver=com.mysql.cj.jdbc.Driver
+#   --database.url=jdbc:mysql://localhost:3306/mydb
+#   --database.username=root
+#   --database.password=secret
 # =====================================================
-database:
-  # MySQL JDBC 驱动
-  driver: com.mysql.cj.jdbc.Driver
-
-  # MySQL 连接字符串
-  # useSSL=false: 禁用 SSL（开发环境）
-  # serverTimezone=UTC: 指定时区
-  # allowPublicKeyRetrieval=true: 允许公钥检索（开发环境）
-  # characterEncoding=utf8mb4: 字符编码
-  url: jdbc:mysql://localhost:3306/cap-example-db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&characterEncoding=utf8mb4
-
-  # 数据库用户名
-  username: root
-
-  # 数据库密码
-  password: moper
-
-  # 连接池配置（可选）
-  pool:
-    max-pool-size: 10
-    min-idle-size: 2
-    connection-timeout: 30000
 
 # =====================================================
 # Web 配置
