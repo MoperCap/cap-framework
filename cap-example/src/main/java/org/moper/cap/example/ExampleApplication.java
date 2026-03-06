@@ -15,7 +15,7 @@ import org.moper.cap.core.annotation.ResourceScan;
  *   <li>{@link ResourceScan} 默认扫描根路径，加载 {@code application.yaml}。</li>
  * </ul>
  */
-@ComponentScan("org.moper.cap.example")
+@ComponentScan({"org.moper.cap.example", "org.moper.cap.data.config"})
 @ResourceScan
 public class ExampleApplication {
 }

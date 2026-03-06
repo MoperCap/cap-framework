@@ -51,8 +51,7 @@ public class TransactionBootstrapRunner implements BootstrapRunner {
             log.info("✅ 事务模块初始化完成");
             log.info("   - TransactionBeanInterceptor 已注册");
             log.info("   - 现在可以使用 @Transactional 注解");
-            log.info("   💡 注意：事务功能依赖于 TransactionManager 的具体实现");
-            log.info("           请确保已在应用中配置 TransactionManager 实现");
+            log.info("   - 事务实现由其他模块动态提供（如 cap-data）");
         } catch (Exception e) {
             log.error("❌ 事务模块初始化失败", e);
             throw e;

@@ -7,6 +7,7 @@ import org.moper.cap.example.model.Order;
 import org.moper.cap.transaction.annotation.IsolationLevel;
 import org.moper.cap.transaction.annotation.Propagation;
 import org.moper.cap.transaction.annotation.Transactional;
+import org.moper.cap.transaction.template.TransactionTemplate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -34,6 +35,9 @@ public class OrderService {
 
     @Inject
     ProductService productService;
+
+    @Inject
+    private TransactionTemplate txTemplate;
 
     private final Map<Long, Order> orderStore = new ConcurrentHashMap<>();
     private final AtomicLong idGenerator = new AtomicLong(0);
@@ -148,44 +152,30 @@ public class OrderService {
     }
 
     /**
-     * 批量创建订单 - 独立事务示例
+     * 批量创建订单 - 编程式事务示例
      *
-     * <p>演示 {@code Propagation.REQUIRES_NEW} 的用法：
-     * 每个订单都在独立的事务中创建，互不影响。
-     * 如果某个订单创建失败，只回滚该订单，其他订单正常提交。
+     * <p>演示 {@link TransactionTemplate} 的使用：
+     * 将所有订单创建操作包裹在一个事务中，对每个请求捕获并记录异常以允许继续处理后续订单。
+     * 注意：若事务整体失败，所有操作将一同回滚；若成功提交，则所有成功创建的订单一同提交。
      */
-    @Transactional(
-        propagation = Propagation.REQUIRED,
-        isolation = IsolationLevel.READ_COMMITTED
-    )
     public List<Order> batchCreateOrders(List<OrderRequest> requests) {
-        log.info("=== 批量创建订单 [外层事务] ===");
-        List<Order> orders = new ArrayList<>();
+        log.info("=== 批量创建订单 [编程式事务] ===");
 
-        for (OrderRequest request : requests) {
-            try {
-                Order order = createOrderInTransaction(request);
-                orders.add(order);
-            } catch (Exception e) {
-                log.error("创建订单失败: {}, 继续处理下一个", e.getMessage());
+        return txTemplate.execute(() -> {
+            List<Order> orders = new ArrayList<>();
+
+            for (OrderRequest request : requests) {
+                try {
+                    Order order = createOrder(request.userId, request.productId, request.quantity);
+                    orders.add(order);
+                } catch (Exception e) {
+                    log.error("创建订单失败: {}, 继续处理下一个", e.getMessage());
+                }
             }
-        }
 
-        log.info("批量订单创建完成: 成功 {} 个", orders.size());
-        return orders;
-    }
-
-    /**
-     * 独立事务创建单个订单。
-     */
-    @Transactional(
-        propagation = Propagation.REQUIRES_NEW,
-        isolation = IsolationLevel.READ_COMMITTED,
-        rollbackFor = {IllegalArgumentException.class}
-    )
-    private Order createOrderInTransaction(OrderRequest request) {
-        log.info("=== 独立事务：创建单个订单 ===");
-        return createOrder(request.userId, request.productId, request.quantity);
+            log.info("批量订单创建完成: 成功 {} 个", orders.size());
+            return orders;
+        });
     }
 
     public Order getOrderById(long id) {
