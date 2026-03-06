@@ -80,14 +80,17 @@ public class EmbeddedTomcatServer {
         log.info("配置连接器: port={}, maxConnections={}, maxThreads={}",
                 port, maxConnections, maxThreads);
 
-        // 3. 创建应用上下文
+        // 3. 创建应用上下文（规范化 contextPath）
         java.io.File appBaseDir = new java.io.File(baseDir, "webapps");
         if (!appBaseDir.exists()) {
             appBaseDir.mkdirs();
         }
         String appBase = appBaseDir.getAbsolutePath();
-        Context context = tomcat.addContext(contextPath, appBase);
+        String normalizedContextPath = normalizeContextPath(contextPath);
+        Context context = tomcat.addContext(normalizedContextPath, appBase);
         context.setReloadable(false);
+
+        log.info("创建应用上下文: contextPath='{}' -> '{}'", contextPath, normalizedContextPath);
 
         // 4. 配置资源
         StandardRoot standardRoot = new StandardRoot(context);
@@ -95,16 +98,17 @@ public class EmbeddedTomcatServer {
 
         // 5. 注册 DispatcherServlet
         String servletName = "dispatcher";
-        tomcat.addServlet(contextPath, servletName, dispatcherServlet);
+        tomcat.addServlet(normalizedContextPath, servletName, dispatcherServlet);
         context.addServletMappingDecoded("/*", servletName);
 
-        log.info("注册 DispatcherServlet: contextPath={}, mapping=/*", contextPath);
+        log.info("注册 DispatcherServlet: contextPath='{}', mapping=/*", normalizedContextPath);
 
         // 6. 启动 Tomcat
         tomcat.start();
 
         log.info("Tomcat 服务器启动成功！");
-        log.info("访问地址: http://localhost:{}{}", port, contextPath);
+        log.info("访问地址: http://localhost:{}{}", port,
+                "".equals(normalizedContextPath) ? "/" : normalizedContextPath);
     }
 
     /**
@@ -117,6 +121,26 @@ public class EmbeddedTomcatServer {
             tomcat.destroy();
             log.info("Tomcat 服务器已关闭");
         }
+    }
+
+    /**
+     * 规范化 Tomcat 上下文路径
+     *
+     * Tomcat 要求上下文路径必须满足：
+     * 1. 要么是空字符串（表示根路径）
+     * 2. 要么以 '/' 开头且不能以 '/' 结尾
+     *
+     * @param contextPath 原始上下文路径
+     * @return 规范化后的路径
+     */
+    private String normalizeContextPath(String contextPath) {
+        if (contextPath == null || contextPath.isEmpty()) {
+            return "";
+        }
+        // Strip all trailing slashes
+        String normalized = contextPath.replaceAll("/+$", "");
+        // An empty string (including the case where input was "/" or "///") means root context
+        return normalized;
     }
 
     /**
