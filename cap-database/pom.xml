@@ -9,7 +9,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>cap-data</artifactId>
+    <artifactId>cap-database</artifactId>
 
     <dependencies>
 

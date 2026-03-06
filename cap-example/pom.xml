@@ -33,7 +33,7 @@
         <!-- cap-data 提供数据源和事务管理能力 -->
         <dependency>
             <groupId>org.moper.cap</groupId>
-            <artifactId>cap-data</artifactId>
+            <artifactId>cap-database</artifactId>
         </dependency>
 
         <!-- MySQL JDBC 驱动（生产环境） -->
