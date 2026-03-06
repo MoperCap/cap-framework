@@ -6,6 +6,7 @@ import org.moper.cap.bean.annotation.Capper;
 import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.bean.definition.BeanDefinition;
 import org.moper.cap.bean.exception.BeanDefinitionException;
+import org.moper.cap.bean.util.BeanLifecycleResolver;
 import org.moper.cap.bean.util.BeanNamesResolver;
 import org.moper.cap.core.annotation.RunnerMeta;
 import org.moper.cap.core.context.BootstrapContext;
@@ -65,13 +66,23 @@ public class FactoryBeanRegisterBootstrapRunner implements BootstrapRunner {
                     Capper capper = factoryMethod.getAnnotation(Capper.class);
 
                     // 注册Bean定义
+                    String initMethodName = capper.initMethod();
+                    String destroyMethodName = capper.destroyMethod();
+                    if (!initMethodName.isBlank()) {
+                        BeanLifecycleResolver.validate(beanType, initMethodName);
+                    }
+                    if (!destroyMethodName.isBlank()) {
+                        BeanLifecycleResolver.validate(beanType, destroyMethodName);
+                    }
                     BeanDefinition def = BeanDefinition.of(primaryBeanName, beanType)
                             .withFactoryMethod(factoryClassBeanName, factoryMethodName)
                             .withParameterBeanNames(factoryMethodParameterBeanNames)
                             .withPrimary(capper.primary())
                             .withLazy(capper.lazy())
                             .withScope(capper.scope())
-                            .withDescription(capper.description());
+                            .withDescription(capper.description())
+                            .withInitMethod(initMethodName.isBlank() ? null : initMethodName)
+                            .withDestroyMethod(destroyMethodName.isBlank() ? null : destroyMethodName);
                     // 若已经存在Bean定义，则进行覆盖
                     // 目前已知的满足条件有：当@Capper方法的返回类型上存在@Capper注解，且两者均未显式定义Bean名称，则@Capper方法的Bean定义会覆盖@Capper类的Bean定义
                     if(container.containsBeanDefinition(primaryBeanName)) {
