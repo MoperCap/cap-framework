@@ -34,7 +34,6 @@ public class ExampleMain {
     public static void main(String[] args) throws Exception {
         log.info("=== cap-framework Web MVC 示例应用启动 (支持事务模块) ===");
         try (RuntimeContext context = new DefaultCapApplication(ExampleApplication.class, args).run()) {
-            log.info("=== 应用启动完成，按 Ctrl+C 停止 ===");
             Thread.currentThread().join();
         }
     }

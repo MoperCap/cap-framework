@@ -8,6 +8,7 @@
     <artifactId>cap-framework</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
+
     <modules>
         <module>cap-property</module>
         <module>cap-bean</module>

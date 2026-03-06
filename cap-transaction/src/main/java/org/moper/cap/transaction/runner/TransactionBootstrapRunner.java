@@ -25,12 +25,7 @@ import javax.sql.DataSource;
  * <p>若容器中没有 {@link DataSource}，本 Runner 会跳过初始化并打印警告日志。
  */
 @Slf4j
-@RunnerMeta(
-        type = RunnerType.FEATURE,
-        order = 450,
-        name = "CapTransactionBootstrapRunner",
-        description = "初始化事务系统：创建 TransactionManager 并注册 TransactionBeanInterceptor"
-)
+@RunnerMeta(type = RunnerType.FEATURE, order = 380, description = "初始化事务系统：创建 TransactionManager 并注册 TransactionBeanInterceptor")
 public class TransactionBootstrapRunner implements BootstrapRunner {
 
     @Override

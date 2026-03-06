@@ -22,7 +22,7 @@ import java.lang.reflect.*;
  * <ul>
  *   <li>JDK 动态代理（Bean 实现了接口时）</li>
  *   <li>Javassist 子类代理（Bean 未实现接口时）</li>
- *   <li>嵌套事务（通过 {@link TransactionContext} 的 Stack 实现）</li>
+ *   <li>嵌套事务（通过 {@link org.moper.cap.transaction.context.TransactionContext} 的 Stack 实现）</li>
  *   <li>事务传播性（REQUIRED, REQUIRES_NEW, NESTED, NEVER, NOT_SUPPORTED, MANDATORY, SUPPORTS）</li>
  *   <li>灵活的回滚规则（rollbackFor, noRollbackFor）</li>
  * </ul>

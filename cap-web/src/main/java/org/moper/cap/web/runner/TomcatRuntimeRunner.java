@@ -1,5 +1,6 @@
 package org.moper.cap.web.runner;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.moper.cap.core.annotation.RunnerMeta;
 import org.moper.cap.core.context.RuntimeContext;
@@ -25,10 +26,15 @@ import org.moper.cap.web.view.support.DefaultViewHandlerRegistry;
  * 2. 初始化 Web MVC 组件
  * 3. 启动内嵌 Tomcat 服务器
  */
+@Getter
 @Slf4j
 @RunnerMeta(type = RunnerType.FEATURE, order = 300, description = "Starts embedded Tomcat server")
 public class TomcatRuntimeRunner implements RuntimeRunner {
 
+    /**
+     * -- GETTER --
+     *  获取 Tomcat 服务器实例
+     */
     private EmbeddedTomcatServer tomcatServer;
 
     @Override
@@ -93,10 +99,4 @@ public class TomcatRuntimeRunner implements RuntimeRunner {
         }
     }
 
-    /**
-     * 获取 Tomcat 服务器实例
-     */
-    public EmbeddedTomcatServer getTomcatServer() {
-        return tomcatServer;
-    }
 }

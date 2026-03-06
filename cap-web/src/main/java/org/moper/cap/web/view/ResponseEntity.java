@@ -1,5 +1,7 @@
 package org.moper.cap.web.view;
 
+import lombok.Getter;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,6 +13,7 @@ import java.util.Map;
  * - 响应头
  * - 响应体
  */
+@Getter
 public class ResponseEntity<T> {
 
     private final int statusCode;
@@ -21,18 +24,6 @@ public class ResponseEntity<T> {
         this.statusCode = statusCode;
         this.headers = headers != null ? headers : new HashMap<>();
         this.body = body;
-    }
-
-    public int getStatusCode() {
-        return statusCode;
-    }
-
-    public Map<String, String> getHeaders() {
-        return headers;
-    }
-
-    public T getBody() {
-        return body;
     }
 
     public static <T> Builder<T> ok() {
