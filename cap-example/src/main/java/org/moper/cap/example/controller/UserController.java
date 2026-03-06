@@ -42,7 +42,7 @@ public class UserController {
      * GET /api/users/{id}
      */
     @GetMapping("/{id}")
-    public ApiResponse<User> getUserById(@PathVariable long id) {
+    public ApiResponse<User> getUserById(@PathVariable("id") long id) {
         log.info("获取用户: id={}", id);
         User user = userService.getUserById(id);
         if (user == null) {
@@ -67,7 +67,7 @@ public class UserController {
      * PUT /api/users/{id}
      */
     @PutMapping("/{id}")
-    public ApiResponse<User> updateUser(@PathVariable long id, @RequestBody User user) {
+    public ApiResponse<User> updateUser(@PathVariable("id") long id, @RequestBody User user) {
         log.info("更新用户: id={}", id);
         User updated = userService.updateUser(id, user);
         return ApiResponse.success("更新用户成功", updated);
@@ -78,7 +78,7 @@ public class UserController {
      * DELETE /api/users/{id}
      */
     @DeleteMapping("/{id}")
-    public ApiResponse<Void> deleteUser(@PathVariable long id) {
+    public ApiResponse<Void> deleteUser(@PathVariable("id") long id) {
         log.info("删除用户: id={}", id);
         boolean deleted = userService.deleteUser(id);
         if (!deleted) {
