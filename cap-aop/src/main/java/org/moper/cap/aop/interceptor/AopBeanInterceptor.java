@@ -31,20 +31,23 @@ public class AopBeanInterceptor implements BeanInterceptor {
      *
      * <p>同时检查 Bean 类本身的方法以及其所有接口中的方法，
      * 以正确支持 JDK Proxy（接口方法）和 CGLib Proxy（类方法）两种代理模式。
+     * The bean's actual class is always passed as {@code targetClass} so that
+     * annotation-based pointcuts (e.g. {@code @method(...)}) can resolve
+     * annotations from the implementation, not just the interface.
      */
     private boolean hasMatchingAdvisor(Object bean) {
         Class<?> beanClass = bean.getClass();
         // 检查类本身声明的方法
         for (Method m : beanClass.getDeclaredMethods()) {
             for (Advisor advisor : advisors) {
-                if (advisor.matches(m)) return true;
+                if (advisor.matches(m, beanClass)) return true;
             }
         }
         // 检查接口方法（JDK Proxy 场景）
         for (Class<?> iface : beanClass.getInterfaces()) {
             for (Method m : iface.getDeclaredMethods()) {
                 for (Advisor advisor : advisors) {
-                    if (advisor.matches(m)) return true;
+                    if (advisor.matches(m, beanClass)) return true;
                 }
             }
         }

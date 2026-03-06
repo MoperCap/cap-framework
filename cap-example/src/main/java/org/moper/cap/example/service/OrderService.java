@@ -161,6 +161,21 @@ public class OrderService {
     public List<Order> batchCreateOrders(List<OrderRequest> requests) {
         log.info("=== 批量创建订单 [编程式事务] ===");
 
+        if (txTemplate == null) {
+            log.warn("TransactionTemplate 不可用，直接执行（无事务保护）");
+            List<Order> orders = new ArrayList<>();
+            for (OrderRequest request : requests) {
+                try {
+                    Order order = createOrder(request.userId, request.productId, request.quantity);
+                    orders.add(order);
+                } catch (Exception e) {
+                    log.error("创建订单失败: {}, 继续处理下一个", e.getMessage());
+                }
+            }
+            log.info("批量订单创建完成: 成功 {} 个", orders.size());
+            return orders;
+        }
+
         return txTemplate.execute(() -> {
             List<Order> orders = new ArrayList<>();
 

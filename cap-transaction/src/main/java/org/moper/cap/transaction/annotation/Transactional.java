@@ -5,7 +5,8 @@ import java.lang.annotation.*;
 /**
  * 事务注解
  *
- * 标注在方法上表示该方法需要事务管理。
+ * 标注在方法或类上表示需要事务管理。
+ * 标注在类上时，类中所有公共方法均受事务管理。
  *
  * 使用示例：
  * <pre>{@code
@@ -15,7 +16,7 @@ import java.lang.annotation.*;
  * }
  * }</pre>
  */
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Transactional {

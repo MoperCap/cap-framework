@@ -1,6 +1,10 @@
 package org.moper.cap.transaction.aspect;
 
 import lombok.extern.slf4j.Slf4j;
+import org.moper.cap.aop.annotation.Around;
+import org.moper.cap.aop.annotation.Aspect;
+import org.moper.cap.aop.model.JoinPoint;
+import org.moper.cap.bean.container.BeanContainer;
 import org.moper.cap.transaction.annotation.IsolationLevel;
 import org.moper.cap.transaction.annotation.Propagation;
 import org.moper.cap.transaction.annotation.Transactional;
@@ -9,112 +13,167 @@ import org.moper.cap.transaction.exception.TransactionException;
 import org.moper.cap.transaction.manager.TransactionManager;
 
 import java.lang.reflect.Method;
-import java.sql.Connection;
+import java.util.Map;
 
 /**
- * 事务切面 - 处理 @Transactional 的核心逻辑
+ * 事务切面 - 处理所有 {@link Transactional} 方法的事务逻辑
  *
- * <p>工作流程：
+ * <p>与 cap-aop 模块集成，使用 {@link Around} 切面拦截 {@link Transactional} 方法。
+ *
+ * <p>职责：
  * <ol>
- *   <li>{@link #handleTransactionBegin} - 在方法执行前根据传播性决定是否开启事务</li>
- *   <li>方法执行</li>
- *   <li>{@link #handleTransactionEnd} - 在方法执行后提交或回滚事务</li>
+ *   <li>拦截所有标注 {@link Transactional} 的方法或类下的所有方法</li>
+ *   <li>在方法执行前根据传播性开启事务</li>
+ *   <li>在方法成功后提交事务</li>
+ *   <li>在方法异常后按回滚规则回滚事务</li>
  * </ol>
  */
 @Slf4j
+@Aspect
 public class TransactionAspect {
 
-    private final TransactionManager transactionManager;
+    private final BeanContainer beanContainer;
 
-    public TransactionAspect(TransactionManager transactionManager) {
-        this.transactionManager = transactionManager;
+    /**
+     * Cached {@link TransactionManager} – looked up lazily on first use so that the
+     * aspect can be registered during bootstrap before the manager bean is available.
+     */
+    private volatile TransactionManager cachedTransactionManager;
+
+    public TransactionAspect(BeanContainer beanContainer) {
+        this.beanContainer = beanContainer;
     }
 
     /**
-     * 处理事务开始。
-     *
-     * <p>根据方法上的 {@link Transactional} 注解配置以及传播性语义决定是否开启新事务。
-     *
-     * @param method 带有 {@link Transactional} 注解的目标方法
-     * @throws Exception 开启事务失败时抛出
+     * Around advice that intercepts every method annotated with {@link Transactional}
+     * (either on the method itself or on its declaring class).
      */
-    public void handleTransactionBegin(Method method) throws Exception {
-        Transactional tx = method.getAnnotation(Transactional.class);
+    @Around("@target(org.moper.cap.transaction.annotation.Transactional) || @method(org.moper.cap.transaction.annotation.Transactional)")
+    public Object transactionInterceptor(JoinPoint joinPoint) throws Throwable {
+        Transactional tx = getTransactionalAnnotation(joinPoint);
         if (tx == null) {
-            return;
+            return joinPoint.proceed();
         }
 
-        log.debug("处理事务开始: method={}", method.getName());
-        handlePropagation(tx.propagation(), tx.readOnly(), tx.isolation());
+        TransactionManager txManager = getTransactionManager();
+        if (txManager == null) {
+            log.warn("⚠️  未找到 TransactionManager 实现，方法 [{}] 将在无事务环境下执行",
+                    joinPoint.getMethod().getName());
+            return joinPoint.proceed();
+        }
+
+        return handleTransaction(joinPoint, tx, txManager);
     }
 
-    /**
-     * 处理事务结束（提交或回滚）。
-     *
-     * <p>若 {@code throwable} 不为 null，根据回滚规则决定是否回滚；否则提交事务。
-     *
-     * @param method    带有 {@link Transactional} 注解的目标方法
-     * @param throwable 方法执行期间抛出的异常或错误，正常完成时为 null
-     * @throws Exception 提交或回滚失败时抛出
-     */
-    public void handleTransactionEnd(Method method, Throwable throwable) throws Exception {
-        Transactional tx = method.getAnnotation(Transactional.class);
-        if (tx == null) {
-            return;
-        }
+    // -------------------------------------------------------------------------
+    // Transaction lifecycle
+    // -------------------------------------------------------------------------
+
+    private Object handleTransaction(JoinPoint joinPoint, Transactional tx,
+                                     TransactionManager txManager) throws Throwable {
+        Method method = joinPoint.getMethod();
+        log.debug("处理事务方法: method={}", method.getName());
+
+        handlePropagation(tx.propagation(), tx.readOnly(), tx.isolation(), txManager);
 
         TransactionContext.TransactionInfo txInfo = TransactionContext.getCurrentTransaction();
-        if (txInfo == null) {
-            return;
-        }
-
-        // Check timeout before commit
-        checkTimeout(tx, txInfo);
-
-        Connection connection = txInfo.getConnection();
 
         try {
-            if (throwable != null && shouldRollback(tx, throwable)) {
-                log.debug("事务回滚: method={}, exception={}", method.getName(), throwable.getClass().getName());
-                transactionManager.rollback(connection);
-            } else {
+            Object result = joinPoint.proceed();
+
+            if (txInfo != null) {
+                checkTimeout(tx, txInfo);
                 log.debug("事务提交: method={}", method.getName());
-                transactionManager.commit(connection);
+                txManager.commit(txInfo.getConnection());
             }
-        } catch (Exception e) {
-            log.error("处理事务结束失败", e);
-            throw e;
+
+            return result;
+        } catch (Throwable throwable) {
+            if (txInfo != null) {
+                if (shouldRollback(tx, throwable)) {
+                    log.debug("事务回滚: method={}, exception={}",
+                            method.getName(), throwable.getClass().getName());
+                    try {
+                        txManager.rollback(txInfo.getConnection());
+                    } catch (Exception rollbackEx) {
+                        log.error("事务回滚失败", rollbackEx);
+                    }
+                } else {
+                    txManager.commit(txInfo.getConnection());
+                }
+            }
+            throw throwable;
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
     /**
-     * 根据传播性处理事务。
+     * Returns the effective {@link Transactional} annotation for the join point.
+     * Method-level annotation takes precedence over class-level.
      */
-    private void handlePropagation(Propagation propagation, boolean readOnly, IsolationLevel isolation) throws Exception {
+    private Transactional getTransactionalAnnotation(JoinPoint joinPoint) {
+        Method method = joinPoint.getMethod();
+        Transactional methodTx = method.getAnnotation(Transactional.class);
+        if (methodTx != null) {
+            return methodTx;
+        }
+        // Fall back to class-level annotation on the actual target class
+        return joinPoint.getTarget().getClass().getAnnotation(Transactional.class);
+    }
+
+    /** Lazily resolves the {@link TransactionManager} from the bean container. */
+    private TransactionManager getTransactionManager() {
+        if (cachedTransactionManager == null) {
+            synchronized (this) {
+                if (cachedTransactionManager == null) {
+                    try {
+                        Map<String, TransactionManager> managers =
+                                beanContainer.getBeansOfType(TransactionManager.class);
+                        if (!managers.isEmpty()) {
+                            cachedTransactionManager = managers.values().iterator().next();
+                        }
+                    } catch (Exception e) {
+                        log.debug("TransactionManager 查找失败: {}", e.getMessage());
+                    }
+                }
+            }
+        }
+        return cachedTransactionManager;
+    }
+
+    /**
+     * Handles transaction propagation by starting/joining a transaction as required.
+     */
+    private void handlePropagation(Propagation propagation, boolean readOnly,
+                                   IsolationLevel isolation, TransactionManager txManager)
+            throws Exception {
         TransactionContext.TransactionInfo currentTx = TransactionContext.getCurrentTransaction();
 
         switch (propagation) {
             case REQUIRED:
                 if (currentTx == null) {
-                    transactionManager.beginTransaction(readOnly, isolation);
+                    txManager.beginTransaction(readOnly, isolation);
                     log.debug("REQUIRED: 创建新事务");
                 } else {
+                    txManager.beginTransaction(readOnly, isolation);
                     log.debug("REQUIRED: 加入现有事务");
                 }
                 break;
 
             case REQUIRES_NEW:
-                if (currentTx != null) {
-                    log.debug("REQUIRES_NEW: 暂停当前事务，创建新事务");
-                }
-                transactionManager.beginTransaction(readOnly, isolation);
+                txManager.beginTransaction(readOnly, isolation);
+                log.debug("REQUIRES_NEW: 创建新事务");
                 break;
 
             case NESTED:
                 if (currentTx == null) {
-                    transactionManager.beginTransaction(readOnly, isolation);
+                    txManager.beginTransaction(readOnly, isolation);
                     log.debug("NESTED: 创建新事务");
                 } else {
+                    txManager.beginTransaction(readOnly, isolation);
                     log.debug("NESTED: 在现有事务中执行");
                 }
                 break;
@@ -136,24 +195,26 @@ public class TransactionAspect {
                 if (currentTx == null) {
                     throw new TransactionException("MANDATORY propagation but no transaction exists");
                 }
+                txManager.beginTransaction(readOnly, isolation);
                 log.debug("MANDATORY: 在事务中执行");
                 break;
 
             case SUPPORTS:
                 if (currentTx != null) {
+                    txManager.beginTransaction(readOnly, isolation);
                     log.debug("SUPPORTS: 加入现有事务");
                 } else {
                     log.debug("SUPPORTS: 不在事务中");
                 }
                 break;
+
+            default:
+                break;
         }
     }
 
     /**
-     * 检查事务是否超时。
-     *
-     * <p>仅当 {@link Transactional#timeout()} &gt; 0 时有效，在方法执行完成、提交之前检查已用时间。
-     * 若超时则抛出 {@link TransactionException} 触发回滚。
+     * Checks whether the transaction has exceeded its configured timeout.
      */
     private void checkTimeout(Transactional tx, TransactionContext.TransactionInfo txInfo) {
         int timeout = tx.timeout();
@@ -167,15 +228,15 @@ public class TransactionAspect {
     }
 
     /**
-     * 根据 {@link Transactional} 配置判断给定异常/错误是否应触发回滚。
+     * Determines whether the given throwable should trigger a rollback.
      *
-     * <p>规则（按优先级）：
+     * <p>Rules (in priority order):
      * <ol>
-     *   <li>{@link Error} 及其子类：始终回滚</li>
-     *   <li>{@code noRollbackFor} 匹配 → 不回滚</li>
-     *   <li>{@code rollbackFor} 非空且匹配 → 回滚</li>
-     *   <li>{@code rollbackFor} 非空但不匹配 → 不回滚</li>
-     *   <li>默认：{@link RuntimeException} 及其子类回滚</li>
+     *   <li>{@link Error} subclasses always roll back</li>
+     *   <li>{@code noRollbackFor} match → no rollback</li>
+     *   <li>{@code rollbackFor} non-empty and matches → rollback</li>
+     *   <li>{@code rollbackFor} non-empty but no match → no rollback</li>
+     *   <li>Default: {@link RuntimeException} subclasses roll back</li>
      * </ol>
      */
     boolean shouldRollback(Transactional tx, Throwable throwable) {
