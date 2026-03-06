@@ -104,13 +104,15 @@ public class DataSourceFactory {
      * 创建 MySQL DataSource（可扩展）。
      */
     private DataSource createMySqlDataSource(String url, String username, String password) {
-        throw new UnsupportedOperationException("MySQL DataSource 实现待完成，建议引入 HikariCP 等连接池");
+        throw new UnsupportedOperationException(
+                "MySQL DataSource 尚未实现。建议引入 HikariCP 等连接池并自定义 DataSource Bean。");
     }
 
     /**
      * 创建 PostgreSQL DataSource（可扩展）。
      */
     private DataSource createPostgresDataSource(String url, String username, String password) {
-        throw new UnsupportedOperationException("PostgreSQL DataSource 实现待完成，建议引入 HikariCP 等连接池");
+        throw new UnsupportedOperationException(
+                "PostgreSQL DataSource 尚未实现。建议引入 HikariCP 等连接池并自定义 DataSource Bean。");
     }
 }

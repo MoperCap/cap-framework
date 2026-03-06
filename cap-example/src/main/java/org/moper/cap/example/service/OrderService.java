@@ -155,7 +155,8 @@ public class OrderService {
      * 批量创建订单 - 编程式事务示例
      *
      * <p>演示 {@link TransactionTemplate} 的使用：
-     * 将所有订单创建操作包裹在一个事务中，任何失败会跳过当前订单但继续处理下一个。
+     * 将所有订单创建操作包裹在一个事务中，对每个请求捕获并记录异常以允许继续处理后续订单。
+     * 注意：若事务整体失败，所有操作将一同回滚；若成功提交，则所有成功创建的订单一同提交。
      */
     public List<Order> batchCreateOrders(List<OrderRequest> requests) {
         log.info("=== 批量创建订单 [编程式事务] ===");

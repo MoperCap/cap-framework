@@ -43,6 +43,9 @@ public class TransactionTemplate {
     private final TransactionManager transactionManager;
     private boolean readOnly = false;
     private IsolationLevel isolationLevel = IsolationLevel.READ_COMMITTED;
+    // NOTE: propagation and timeout are reserved for future implementation.
+    // Currently execute() implements REQUIRED semantics: join existing transaction
+    // or begin a new one.
     private Propagation propagation = Propagation.REQUIRED;
     private int timeout = -1;
 
