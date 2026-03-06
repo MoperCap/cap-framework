@@ -1,7 +1,14 @@
 # 数据库配置
-db:
-  url: "jdbc:example://localhost:5432/example"
-  h2:
-    url: "jdbc:h2:mem:capdb;MODE=MySQL"
-    username: sa
-    password: ""
+# 注意：这是可选的！如果不配置，框架会自动使用 H2 内存数据库
+database:
+  # 数据库驱动
+  driver: org.h2.Driver
+
+  # 连接 URL（H2 内存数据库）
+  url: jdbc:h2:mem:capdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+
+  # 数据库用户名
+  username: sa
+
+  # 数据库密码
+  password: ""
