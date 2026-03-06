@@ -74,14 +74,20 @@ public class TransactionAspect {
         Method method = joinPoint.getMethod();
         log.debug("处理事务方法: method={}", method.getName());
 
+        // Capture the transaction context before we potentially push a new entry.
+        // We are only responsible for commit/rollback if we started a new transaction.
+        TransactionContext.TransactionInfo existingTx = TransactionContext.getCurrentTransaction();
+
         handlePropagation(tx.propagation(), tx.readOnly(), tx.isolation(), txManager);
 
         TransactionContext.TransactionInfo txInfo = TransactionContext.getCurrentTransaction();
+        // We own the transaction only when a new entry was pushed onto the stack
+        boolean isOwner = txInfo != null && txInfo != existingTx;
 
         try {
             Object result = joinPoint.proceed();
 
-            if (txInfo != null) {
+            if (isOwner) {
                 checkTimeout(tx, txInfo);
                 log.debug("事务提交: method={}", method.getName());
                 txManager.commit(txInfo.getConnection());
@@ -89,7 +95,7 @@ public class TransactionAspect {
 
             return result;
         } catch (Throwable throwable) {
-            if (txInfo != null) {
+            if (isOwner) {
                 if (shouldRollback(tx, throwable)) {
                     log.debug("事务回滚: method={}, exception={}",
                             method.getName(), throwable.getClass().getName());
@@ -146,6 +152,11 @@ public class TransactionAspect {
 
     /**
      * Handles transaction propagation by starting/joining a transaction as required.
+     *
+     * <p>A new transaction entry is pushed onto the context stack only when this method
+     * actually begins a transaction. The caller tracks whether a new entry was pushed
+     * by comparing {@link TransactionContext#getCurrentTransaction()} before and after
+     * this call, and uses that to decide whether it owns the commit/rollback.
      */
     private void handlePropagation(Propagation propagation, boolean readOnly,
                                    IsolationLevel isolation, TransactionManager txManager)
@@ -158,7 +169,6 @@ public class TransactionAspect {
                     txManager.beginTransaction(readOnly, isolation);
                     log.debug("REQUIRED: 创建新事务");
                 } else {
-                    txManager.beginTransaction(readOnly, isolation);
                     log.debug("REQUIRED: 加入现有事务");
                 }
                 break;
@@ -173,7 +183,6 @@ public class TransactionAspect {
                     txManager.beginTransaction(readOnly, isolation);
                     log.debug("NESTED: 创建新事务");
                 } else {
-                    txManager.beginTransaction(readOnly, isolation);
                     log.debug("NESTED: 在现有事务中执行");
                 }
                 break;
@@ -195,13 +204,11 @@ public class TransactionAspect {
                 if (currentTx == null) {
                     throw new TransactionException("MANDATORY propagation but no transaction exists");
                 }
-                txManager.beginTransaction(readOnly, isolation);
                 log.debug("MANDATORY: 在事务中执行");
                 break;
 
             case SUPPORTS:
                 if (currentTx != null) {
-                    txManager.beginTransaction(readOnly, isolation);
                     log.debug("SUPPORTS: 加入现有事务");
                 } else {
                     log.debug("SUPPORTS: 不在事务中");
